@@ -13,6 +13,10 @@ import httpx
 import asyncio
 from enum import Enum
 import json
+import jwt
+import hashlib
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from typing import Union
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
