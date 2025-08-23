@@ -347,10 +347,13 @@ async def search_restaurants(
 ):
     """Search for restaurants with specials near a location"""
     try:
-        # Get all restaurants from database
+        # Get real restaurants from Google Places API
+        google_restaurants = await search_google_places_real(latitude, longitude, radius, query, limit)
+        
+        # Get mock restaurants from database (with specials)
         restaurants_cursor = db.restaurants.find({})
         all_restaurants_raw = await restaurants_cursor.to_list(length=None)
-        all_restaurants = [prepare_from_mongo(restaurant) for restaurant in all_restaurants_raw]
+        mock_restaurants = [prepare_from_mongo(restaurant) for restaurant in all_restaurants_raw]
         
         # Filter by distance
         nearby_restaurants = []
