@@ -21,6 +21,12 @@ function App() {
   const [selectedSpecialType, setSelectedSpecialType] = useState("");
   const [searchRadius, setSearchRadius] = useState(8047); // 5 miles default
   const [lastSearch, setLastSearch] = useState(null);
+  const [showOwnerPortal, setShowOwnerPortal] = useState(false);
+
+  // If showing owner portal, render it
+  if (showOwnerPortal) {
+    return <OwnerPortal />;
+  }
 
   useEffect(() => {
     fetchSpecialTypes();
