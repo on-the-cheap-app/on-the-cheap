@@ -411,9 +411,11 @@ async def search_restaurants(
 @api_router.get("/restaurants/{restaurant_id}")
 async def get_restaurant(restaurant_id: str):
     """Get details for a specific restaurant"""
-    restaurant = await db.restaurants.find_one({"id": restaurant_id})
-    if not restaurant:
+    restaurant_raw = await db.restaurants.find_one({"id": restaurant_id})
+    if not restaurant_raw:
         raise HTTPException(status_code=404, detail="Restaurant not found")
+    
+    restaurant = prepare_from_mongo(restaurant_raw)
     
     # Filter only active specials that are currently running
     active_specials = []
