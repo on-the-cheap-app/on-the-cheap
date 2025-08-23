@@ -449,7 +449,7 @@ async def search_restaurants(
         
         # Filter by distance
         nearby_restaurants = []
-        for restaurant in all_restaurants:
+        for restaurant in mock_restaurants:
             location = restaurant.get('location', {})
             rest_lat = location.get('latitude', 0)
             rest_lon = location.get('longitude', 0)
