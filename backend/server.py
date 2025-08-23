@@ -670,6 +670,46 @@ async def get_special_types():
         ]
     }
 
+@api_router.get("/geocode")
+async def geocode_address(address: str = Query(...)):
+    """Convert address to coordinates using Google Geocoding API"""
+    google_api_key = os.environ.get('GOOGLE_PLACES_API_KEY')
+    if not google_api_key:
+        raise HTTPException(status_code=500, detail="Google API key not configured")
+    
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(
+                "https://maps.googleapis.com/maps/api/geocode/json",
+                params={
+                    "address": address,
+                    "key": google_api_key
+                }
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if data.get('status') == 'OK' and data.get('results'):
+                    location = data['results'][0]['geometry']['location']
+                    return {
+                        "coordinates": {
+                            "latitude": location['lat'],
+                            "longitude": location['lng']
+                        },
+                        "formatted_address": data['results'][0]['formatted_address']
+                    }
+                else:
+                    logger.warning(f"Geocoding failed for address: {address}, status: {data.get('status')}")
+                    raise HTTPException(status_code=404, detail="Address not found")
+            else:
+                logger.error(f"Google Geocoding API error: {response.status_code}")
+                raise HTTPException(status_code=500, detail="Geocoding service error")
+                
+    except Exception as e:
+        logger.error(f"Error geocoding address '{address}': {e}")
+        raise HTTPException(status_code=500, detail="Geocoding failed")
+
 # =================== RESTAURANT OWNER AUTHENTICATION ===================
 
 @api_router.post("/auth/register")
