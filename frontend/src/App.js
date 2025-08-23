@@ -61,15 +61,32 @@ function App() {
     }
   };
 
-  const geocodeLocation = async (location) => {
-    // For demo purposes, using some common locations
-    // In production, you'd use a real geocoding service
+const geocodeLocation = async (location) => {
+    try {
+      // Use backend geocoding endpoint (which uses Google Places API)
+      const response = await axios.get(`${API}/geocode`, {
+        params: { address: location }
+      });
+      
+      if (response.data.coordinates) {
+        return response.data.coordinates;
+      }
+    } catch (error) {
+      console.error('Geocoding error:', error);
+    }
+
+    // Fallback: try common locations for basic coverage
     const commonLocations = {
       "san francisco": { latitude: 37.7749, longitude: -122.4194 },
       "new york": { latitude: 40.7128, longitude: -74.0060 },
       "los angeles": { latitude: 34.0522, longitude: -118.2437 },
       "chicago": { latitude: 41.8781, longitude: -87.6298 },
-      "miami": { latitude: 25.7617, longitude: -80.1918 }
+      "miami": { latitude: 25.7617, longitude: -80.1918 },
+      "new orleans": { latitude: 29.9511, longitude: -90.0715 },
+      "boston": { latitude: 42.3601, longitude: -71.0589 },
+      "seattle": { latitude: 47.6062, longitude: -122.3321 },
+      "denver": { latitude: 39.7392, longitude: -104.9903 },
+      "atlanta": { latitude: 33.7490, longitude: -84.3880 }
     };
 
     const locationKey = location.toLowerCase();
