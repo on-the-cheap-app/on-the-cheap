@@ -104,7 +104,7 @@ function App() {
         limit: 20
       };
 
-      if (selectedSpecialType) {
+      if (selectedSpecialType && selectedSpecialType !== "all") {
         params.special_type = selectedSpecialType;
       }
 
