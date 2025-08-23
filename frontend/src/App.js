@@ -212,7 +212,7 @@ function App() {
                     <SelectValue placeholder="Filter by special type (optional)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Specials</SelectItem>
+                    <SelectItem value="all">All Specials</SelectItem>
                     {specialTypes.map((type) => (
                       <SelectItem key={type.value} value={type.value}>
                         {type.label}
