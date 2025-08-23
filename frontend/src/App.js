@@ -160,13 +160,25 @@ function App() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
-              On-the-Cheap
-            </h1>
-            <p className="text-lg text-gray-600">
-              Find the best restaurant specials near you
-            </p>
+          <div className="flex justify-between items-center">
+            <div className="text-center flex-1">
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                On-the-Cheap
+              </h1>
+              <p className="text-lg text-gray-600">
+                Find the best restaurant specials near you
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowOwnerPortal(true)}
+                className="border-orange-600 text-orange-600 hover:bg-orange-50"
+              >
+                <Building2 className="w-4 h-4 mr-2" />
+                Restaurant Owner
+              </Button>
+            </div>
           </div>
         </div>
       </div>
