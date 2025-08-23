@@ -150,6 +150,11 @@ function App() {
     return colors[type] || "bg-gray-100 text-gray-800 border-gray-200";
   };
 
+  // If showing owner portal, render it
+  if (showOwnerPortal) {
+    return <OwnerPortal />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50">
       {/* Header */}
