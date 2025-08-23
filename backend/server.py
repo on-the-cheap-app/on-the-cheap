@@ -300,6 +300,98 @@ async def init_mock_data():
     await db.restaurants.insert_many(prepared_restaurants)
     logger.info(f"Inserted {len(mock_restaurants)} mock restaurants")
 
+# Google Places API Integration
+async def search_google_places_real(latitude: float, longitude: float, radius: int, query: Optional[str] = None, limit: int = 20) -> List[dict]:
+    """Search for real restaurants using Google Places API"""
+    google_api_key = os.environ.get('GOOGLE_PLACES_API_KEY')
+    if not google_api_key:
+        logger.warning("Google Places API key not found, skipping real API call")
+        return []
+    
+    try:
+        headers = {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": google_api_key,
+            "X-Goog-FieldMask": "places.id,places.displayName,places.types,places.rating,places.priceLevel,places.location,places.formattedAddress,places.nationalPhoneNumber,places.websiteUri,places.regularOpeningHours,places.photos"
+        }
+        
+        # Build request payload for Google Places API (New)
+        included_types = ["restaurant", "bar", "cafe", "meal_takeaway"]
+        
+        payload = {
+            "includedTypes": included_types,
+            "maxResultCount": min(limit, 20),
+            "locationRestriction": {
+                "circle": {
+                    "center": {
+                        "latitude": latitude,
+                        "longitude": longitude
+                    },
+                    "radius": float(min(radius, 50000))  # Google Places max radius
+                }
+            }
+        }
+        
+        # Add text query if provided
+        if query:
+            payload["textQuery"] = query
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                "https://places.googleapis.com/v1/places:searchNearby",
+                json=payload,
+                headers=headers
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                places = data.get('places', [])
+                
+                # Convert Google Places format to our format
+                restaurants = []
+                for place in places:
+                    try:
+                        location = place.get('location', {})
+                        display_name = place.get('displayName', {})
+                        
+                        restaurant = {
+                            'id': f"google_{place.get('id', str(uuid.uuid4()))}",
+                            'name': display_name.get('text', 'Unknown Restaurant'),
+                            'address': place.get('formattedAddress', ''),
+                            'location': {
+                                'latitude': location.get('latitude', latitude),
+                                'longitude': location.get('longitude', longitude)
+                            },
+                            'phone': place.get('nationalPhoneNumber'),
+                            'website': place.get('websiteUri'),
+                            'cuisine_type': [t.replace('_', ' ').title() for t in place.get('types', []) if t in ['restaurant', 'bar', 'cafe', 'meal_takeaway']],
+                            'rating': place.get('rating'),
+                            'price_level': place.get('priceLevel'),
+                            'specials': [],  # Real restaurants don't have specials in our system yet
+                            'is_verified': True,
+                            'source': 'google_places',
+                            'distance': calculate_distance(
+                                latitude, longitude,
+                                location.get('latitude', latitude),
+                                location.get('longitude', longitude)
+                            ),
+                            'created_at': datetime.now(timezone.utc).isoformat()
+                        }
+                        restaurants.append(restaurant)
+                    except Exception as e:
+                        logger.warning(f"Error processing Google Places result: {e}")
+                        continue
+                
+                logger.info(f"Found {len(restaurants)} restaurants from Google Places API")
+                return restaurants
+            else:
+                logger.error(f"Google Places API error: {response.status_code} - {response.text}")
+                return []
+                
+    except Exception as e:
+        logger.error(f"Error calling Google Places API: {e}")
+        return []
+
 # Helper functions
 def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Calculate distance between two points in meters (Haversine formula)"""
