@@ -296,7 +296,8 @@ async def init_mock_data():
         }
     ]
     
-    await db.restaurants.insert_many(mock_restaurants)
+    prepared_restaurants = [prepare_for_mongo(restaurant) for restaurant in mock_restaurants]
+    await db.restaurants.insert_many(prepared_restaurants)
     logger.info(f"Inserted {len(mock_restaurants)} mock restaurants")
 
 # Helper functions
