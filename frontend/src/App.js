@@ -23,11 +23,6 @@ function App() {
   const [lastSearch, setLastSearch] = useState(null);
   const [showOwnerPortal, setShowOwnerPortal] = useState(false);
 
-  // If showing owner portal, render it
-  if (showOwnerPortal) {
-    return <OwnerPortal />;
-  }
-
   useEffect(() => {
     fetchSpecialTypes();
   }, []);
