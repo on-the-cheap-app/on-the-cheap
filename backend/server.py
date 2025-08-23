@@ -86,6 +86,31 @@ class RestaurantOwner(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 # Mock data setup
+def prepare_for_mongo(data):
+    """Convert data for MongoDB storage"""
+    if isinstance(data, dict):
+        return {k: prepare_for_mongo(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [prepare_for_mongo(item) for item in data]
+    elif isinstance(data, datetime):
+        return data.isoformat()
+    else:
+        return data
+
+def prepare_from_mongo(data):
+    """Convert data from MongoDB to dict (removes ObjectId)"""
+    if isinstance(data, dict):
+        result = {}
+        for k, v in data.items():
+            if k == '_id':
+                continue  # Skip MongoDB's _id field
+            result[k] = prepare_from_mongo(v)
+        return result
+    elif isinstance(data, list):
+        return [prepare_from_mongo(item) for item in data]
+    else:
+        return data
+
 async def init_mock_data():
     """Initialize mock restaurant data"""
     existing_restaurants = await db.restaurants.count_documents({})
