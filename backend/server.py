@@ -88,11 +88,52 @@ class RestaurantSearch(BaseModel):
 class RestaurantOwner(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     email: str
+    password_hash: str
     business_name: str
     phone: str
+    first_name: str
+    last_name: str
     restaurant_ids: List[str] = []
     is_verified: bool = False
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class RestaurantOwnerCreate(BaseModel):
+    email: str
+    password: str
+    business_name: str
+    phone: str
+    first_name: str
+    last_name: str
+
+class RestaurantOwnerLogin(BaseModel):
+    email: str
+    password: str
+
+class RestaurantClaim(BaseModel):
+    google_place_id: str
+    business_name: str
+    verification_notes: Optional[str] = None
+
+class SpecialCreate(BaseModel):
+    title: str
+    description: str
+    special_type: SpecialType
+    price: Optional[float] = None
+    original_price: Optional[float] = None
+    days_available: List[str]  # ["monday", "tuesday", etc.]
+    time_start: str  # "14:00"
+    time_end: str    # "17:00"
+
+class SpecialUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    special_type: Optional[SpecialType] = None
+    price: Optional[float] = None
+    original_price: Optional[float] = None
+    days_available: Optional[List[str]] = None
+    time_start: Optional[str] = None
+    time_end: Optional[str] = None
+    is_active: Optional[bool] = None
 
 # Mock data setup
 def prepare_for_mongo(data):
