@@ -670,6 +670,429 @@ async def get_special_types():
         ]
     }
 
+# =================== RESTAURANT OWNER AUTHENTICATION ===================
+
+@api_router.post("/auth/register")
+async def register_owner(owner_data: RestaurantOwnerCreate):
+    """Register a new restaurant owner"""
+    try:
+        # Check if email already exists
+        existing_owner = await db.restaurant_owners.find_one({"email": owner_data.email})
+        if existing_owner:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        
+        # Create new owner
+        owner = RestaurantOwner(
+            email=owner_data.email,
+            password_hash=hash_password(owner_data.password),
+            business_name=owner_data.business_name,
+            phone=owner_data.phone,
+            first_name=owner_data.first_name,
+            last_name=owner_data.last_name
+        )
+        
+        owner_dict = prepare_for_mongo(owner.dict())
+        result = await db.restaurant_owners.insert_one(owner_dict)
+        
+        # Create access token
+        token = create_access_token({"user_id": owner.id, "email": owner.email})
+        
+        return {
+            "message": "Registration successful",
+            "access_token": token,
+            "token_type": "bearer",
+            "user": {
+                "id": owner.id,
+                "email": owner.email,
+                "business_name": owner.business_name,
+                "first_name": owner.first_name,
+                "last_name": owner.last_name
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Registration error: {e}")
+        raise HTTPException(status_code=500, detail="Registration failed")
+
+@api_router.post("/auth/login")
+async def login_owner(login_data: RestaurantOwnerLogin):
+    """Login restaurant owner"""
+    try:
+        # Find user by email
+        user = await db.restaurant_owners.find_one({"email": login_data.email})
+        if not user:
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        user = prepare_from_mongo(user)
+        
+        # Verify password
+        if not verify_password(login_data.password, user['password_hash']):
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        # Create access token
+        token = create_access_token({"user_id": user['id'], "email": user['email']})
+        
+        return {
+            "message": "Login successful",
+            "access_token": token,
+            "token_type": "bearer",
+            "user": {
+                "id": user['id'],
+                "email": user['email'],
+                "business_name": user['business_name'],
+                "first_name": user['first_name'],
+                "last_name": user['last_name'],
+                "restaurant_ids": user.get('restaurant_ids', [])
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Login error: {e}")
+        raise HTTPException(status_code=500, detail="Login failed")
+
+@api_router.get("/auth/me")
+async def get_current_user_info(current_user: dict = Depends(get_current_user)):
+    """Get current user information"""
+    return {
+        "id": current_user['id'],
+        "email": current_user['email'],
+        "business_name": current_user['business_name'],
+        "first_name": current_user['first_name'],
+        "last_name": current_user['last_name'],
+        "phone": current_user['phone'],
+        "restaurant_ids": current_user.get('restaurant_ids', []),
+        "is_verified": current_user.get('is_verified', False)
+    }
+
+# =================== RESTAURANT CLAIMING & MANAGEMENT ===================
+
+@api_router.get("/owner/search-restaurants")
+async def search_restaurants_to_claim(
+    query: str = Query(..., min_length=2),
+    latitude: Optional[float] = Query(None),
+    longitude: Optional[float] = Query(None),
+    current_user: dict = Depends(get_current_user)
+):
+    """Search Google Places restaurants for claiming"""
+    try:
+        # If no coordinates provided, use a default (San Francisco)
+        if not latitude or not longitude:
+            latitude, longitude = 37.7749, -122.4194
+        
+        # Search Google Places
+        restaurants = await search_google_places_real(
+            latitude=latitude,
+            longitude=longitude,
+            radius=50000,  # 50km radius
+            query=query,
+            limit=20
+        )
+        
+        # Add claiming status for each restaurant
+        for restaurant in restaurants:
+            # Check if already claimed
+            claimed_restaurant = await db.restaurant_claims.find_one({
+                "google_place_id": restaurant['id'].replace('google_', ''),
+                "status": {"$in": ["approved", "pending"]}
+            })
+            restaurant['is_claimed'] = bool(claimed_restaurant)
+            restaurant['claim_status'] = claimed_restaurant.get('status') if claimed_restaurant else None
+        
+        return {"restaurants": restaurants}
+        
+    except Exception as e:
+        logger.error(f"Search restaurants error: {e}")
+        raise HTTPException(status_code=500, detail="Search failed")
+
+@api_router.post("/owner/claim-restaurant")
+async def claim_restaurant(
+    claim_data: RestaurantClaim,
+    current_user: dict = Depends(get_current_user)
+):
+    """Claim a restaurant from Google Places"""
+    try:
+        # Check if restaurant is already claimed
+        existing_claim = await db.restaurant_claims.find_one({
+            "google_place_id": claim_data.google_place_id,
+            "status": {"$in": ["approved", "pending"]}
+        })
+        
+        if existing_claim:
+            raise HTTPException(status_code=400, detail="Restaurant is already claimed or pending approval")
+        
+        # Create claim record
+        claim_record = {
+            "id": str(uuid.uuid4()),
+            "owner_id": current_user['id'],
+            "google_place_id": claim_data.google_place_id,
+            "business_name": claim_data.business_name,
+            "verification_notes": claim_data.verification_notes,
+            "status": "pending",  # pending, approved, rejected
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "reviewed_at": None,
+            "reviewed_by": None
+        }
+        
+        await db.restaurant_claims.insert_one(claim_record)
+        
+        return {
+            "message": "Restaurant claim submitted successfully",
+            "claim_id": claim_record['id'],
+            "status": "pending"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Claim restaurant error: {e}")
+        raise HTTPException(status_code=500, detail="Claim submission failed")
+
+@api_router.get("/owner/my-restaurants")
+async def get_my_restaurants(current_user: dict = Depends(get_current_user)):
+    """Get restaurants owned by current user"""
+    try:
+        # Get approved claims for this user
+        claims_cursor = db.restaurant_claims.find({
+            "owner_id": current_user['id'],
+            "status": "approved"
+        })
+        approved_claims = await claims_cursor.to_list(length=None)
+        
+        # Get pending claims
+        pending_claims_cursor = db.restaurant_claims.find({
+            "owner_id": current_user['id'],
+            "status": "pending"
+        })
+        pending_claims = await pending_claims_cursor.to_list(length=None)
+        
+        # Get restaurant details for approved claims
+        restaurants = []
+        for claim in approved_claims:
+            # Find restaurant in our database or get from Google Places
+            restaurant = await db.restaurants.find_one({"google_place_id": claim['google_place_id']})
+            
+            if restaurant:
+                restaurant = prepare_from_mongo(restaurant)
+            else:
+                # Create restaurant record from Google Places data if it doesn't exist
+                # For now, create a basic record
+                restaurant = {
+                    "id": f"google_{claim['google_place_id']}",
+                    "google_place_id": claim['google_place_id'],
+                    "name": claim['business_name'],
+                    "owner_id": current_user['id'],
+                    "specials": [],
+                    "is_verified": True,
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+                
+                # Insert into database
+                await db.restaurants.insert_one(prepare_for_mongo(restaurant))
+            
+            restaurants.append(restaurant)
+        
+        return {
+            "restaurants": restaurants,
+            "pending_claims": [prepare_from_mongo(claim) for claim in pending_claims]
+        }
+        
+    except Exception as e:
+        logger.error(f"Get my restaurants error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get restaurants")
+
+# =================== SPECIALS MANAGEMENT ===================
+
+@api_router.post("/owner/restaurants/{restaurant_id}/specials")
+async def create_special(
+    restaurant_id: str,
+    special_data: SpecialCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Create a new special for restaurant"""
+    try:
+        # Verify restaurant ownership
+        restaurant = await db.restaurants.find_one({"id": restaurant_id})
+        if not restaurant:
+            raise HTTPException(status_code=404, detail="Restaurant not found")
+        
+        restaurant = prepare_from_mongo(restaurant)
+        
+        # Check if user owns this restaurant (via claims)
+        claim = await db.restaurant_claims.find_one({
+            "owner_id": current_user['id'],
+            "google_place_id": restaurant.get('google_place_id', ''),
+            "status": "approved"
+        })
+        
+        if not claim and restaurant.get('owner_id') != current_user['id']:
+            raise HTTPException(status_code=403, detail="You don't own this restaurant")
+        
+        # Create new special
+        special = RestaurantSpecial(
+            title=special_data.title,
+            description=special_data.description,
+            special_type=special_data.special_type,
+            price=special_data.price,
+            original_price=special_data.original_price,
+            days_available=special_data.days_available,
+            time_start=special_data.time_start,
+            time_end=special_data.time_end
+        )
+        
+        special_dict = prepare_for_mongo(special.dict())
+        
+        # Add special to restaurant
+        await db.restaurants.update_one(
+            {"id": restaurant_id},
+            {"$push": {"specials": special_dict}}
+        )
+        
+        return {
+            "message": "Special created successfully",
+            "special_id": special.id,
+            "special": special_dict
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Create special error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create special")
+
+@api_router.get("/owner/restaurants/{restaurant_id}/specials")
+async def get_restaurant_specials(
+    restaurant_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get all specials for a restaurant"""
+    try:
+        # Verify restaurant ownership
+        restaurant = await db.restaurants.find_one({"id": restaurant_id})
+        if not restaurant:
+            raise HTTPException(status_code=404, detail="Restaurant not found")
+        
+        restaurant = prepare_from_mongo(restaurant)
+        
+        # Check ownership
+        claim = await db.restaurant_claims.find_one({
+            "owner_id": current_user['id'],
+            "google_place_id": restaurant.get('google_place_id', ''),
+            "status": "approved"
+        })
+        
+        if not claim and restaurant.get('owner_id') != current_user['id']:
+            raise HTTPException(status_code=403, detail="You don't own this restaurant")
+        
+        return {
+            "specials": restaurant.get('specials', []),
+            "restaurant_name": restaurant.get('name', '')
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get specials error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get specials")
+
+@api_router.put("/owner/restaurants/{restaurant_id}/specials/{special_id}")
+async def update_special(
+    restaurant_id: str,
+    special_id: str,
+    special_update: SpecialUpdate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update a special"""
+    try:
+        # Verify restaurant ownership
+        restaurant = await db.restaurants.find_one({"id": restaurant_id})
+        if not restaurant:
+            raise HTTPException(status_code=404, detail="Restaurant not found")
+        
+        restaurant = prepare_from_mongo(restaurant)
+        
+        # Check ownership
+        claim = await db.restaurant_claims.find_one({
+            "owner_id": current_user['id'],
+            "google_place_id": restaurant.get('google_place_id', ''),
+            "status": "approved"
+        })
+        
+        if not claim and restaurant.get('owner_id') != current_user['id']:
+            raise HTTPException(status_code=403, detail="You don't own this restaurant")
+        
+        # Find and update the special
+        specials = restaurant.get('specials', [])
+        special_found = False
+        
+        for i, special in enumerate(specials):
+            if special.get('id') == special_id:
+                # Update fields that are provided
+                update_data = special_update.dict(exclude_unset=True)
+                for key, value in update_data.items():
+                    specials[i][key] = value
+                special_found = True
+                break
+        
+        if not special_found:
+            raise HTTPException(status_code=404, detail="Special not found")
+        
+        # Update restaurant in database
+        await db.restaurants.update_one(
+            {"id": restaurant_id},
+            {"$set": {"specials": specials}}
+        )
+        
+        return {"message": "Special updated successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Update special error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update special")
+
+@api_router.delete("/owner/restaurants/{restaurant_id}/specials/{special_id}")
+async def delete_special(
+    restaurant_id: str,
+    special_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Delete a special"""
+    try:
+        # Verify restaurant ownership
+        restaurant = await db.restaurants.find_one({"id": restaurant_id})
+        if not restaurant:
+            raise HTTPException(status_code=404, detail="Restaurant not found")
+        
+        restaurant = prepare_from_mongo(restaurant)
+        
+        # Check ownership
+        claim = await db.restaurant_claims.find_one({
+            "owner_id": current_user['id'],
+            "google_place_id": restaurant.get('google_place_id', ''),
+            "status": "approved"
+        })
+        
+        if not claim and restaurant.get('owner_id') != current_user['id']:
+            raise HTTPException(status_code=403, detail="You don't own this restaurant")
+        
+        # Remove the special
+        await db.restaurants.update_one(
+            {"id": restaurant_id},
+            {"$pull": {"specials": {"id": special_id}}}
+        )
+        
+        return {"message": "Special deleted successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Delete special error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete special")
+
 # Original status check endpoints (keeping for compatibility)
 class StatusCheck(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
