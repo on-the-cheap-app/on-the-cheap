@@ -349,7 +349,8 @@ async def search_restaurants(
     try:
         # Get all restaurants from database
         restaurants_cursor = db.restaurants.find({})
-        all_restaurants = await restaurants_cursor.to_list(length=None)
+        all_restaurants_raw = await restaurants_cursor.to_list(length=None)
+        all_restaurants = [prepare_from_mongo(restaurant) for restaurant in all_restaurants_raw]
         
         # Filter by distance
         nearby_restaurants = []
