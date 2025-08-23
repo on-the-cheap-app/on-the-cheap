@@ -446,9 +446,11 @@ async def search_restaurants(
         restaurants_cursor = db.restaurants.find({})
         all_restaurants_raw = await restaurants_cursor.to_list(length=None)
         mock_restaurants = [prepare_from_mongo(restaurant) for restaurant in all_restaurants_raw]
+
+        # Combine real restaurants with mock specials data
+        all_restaurants = []
         
-        # Filter by distance
-        nearby_restaurants = []
+        # First, add mock restaurants (they have specials)
         for restaurant in mock_restaurants:
             location = restaurant.get('location', {})
             rest_lat = location.get('latitude', 0)
@@ -458,6 +460,7 @@ async def search_restaurants(
             
             if distance <= radius:
                 restaurant['distance'] = round(distance)
+                restaurant['source'] = 'mock_with_specials'
                 
                 # Filter specials by type if specified
                 if special_type:
@@ -475,7 +478,19 @@ async def search_restaurants(
                 
                 # Only include restaurants with active specials
                 if restaurant['specials']:
-                    nearby_restaurants.append(restaurant)
+                    all_restaurants.append(restaurant)
+        
+        # Then add Google Places restaurants (they don't have specials yet)
+        # We'll show them only if no special_type filter is applied
+        if not special_type:
+            for restaurant in google_restaurants:
+                if restaurant.get('distance', 0) <= radius:
+                    # Add a note that these are real restaurants without specials data
+                    restaurant['specials'] = []
+                    restaurant['note'] = 'Real restaurant - specials data coming soon!'
+                    all_restaurants.append(restaurant)
+
+        nearby_restaurants = all_restaurants
         
         # Filter by query if provided
         if query:
