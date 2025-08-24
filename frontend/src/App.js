@@ -28,6 +28,7 @@ function App() {
   const [showUserAuth, setShowUserAuth] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [userFavorites, setUserFavorites] = useState([]);
+  const [showGeocodingDemo, setShowGeocodingDemo] = useState(false);
 
   useEffect(() => {
     fetchSpecialTypes();
