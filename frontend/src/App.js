@@ -414,12 +414,29 @@ function App() {
                       {restaurant.distance && formatDistance(restaurant.distance)}
                     </CardDescription>
                   </div>
-                  {restaurant.rating && (
-                    <div className="flex items-center">
-                      <Star className="w-4 h-4 text-yellow-400 fill-current mr-1" />
-                      <span className="text-sm font-medium">{restaurant.rating}</span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => toggleFavorite(restaurant.id)}
+                      className={`p-1 rounded-full transition-colors ${
+                        userFavorites.includes(restaurant.id)
+                          ? 'text-red-500 hover:text-red-600'
+                          : 'text-gray-400 hover:text-red-500'
+                      }`}
+                      title={userFavorites.includes(restaurant.id) ? 'Remove from favorites' : 'Add to favorites'}
+                    >
+                      <Heart 
+                        className={`w-5 h-5 ${
+                          userFavorites.includes(restaurant.id) ? 'fill-current' : ''
+                        }`} 
+                      />
+                    </button>
+                    {restaurant.rating && (
+                      <div className="flex items-center">
+                        <Star className="w-4 h-4 text-yellow-400 fill-current mr-1" />
+                        <span className="text-sm font-medium">{restaurant.rating}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
