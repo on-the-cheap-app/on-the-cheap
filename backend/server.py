@@ -794,44 +794,153 @@ async def get_special_types():
         ]
     }
 
+# =================== ENHANCED GEOCODING ENDPOINTS ===================
+
+@api_router.post("/geocode/forward", response_model=GeocodeResponse)
+async def forward_geocode(request: GeocodeRequest):
+    """Convert address to coordinates using Google Geocoding API"""
+    try:
+        gmaps_client = get_gmaps_client()
+        
+        # Prepare geocoding parameters
+        geocoding_params = {"address": request.address}
+        if request.region:
+            geocoding_params["region"] = request.region
+        if request.bounds:
+            geocoding_params["bounds"] = request.bounds
+            
+        # Perform geocoding
+        geocode_result = gmaps_client.geocode(**geocoding_params)
+        
+        if not geocode_result:
+            raise HTTPException(status_code=404, detail="Address not found")
+            
+        result = geocode_result[0]
+        location = result["geometry"]["location"]
+        
+        return GeocodeResponse(
+            formatted_address=result["formatted_address"],
+            latitude=location["lat"],
+            longitude=location["lng"],
+            place_id=result["place_id"],
+            address_components=result["address_components"],
+            geometry_type=result["geometry"]["location_type"]
+        )
+        
+    except (gmaps_exceptions.ApiError, gmaps_exceptions.TransportError, gmaps_exceptions.Timeout) as e:
+        logging.error(f"Google Maps API error: {e}")
+        raise handle_geocoding_error(e)
+    except Exception as e:
+        logging.error(f"Unexpected error in forward geocoding: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.post("/geocode/reverse", response_model=List[GeocodeResponse])
+async def reverse_geocode(request: ReverseGeocodeRequest):
+    """Convert coordinates to addresses using Google Geocoding API"""
+    try:
+        gmaps_client = get_gmaps_client()
+        
+        latlng = (request.latitude, request.longitude)
+        
+        # Prepare reverse geocoding parameters
+        reverse_params = {"latlng": latlng}
+        if request.result_type:
+            reverse_params["result_type"] = request.result_type
+        if request.location_type:
+            reverse_params["location_type"] = request.location_type
+            
+        # Perform reverse geocoding
+        reverse_result = gmaps_client.reverse_geocode(**reverse_params)
+        
+        if not reverse_result:
+            raise HTTPException(status_code=404, detail="No address found for coordinates")
+            
+        results = []
+        for result in reverse_result[:5]:  # Limit to top 5 results
+            location = result["geometry"]["location"]
+            results.append(GeocodeResponse(
+                formatted_address=result["formatted_address"],
+                latitude=location["lat"],
+                longitude=location["lng"],
+                place_id=result["place_id"],
+                address_components=result["address_components"],
+                geometry_type=result["geometry"]["location_type"]
+            ))
+            
+        return results
+        
+    except (gmaps_exceptions.ApiError, gmaps_exceptions.TransportError, gmaps_exceptions.Timeout) as e:
+        logging.error(f"Google Maps API error: {e}")
+        raise handle_geocoding_error(e)
+    except Exception as e:
+        logging.error(f"Unexpected error in reverse geocoding: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.post("/geocode/batch", response_model=BatchGeocodeResponse)
+async def batch_geocode(request: BatchGeocodeRequest):
+    """Batch geocode multiple addresses"""
+    try:
+        gmaps_client = get_gmaps_client()
+        
+        results = []
+        errors = []
+        
+        # Limit batch size to prevent excessive API usage
+        addresses = request.addresses[:request.max_results or 10]
+        
+        for i, address in enumerate(addresses):
+            try:
+                geocoding_params = {"address": address}
+                if request.region:
+                    geocoding_params["region"] = request.region
+                    
+                geocode_result = gmaps_client.geocode(**geocoding_params)
+                
+                if geocode_result:
+                    result = geocode_result[0]
+                    location = result["geometry"]["location"]
+                    results.append(GeocodeResponse(
+                        formatted_address=result["formatted_address"],
+                        latitude=location["lat"],
+                        longitude=location["lng"],
+                        place_id=result["place_id"],
+                        address_components=result["address_components"],
+                        geometry_type=result["geometry"]["location_type"]
+                    ))
+                else:
+                    errors.append({"index": i, "address": address, "error": "Address not found"})
+                    
+            except gmaps_exceptions.ApiError as e:
+                errors.append({"index": i, "address": address, "error": str(e)})
+            except Exception as e:
+                errors.append({"index": i, "address": address, "error": "Processing error"})
+                
+        return BatchGeocodeResponse(results=results, errors=errors)
+        
+    except Exception as e:
+        logging.error(f"Unexpected error in batch geocoding: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 @api_router.get("/geocode")
 async def geocode_address(address: str = Query(...)):
-    """Convert address to coordinates using Google Geocoding API"""
-    google_api_key = os.environ.get('GOOGLE_PLACES_API_KEY')
-    if not google_api_key:
-        raise HTTPException(status_code=500, detail="Google API key not configured")
-    
+    """Legacy geocode endpoint - converts address to coordinates"""
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(
-                "https://maps.googleapis.com/maps/api/geocode/json",
-                params={
-                    "address": address,
-                    "key": google_api_key
-                }
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                
-                if data.get('status') == 'OK' and data.get('results'):
-                    location = data['results'][0]['geometry']['location']
-                    return {
-                        "coordinates": {
-                            "latitude": location['lat'],
-                            "longitude": location['lng']
-                        },
-                        "formatted_address": data['results'][0]['formatted_address']
-                    }
-                else:
-                    logger.warning(f"Geocoding failed for address: {address}, status: {data.get('status')}")
-                    raise HTTPException(status_code=404, detail="Address not found")
-            else:
-                logger.error(f"Google Geocoding API error: {response.status_code}")
-                raise HTTPException(status_code=500, detail="Geocoding service error")
-                
+        # Use the new forward geocoding functionality
+        request = GeocodeRequest(address=address)
+        result = await forward_geocode(request)
+        
+        # Return in legacy format for backward compatibility
+        return {
+            "coordinates": {
+                "latitude": result.latitude,
+                "longitude": result.longitude
+            },
+            "formatted_address": result.formatted_address
+        }
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Error geocoding address '{address}': {e}")
+        logging.error(f"Error in legacy geocode endpoint: {e}")
         raise HTTPException(status_code=500, detail="Geocoding failed")
 
 # =================== RESTAURANT OWNER AUTHENTICATION ===================
