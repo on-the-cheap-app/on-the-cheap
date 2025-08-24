@@ -312,6 +312,13 @@ function App() {
                 <Building2 className="w-4 h-4 mr-2" />
                 Restaurant Owner
               </Button>
+              <Button
+                variable="outline"
+                onClick={() => setShowGeocodingDemo(true)}
+                className="border-green-600 text-green-600 hover:bg-green-50"
+              >
+                🌍 Geocoding Demo
+              </Button>
             </div>
           </div>
         </div>
