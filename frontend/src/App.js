@@ -313,7 +313,7 @@ function App() {
                 Restaurant Owner
               </Button>
               <Button
-                variable="outline"
+                variant="outline"
                 onClick={() => setShowGeocodingDemo(true)}
                 className="border-green-600 text-green-600 hover:bg-green-50"
               >
