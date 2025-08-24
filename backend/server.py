@@ -863,6 +863,178 @@ async def get_current_user_info(current_user: dict = Depends(get_current_user)):
         "is_verified": current_user.get('is_verified', False)
     }
 
+# =================== REGULAR USER AUTHENTICATION ===================
+
+@api_router.post("/users/register")
+async def register_user(user_data: UserCreate):
+    """Register a new regular user"""
+    try:
+        # Check if email already exists in users or restaurant owners
+        existing_user = await db.users.find_one({"email": user_data.email})
+        existing_owner = await db.restaurant_owners.find_one({"email": user_data.email})
+        
+        if existing_user or existing_owner:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        
+        # Create new user
+        user = User(
+            email=user_data.email,
+            password_hash=hash_password(user_data.password),
+            first_name=user_data.first_name,
+            last_name=user_data.last_name
+        )
+        
+        user_dict = prepare_for_mongo(user.dict())
+        result = await db.users.insert_one(user_dict)
+        
+        # Create access token
+        token = create_access_token({"user_id": user.id, "email": user.email, "user_type": "user"})
+        
+        return {
+            "message": "Registration successful",
+            "access_token": token,
+            "token_type": "bearer",
+            "user_type": "user",
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "favorite_restaurants": []
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"User registration error: {e}")
+        raise HTTPException(status_code=500, detail="Registration failed")
+
+@api_router.post("/users/login")
+async def login_user(login_data: UserLogin):
+    """Login regular user"""
+    try:
+        # Find user by email
+        user = await db.users.find_one({"email": login_data.email})
+        if not user:
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        user = prepare_from_mongo(user)
+        
+        # Verify password
+        if not verify_password(login_data.password, user['password_hash']):
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        # Create access token
+        token = create_access_token({"user_id": user['id'], "email": user['email'], "user_type": "user"})
+        
+        return {
+            "message": "Login successful",
+            "access_token": token,
+            "token_type": "bearer",
+            "user_type": "user",
+            "user": {
+                "id": user['id'],
+                "email": user['email'],
+                "first_name": user['first_name'],
+                "last_name": user['last_name'],
+                "favorite_restaurant_ids": user.get('favorite_restaurant_ids', [])
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"User login error: {e}")
+        raise HTTPException(status_code=500, detail="Login failed")
+
+@api_router.get("/users/me")
+async def get_current_user_info(current_user: dict = Depends(get_current_regular_user)):
+    """Get current regular user information"""
+    return {
+        "id": current_user['id'],
+        "email": current_user['email'],
+        "first_name": current_user['first_name'],
+        "last_name": current_user['last_name'],
+        "favorite_restaurant_ids": current_user.get('favorite_restaurant_ids', []),
+        "preferences": current_user.get('preferences', {}),
+        "created_at": current_user.get('created_at')
+    }
+
+@api_router.post("/users/favorites/{restaurant_id}")
+async def add_favorite_restaurant(
+    restaurant_id: str,
+    current_user: dict = Depends(get_current_regular_user)
+):
+    """Add restaurant to user's favorites"""
+    try:
+        # Check if already in favorites
+        current_favorites = current_user.get('favorite_restaurant_ids', [])
+        if restaurant_id in current_favorites:
+            return {"message": "Restaurant already in favorites"}
+        
+        # Add to favorites
+        await db.users.update_one(
+            {"id": current_user['id']},
+            {"$push": {"favorite_restaurant_ids": restaurant_id}}
+        )
+        
+        return {"message": "Restaurant added to favorites"}
+        
+    except Exception as e:
+        logger.error(f"Add favorite error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to add favorite")
+
+@api_router.delete("/users/favorites/{restaurant_id}")
+async def remove_favorite_restaurant(
+    restaurant_id: str,
+    current_user: dict = Depends(get_current_regular_user)
+):
+    """Remove restaurant from user's favorites"""
+    try:
+        # Remove from favorites
+        await db.users.update_one(
+            {"id": current_user['id']},
+            {"$pull": {"favorite_restaurant_ids": restaurant_id}}
+        )
+        
+        return {"message": "Restaurant removed from favorites"}
+        
+    except Exception as e:
+        logger.error(f"Remove favorite error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to remove favorite")
+
+@api_router.get("/users/favorites")
+async def get_favorite_restaurants(current_user: dict = Depends(get_current_regular_user)):
+    """Get user's favorite restaurants with details"""
+    try:
+        favorite_ids = current_user.get('favorite_restaurant_ids', [])
+        
+        if not favorite_ids:
+            return {"favorites": []}
+        
+        # Get restaurant details for favorites (from mock database)
+        favorites = []
+        restaurants_cursor = db.restaurants.find({"id": {"$in": favorite_ids}})
+        restaurants = await restaurants_cursor.to_list(length=None)
+        
+        for restaurant in restaurants:
+            restaurant = prepare_from_mongo(restaurant)
+            favorites.append({
+                "id": restaurant['id'],
+                "name": restaurant['name'],
+                "address": restaurant.get('address', ''),
+                "rating": restaurant.get('rating'),
+                "cuisine_type": restaurant.get('cuisine_type', []),
+                "specials_count": len(restaurant.get('specials', []))
+            })
+        
+        return {"favorites": favorites}
+        
+    except Exception as e:
+        logger.error(f"Get favorites error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get favorites")
+
 # =================== RESTAURANT CLAIMING & MANAGEMENT ===================
 
 @api_router.get("/owner/search-restaurants")
