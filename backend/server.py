@@ -1201,21 +1201,71 @@ async def get_favorite_restaurants(current_user: dict = Depends(get_current_regu
         if not favorite_ids:
             return {"favorites": []}
         
-        # Get restaurant details for favorites (from mock database)
         favorites = []
-        restaurants_cursor = db.restaurants.find({"id": {"$in": favorite_ids}})
-        restaurants = await restaurants_cursor.to_list(length=None)
         
-        for restaurant in restaurants:
-            restaurant = prepare_from_mongo(restaurant)
-            favorites.append({
-                "id": restaurant['id'],
-                "name": restaurant['name'],
-                "address": restaurant.get('address', ''),
-                "rating": restaurant.get('rating'),
-                "cuisine_type": restaurant.get('cuisine_type', []),
-                "specials_count": len(restaurant.get('specials', []))
-            })
+        # Separate Google Places IDs from database IDs
+        google_ids = [fid for fid in favorite_ids if fid.startswith('google_')]
+        db_ids = [fid for fid in favorite_ids if not fid.startswith('google_')]
+        
+        # Get database restaurants (mock restaurants)
+        if db_ids:
+            restaurants_cursor = db.restaurants.find({"id": {"$in": db_ids}})
+            restaurants = await restaurants_cursor.to_list(length=None)
+            
+            for restaurant in restaurants:
+                restaurant = prepare_from_mongo(restaurant)
+                favorites.append({
+                    "id": restaurant['id'],
+                    "name": restaurant['name'],
+                    "address": restaurant.get('address', ''),
+                    "rating": restaurant.get('rating'),
+                    "cuisine_type": restaurant.get('cuisine_type', []),
+                    "specials_count": len(restaurant.get('specials', []))
+                })
+        
+        # Get Google Places restaurants
+        if google_ids:
+            google_api_key = os.environ.get('GOOGLE_PLACES_API_KEY')
+            if google_api_key:
+                async with httpx.AsyncClient(timeout=30.0) as client:
+                    for google_id in google_ids:
+                        try:
+                            # Extract the Google Place ID from our format (google_PLACE_ID)
+                            place_id = google_id.replace('google_', '')
+                            
+                            # Get place details from Google Places API
+                            response = await client.get(
+                                "https://maps.googleapis.com/maps/api/place/details/json",
+                                params={
+                                    "place_id": place_id,
+                                    "fields": "name,formatted_address,rating,types,place_id",
+                                    "key": google_api_key
+                                }
+                            )
+                            
+                            if response.status_code == 200:
+                                data = response.json()
+                                if data.get('status') == 'OK' and data.get('result'):
+                                    place = data['result']
+                                    favorites.append({
+                                        "id": google_id,  # Keep our format
+                                        "name": place.get('name', 'Unknown Restaurant'),
+                                        "address": place.get('formatted_address', ''),
+                                        "rating": place.get('rating'),
+                                        "cuisine_type": place.get('types', []),
+                                        "specials_count": 0  # Google Places restaurants don't have our specials
+                                    })
+                        except Exception as e:
+                            logger.warning(f"Failed to get Google Place details for {google_id}: {e}")
+                            # Add a placeholder for failed lookups so user knows it exists
+                            favorites.append({
+                                "id": google_id,
+                                "name": "Restaurant (Details Unavailable)",
+                                "address": "",
+                                "rating": None,
+                                "cuisine_type": [],
+                                "specials_count": 0
+                            })
         
         return {"favorites": favorites}
         
