@@ -297,9 +297,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Restaurant Search API"
-    - "User Favorites API Integration"
-  stuck_tasks: []
+    - "Favorites Heart Icon Integration"
+  stuck_tasks:
+    - "Favorites Heart Icon Integration"
   test_all: false
   test_priority: "high_first"
 
