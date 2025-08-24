@@ -662,6 +662,18 @@ class OnTheCheapAPITester:
         # Edge cases
         self.test_auth_edge_cases()
         
+        print("\n" + "👤 REGULAR USER TESTS")
+        print("=" * 50)
+        
+        # Regular user authentication and favorites tests
+        self.test_user_registration()
+        self.test_user_login()
+        self.test_user_auth_me()
+        self.test_add_favorite_restaurant()
+        self.test_remove_favorite_restaurant()
+        self.test_get_favorite_restaurants()
+        self.test_user_auth_edge_cases()
+        
         # Print summary
         print("\n" + "=" * 50)
         print(f"📊 Test Results: {self.tests_passed}/{self.tests_run} tests passed")
