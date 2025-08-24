@@ -228,11 +228,13 @@ function App() {
   };
 
   const toggleFavorite = async (restaurantId) => {
+    alert(`Debug: toggleFavorite called with restaurantId: ${restaurantId}`);
     console.log('toggleFavorite called - restaurantId:', restaurantId);
     console.log('toggleFavorite called - currentUser:', currentUser);
     
     if (!currentUser) {
       console.log('No user logged in, showing auth modal');
+      alert('Debug: No user logged in, showing auth modal');
       setShowUserAuth(true);
       return;
     }
@@ -240,6 +242,8 @@ function App() {
     try {
       const userToken = localStorage.getItem('user_token');
       const isFavorite = userFavorites.includes(restaurantId);
+      
+      alert(`Debug: Current state - isFavorite: ${isFavorite}, userFavorites count: ${userFavorites.length}`);
       
       console.log('toggleFavorite - Current state:', {
         restaurantId,
@@ -258,6 +262,7 @@ function App() {
         const newFavorites = userFavorites.filter(id => id !== restaurantId);
         setUserFavorites(newFavorites);
         console.log('Updated favorites after removal:', newFavorites);
+        alert(`Debug: Removed favorite, new count: ${newFavorites.length}`);
       } else {
         console.log('Adding to favorites...');
         const response = await axios.post(`${API}/users/favorites/${restaurantId}`, {}, {
@@ -268,6 +273,7 @@ function App() {
         const newFavorites = [...userFavorites, restaurantId];
         setUserFavorites(newFavorites);
         console.log('Updated favorites after addition:', newFavorites);
+        alert(`Debug: Added favorite, new count: ${newFavorites.length}`);
         
         // Also refresh favorites from server to make sure we're in sync
         setTimeout(() => {
@@ -277,6 +283,7 @@ function App() {
       }
     } catch (error) {
       console.error('Error toggling favorite:', error.response?.data || error.message);
+      alert(`Debug: Error - ${error.message}`);
     }
   };
 
