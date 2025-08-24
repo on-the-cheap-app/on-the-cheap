@@ -281,8 +281,10 @@ function App() {
   };
 
   const handleUserLogin = (userData) => {
+    console.log('handleUserLogin called with:', userData);
     setCurrentUser(userData);
     if (userData) {
+      console.log('Fetching user favorites after login...');
       fetchUserFavorites();
     } else {
       setUserFavorites([]);
