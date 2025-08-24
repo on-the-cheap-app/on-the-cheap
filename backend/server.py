@@ -830,6 +830,8 @@ async def forward_geocode(request: GeocodeRequest):
     except (gmaps_exceptions.ApiError, gmaps_exceptions.TransportError, gmaps_exceptions.Timeout) as e:
         logging.error(f"Google Maps API error: {e}")
         raise handle_geocoding_error(e)
+    except HTTPException:
+        raise
     except Exception as e:
         logging.error(f"Unexpected error in forward geocoding: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
