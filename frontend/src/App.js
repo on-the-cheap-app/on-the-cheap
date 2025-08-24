@@ -232,19 +232,33 @@ function App() {
       const userToken = localStorage.getItem('user_token');
       const isFavorite = userFavorites.includes(restaurantId);
       
+      console.log('Toggling favorite:', {
+        restaurantId,
+        isFavorite,
+        currentFavorites: userFavorites,
+        tokenExists: !!userToken
+      });
+      
       if (isFavorite) {
-        await axios.delete(`${API}/users/favorites/${restaurantId}`, {
+        console.log('Removing from favorites...');
+        const response = await axios.delete(`${API}/users/favorites/${restaurantId}`, {
           headers: { Authorization: `Bearer ${userToken}` }
         });
+        console.log('Remove response:', response.status);
         setUserFavorites(userFavorites.filter(id => id !== restaurantId));
+        console.log('Updated favorites after removal:', userFavorites.filter(id => id !== restaurantId));
       } else {
-        await axios.post(`${API}/users/favorites/${restaurantId}`, {}, {
+        console.log('Adding to favorites...');
+        const response = await axios.post(`${API}/users/favorites/${restaurantId}`, {}, {
           headers: { Authorization: `Bearer ${userToken}` }
         });
-        setUserFavorites([...userFavorites, restaurantId]);
+        console.log('Add response:', response.status);
+        const newFavorites = [...userFavorites, restaurantId];
+        setUserFavorites(newFavorites);
+        console.log('Updated favorites after addition:', newFavorites);
       }
     } catch (error) {
-      console.error('Error toggling favorite:', error);
+      console.error('Error toggling favorite:', error.response?.data || error.message);
     }
   };
 
