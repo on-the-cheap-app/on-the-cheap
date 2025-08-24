@@ -9,6 +9,8 @@ import { Badge } from "./components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
 import OwnerPortal from "./OwnerPortal";
 import UserAuth from "./UserAuth";
+import AddressInput from "./components/AddressInput";
+import GeocodingDemo from "./components/GeocodingDemo";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
