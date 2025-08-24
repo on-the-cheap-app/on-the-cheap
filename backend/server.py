@@ -229,6 +229,37 @@ def prepare_from_mongo(data):
     else:
         return data
 
+# =================== GEOCODING HELPERS ===================
+
+def get_gmaps_client():
+    """Get Google Maps client instance"""
+    api_key = os.environ.get('GOOGLE_PLACES_API_KEY')
+    if not api_key:
+        raise HTTPException(status_code=500, detail="Google Maps API key not configured")
+    return googlemaps.Client(key=api_key, timeout=10)
+
+def handle_geocoding_error(error: Exception) -> HTTPException:
+    """Convert geocoding errors to appropriate HTTP exceptions"""
+    if isinstance(error, gmaps_exceptions.ApiError):
+        status_code_mapping = {
+            "ZERO_RESULTS": 404,
+            "INVALID_REQUEST": 400,
+            "OVER_QUERY_LIMIT": 429,
+            "REQUEST_DENIED": 403,
+            "UNKNOWN_ERROR": 500,
+        }
+        status_code = status_code_mapping.get(error.status, 500)
+        return HTTPException(status_code=status_code, detail=f"Geocoding API error: {error.status}")
+    
+    elif isinstance(error, gmaps_exceptions.TransportError):
+        return HTTPException(status_code=502, detail="Network communication error")
+    
+    elif isinstance(error, gmaps_exceptions.Timeout):
+        return HTTPException(status_code=408, detail="Request timeout")
+    
+    else:
+        return HTTPException(status_code=500, detail="Internal geocoding error")
+
 async def init_mock_data():
     """Initialize mock restaurant data"""
     existing_restaurants = await db.restaurants.count_documents({})
