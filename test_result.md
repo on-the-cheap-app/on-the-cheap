@@ -291,6 +291,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "❌ CRITICAL ISSUE CONFIRMED: Comprehensive testing reveals that while restaurant search now works correctly (20 restaurants displayed with heart icons), the heart icon functionality itself is completely broken. Heart icons are visible and clickable, user authentication works properly (login modal appears when not authenticated, registration successful), but clicking heart icons does NOT change their visual state (no fill-current class added), NO API calls are made to /api/users/favorites endpoints, and no favorites are actually saved. The toggleFavorite function in App.js is not working despite being called. User dashboard shows 'No favorites yet' even after clicking multiple hearts. This is a critical functionality failure requiring immediate investigation and fix."
+      - working: false
+        agent: "testing"
+        comment: "❌ ROOT CAUSE IDENTIFIED: Comprehensive debugging reveals the exact issue with favorites functionality. BACKEND BUG: The get_favorite_restaurants function (/api/users/favorites GET) only searches the db.restaurants collection for favorite restaurant details, but Google Places restaurants (with IDs like 'google_ChIJlYL0Wa-BhYARJi6qr49Ncv0') are NOT stored in the database - they're fetched dynamically from Google Places API. Database only contains mock restaurants with UUID IDs. RESULT: Users can successfully add Google Places restaurants to favorites (POST works), but GET /api/users/favorites returns empty array because it can't find the Google Places restaurants in the database. FIX REQUIRED: Modify get_favorite_restaurants function to handle both database restaurants (UUID IDs) AND Google Places restaurants (google_ prefixed IDs) by fetching Google Places data when needed. This explains why hearts turn red then gray - frontend adds to favorites successfully but retrieval fails."
 
 metadata:
   created_by: "main_agent"
