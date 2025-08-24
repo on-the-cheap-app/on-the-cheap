@@ -1869,5 +1869,43 @@ def main():
     tester = OnTheCheapAPITester()
     return tester.run_all_tests()
 
+def test_fixed_favorites_only():
+    """Test runner specifically for the FIXED Google Places favorites functionality"""
+    print("🔧 TESTING FIXED GOOGLE PLACES FAVORITES FUNCTIONALITY")
+    print("=" * 70)
+    print("This test focuses on verifying that the Google Places favorites bug has been fixed.")
+    print("The fix should allow Google Places restaurants to be properly retrieved with details.")
+    print("=" * 70)
+    
+    tester = OnTheCheapAPITester()
+    
+    # Run only the favorites-related tests
+    print("\n📋 Running focused favorites tests...")
+    
+    # Test basic user functionality first
+    tester.test_user_registration()
+    tester.test_user_login()
+    tester.test_user_auth_me()
+    
+    # Test the core fixed functionality
+    tester.test_fixed_google_places_favorites_workflow()
+    tester.test_google_places_api_integration()
+    
+    # Test basic favorites operations
+    tester.test_add_favorite_restaurant()
+    tester.test_get_favorite_restaurants()
+    tester.test_remove_favorite_restaurant()
+    
+    # Print focused summary
+    print("\n" + "=" * 70)
+    print(f"📊 FIXED FAVORITES TEST Results: {tester.tests_passed}/{tester.tests_run} tests passed")
+    
+    if tester.tests_passed == tester.tests_run:
+        print("🎉 All FIXED FAVORITES tests passed! The Google Places favorites bug appears to be resolved.")
+        return 0
+    else:
+        print(f"⚠️  {tester.tests_run - tester.tests_passed} FIXED FAVORITES tests failed - bug may still exist")
+        return 1
+
 if __name__ == "__main__":
     sys.exit(main())
