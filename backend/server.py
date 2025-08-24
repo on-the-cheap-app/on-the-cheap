@@ -406,15 +406,40 @@ def verify_token(token: str) -> dict:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """Get current authenticated user"""
+    """Get current authenticated user (restaurant owner)"""
     token = credentials.credentials
     payload = verify_token(token)
     user_id = payload.get("user_id")
+    user_type = payload.get("user_type", "owner")  # Default to owner for backward compatibility
     
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid token")
     
-    user = await db.restaurant_owners.find_one({"id": user_id})
+    if user_type == "owner":
+        user = await db.restaurant_owners.find_one({"id": user_id})
+        collection = "restaurant_owners"
+    else:
+        user = await db.users.find_one({"id": user_id})
+        collection = "users"
+    
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    
+    user_data = prepare_from_mongo(user)
+    user_data["user_type"] = user_type
+    return user_data
+
+async def get_current_regular_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Get current authenticated regular user"""
+    token = credentials.credentials
+    payload = verify_token(token)
+    user_id = payload.get("user_id")
+    user_type = payload.get("user_type")
+    
+    if not user_id or user_type != "user":
+        raise HTTPException(status_code=401, detail="Invalid user token")
+    
+    user = await db.users.find_one({"id": user_id})
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
     
