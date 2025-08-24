@@ -1505,6 +1505,24 @@ class OnTheCheapAPITester:
         # Performance tests
         self.test_performance()
         
+        print("\n" + "🌍 GEOCODING API TESTS")
+        print("=" * 50)
+        
+        # Geocoding functionality tests
+        self.test_forward_geocoding_basic()
+        self.test_forward_geocoding_with_region()
+        self.test_forward_geocoding_invalid_address()
+        self.test_reverse_geocoding_basic()
+        self.test_reverse_geocoding_with_filters()
+        self.test_reverse_geocoding_invalid_coordinates()
+        self.test_batch_geocoding_basic()
+        self.test_batch_geocoding_with_errors()
+        self.test_batch_geocoding_max_limit()
+        self.test_batch_geocoding_over_limit()
+        self.test_legacy_geocoding_basic()
+        self.test_legacy_geocoding_invalid_address()
+        self.test_geocoding_error_handling()
+        
         print("\n" + "🏪 RESTAURANT OWNER PORTAL TESTS")
         print("=" * 50)
         
