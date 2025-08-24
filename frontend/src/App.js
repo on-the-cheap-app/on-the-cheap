@@ -591,6 +591,28 @@ function App() {
         />
       )}
 
+      {/* Geocoding Demo Modal */}
+      {showGeocodingDemo && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h2 className="text-xl font-semibold">Google Geocoding API Demo</h2>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowGeocodingDemo(false)}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Close
+              </Button>
+            </div>
+            <div className="p-4">
+              <GeocodingDemo />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Footer */}
       <footer className="bg-white border-t mt-12">
         <div className="max-w-6xl mx-auto px-4 py-8">
