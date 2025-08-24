@@ -158,6 +158,17 @@ function App() {
     }
   };
 
+  // Enhanced handler for AddressInput component
+  const handleAddressSelect = (geocodeResult) => {
+    setSearchLocation(geocodeResult.formatted_address);
+    setCoordinates({
+      latitude: geocodeResult.latitude,
+      longitude: geocodeResult.longitude
+    });
+    setLoading(true);
+    searchRestaurants(geocodeResult.latitude, geocodeResult.longitude);
+  };
+
   const searchRestaurants = async (lat, lng) => {
     try {
       const params = {
