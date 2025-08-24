@@ -482,10 +482,10 @@ function App() {
                         alert('Heart button clicked!');
                         toggleFavorite(restaurant.id);
                       }}
-                      className={`p-1 rounded-full transition-colors ${
+                      className={`p-1 rounded-full transition-colors border-2 ${
                         userFavorites.includes(restaurant.id)
-                          ? 'text-red-500 hover:text-red-600'
-                          : 'text-gray-400 hover:text-red-500'
+                          ? 'text-red-500 hover:text-red-600 border-red-500 bg-red-100'
+                          : 'text-gray-400 hover:text-red-500 border-gray-300 bg-white'
                       }`}
                       title={userFavorites.includes(restaurant.id) ? 'Remove from favorites' : 'Add to favorites'}
                     >
@@ -494,6 +494,7 @@ function App() {
                           userFavorites.includes(restaurant.id) ? 'fill-current' : ''
                         }`} 
                       />
+                      {userFavorites.includes(restaurant.id) && <span className="text-xs">★</span>}
                     </button>
                     {restaurant.rating && (
                       <div className="flex items-center">
