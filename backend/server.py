@@ -826,12 +826,13 @@ async def login_owner(login_data: RestaurantOwnerLogin):
             raise HTTPException(status_code=401, detail="Invalid email or password")
         
         # Create access token
-        token = create_access_token({"user_id": user['id'], "email": user['email']})
+        token = create_access_token({"user_id": user['id'], "email": user['email'], "user_type": "owner"})
         
         return {
             "message": "Login successful",
             "access_token": token,
             "token_type": "bearer",
+            "user_type": "owner",
             "user": {
                 "id": user['id'],
                 "email": user['email'],
