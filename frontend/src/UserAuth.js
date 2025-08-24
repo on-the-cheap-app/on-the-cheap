@@ -22,7 +22,7 @@ import { Alert, AlertDescription } from "./components/ui/alert";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const UserAuth = ({ onClose, onUserLogin }) => {
+const UserAuth = ({ onClose, onUserLogin, currentFavorites = [], onFavoritesUpdate }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('user_token'));
   const [loading, setLoading] = useState(false);
@@ -39,7 +39,7 @@ const UserAuth = ({ onClose, onUserLogin }) => {
     last_name: ''
   });
 
-  // User data states
+  // User data states - use favorites data passed from parent
   const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
@@ -47,6 +47,29 @@ const UserAuth = ({ onClose, onUserLogin }) => {
       fetchUserData();
     }
   }, [token]);
+
+  // Update local favorites when parent favorites change
+  useEffect(() => {
+    if (currentFavorites.length > 0) {
+      fetchFavoritesDetails();
+    } else {
+      setFavorites([]);
+    }
+  }, [currentFavorites, token]);
+
+  const fetchFavoritesDetails = async () => {
+    try {
+      if (token && currentFavorites.length > 0) {
+        const response = await axios.get(`${API}/users/favorites`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        console.log('UserAuth - Fetched favorites details:', response.data.favorites);
+        setFavorites(response.data.favorites);
+      }
+    } catch (error) {
+      console.error('Error fetching favorite details:', error);
+    }
+  };
 
   const fetchUserData = async () => {
     try {
