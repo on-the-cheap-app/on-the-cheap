@@ -1484,6 +1484,300 @@ class OnTheCheapAPITester:
         except Exception as e:
             return False, str(e)
 
+    def test_fixed_google_places_favorites_workflow(self):
+        """Test the FIXED Google Places favorites functionality - comprehensive workflow"""
+        print("\n🔍 TESTING FIXED GOOGLE PLACES FAVORITES FUNCTIONALITY")
+        print("=" * 70)
+        
+        # Step 1: Create/login test user
+        try:
+            test_email = f"favorites_test_{uuid.uuid4().hex[:8]}@example.com"
+            registration_data = {
+                "email": test_email,
+                "password": "FavoritesTest123!",
+                "first_name": "Favorites",
+                "last_name": "Tester"
+            }
+            
+            reg_response = self.session.post(f"{self.api_url}/users/register", json=registration_data)
+            if reg_response.status_code != 200:
+                self.log_test("FIXED Google Places Favorites - User Registration", False, f"Failed to create test user: {reg_response.status_code}")
+                return False, {}
+            
+            reg_data = reg_response.json()
+            test_token = reg_data.get('access_token')
+            headers = {'Authorization': f'Bearer {test_token}'}
+            
+            print(f"✅ Step 1: Created test user: {test_email}")
+            
+        except Exception as e:
+            self.log_test("FIXED Google Places Favorites - User Registration", False, str(e))
+            return False, {}
+        
+        # Step 2: Search for restaurants to get Google Places results
+        try:
+            search_params = {
+                'latitude': 37.7749,  # San Francisco
+                'longitude': -122.4194,
+                'radius': 8047,  # 5 miles
+                'limit': 20
+            }
+            
+            search_response = self.session.get(f"{self.api_url}/restaurants/search", params=search_params)
+            if search_response.status_code != 200:
+                self.log_test("FIXED Google Places Favorites - Restaurant Search", False, f"Search failed: {search_response.status_code}")
+                return False, {}
+            
+            search_data = search_response.json()
+            restaurants = search_data.get('restaurants', [])
+            
+            # Find Google Places restaurants (IDs starting with "google_")
+            google_restaurants = [r for r in restaurants if r['id'].startswith('google_')]
+            db_restaurants = [r for r in restaurants if not r['id'].startswith('google_')]
+            
+            print(f"✅ Step 2: Found {len(restaurants)} total restaurants ({len(google_restaurants)} Google Places, {len(db_restaurants)} database)")
+            
+            if len(google_restaurants) < 2:
+                self.log_test("FIXED Google Places Favorites - Restaurant Search", False, f"Need at least 2 Google Places restaurants for testing, found {len(google_restaurants)}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("FIXED Google Places Favorites - Restaurant Search", False, str(e))
+            return False, {}
+        
+        # Step 3: Add Google Places restaurants to favorites
+        try:
+            test_restaurants = google_restaurants[:3]  # Use first 3 Google Places restaurants
+            added_favorites = []
+            
+            for i, restaurant in enumerate(test_restaurants):
+                restaurant_id = restaurant['id']
+                restaurant_name = restaurant['name']
+                
+                add_response = self.session.post(f"{self.api_url}/users/favorites/{restaurant_id}", headers=headers)
+                
+                if add_response.status_code == 200:
+                    added_favorites.append({
+                        'id': restaurant_id,
+                        'name': restaurant_name,
+                        'address': restaurant.get('address', ''),
+                        'rating': restaurant.get('rating')
+                    })
+                    print(f"✅ Step 3.{i+1}: Added '{restaurant_name}' (ID: {restaurant_id}) to favorites")
+                else:
+                    print(f"❌ Step 3.{i+1}: Failed to add '{restaurant_name}' to favorites: {add_response.status_code}")
+                    self.log_test("FIXED Google Places Favorites - Add Favorites", False, f"Failed to add restaurant {restaurant_id}: {add_response.status_code}")
+                    return False, {}
+            
+            if len(added_favorites) < 3:
+                self.log_test("FIXED Google Places Favorites - Add Favorites", False, f"Only added {len(added_favorites)}/3 restaurants to favorites")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("FIXED Google Places Favorites - Add Favorites", False, str(e))
+            return False, {}
+        
+        # Step 4: Retrieve favorites and verify Google Places data is returned
+        try:
+            favorites_response = self.session.get(f"{self.api_url}/users/favorites", headers=headers)
+            
+            if favorites_response.status_code != 200:
+                self.log_test("FIXED Google Places Favorites - Get Favorites", False, f"Failed to get favorites: {favorites_response.status_code}")
+                return False, {}
+            
+            favorites_data = favorites_response.json()
+            favorites = favorites_data.get('favorites', [])
+            
+            print(f"✅ Step 4: Retrieved {len(favorites)} favorites from API")
+            
+            # Verify all added Google Places restaurants are returned with proper details
+            success = True
+            missing_restaurants = []
+            invalid_data = []
+            
+            for added_restaurant in added_favorites:
+                found = False
+                for favorite in favorites:
+                    if favorite['id'] == added_restaurant['id']:
+                        found = True
+                        # Verify the favorite has proper details (name, address, etc.)
+                        if not favorite.get('name') or favorite.get('name') == 'Restaurant (Details Unavailable)':
+                            invalid_data.append(f"Restaurant {added_restaurant['id']} has invalid name: '{favorite.get('name')}'")
+                        
+                        print(f"✅ Found favorite: {favorite.get('name', 'N/A')} - {favorite.get('address', 'N/A')} (Rating: {favorite.get('rating', 'N/A')})")
+                        break
+                
+                if not found:
+                    missing_restaurants.append(added_restaurant['name'])
+                    success = False
+            
+            if missing_restaurants:
+                details = f"Missing restaurants in favorites: {', '.join(missing_restaurants)}"
+                success = False
+            elif invalid_data:
+                details = f"Invalid data in favorites: {'; '.join(invalid_data)}"
+                success = False
+            else:
+                details = f"Successfully retrieved all {len(added_favorites)} Google Places restaurants with proper details"
+            
+            print(f"✅ Step 4 Complete: {details}")
+            
+        except Exception as e:
+            self.log_test("FIXED Google Places Favorites - Get Favorites", False, str(e))
+            return False, {}
+        
+        # Step 5: Test mixed favorites (Google Places + Database restaurants)
+        try:
+            if db_restaurants:
+                # Add one database restaurant to favorites
+                db_restaurant = db_restaurants[0]
+                db_restaurant_id = db_restaurant['id']
+                db_restaurant_name = db_restaurant['name']
+                
+                add_db_response = self.session.post(f"{self.api_url}/users/favorites/{db_restaurant_id}", headers=headers)
+                
+                if add_db_response.status_code == 200:
+                    print(f"✅ Step 5.1: Added database restaurant '{db_restaurant_name}' to favorites")
+                    
+                    # Get favorites again to verify mixed results
+                    mixed_favorites_response = self.session.get(f"{self.api_url}/users/favorites", headers=headers)
+                    
+                    if mixed_favorites_response.status_code == 200:
+                        mixed_favorites_data = mixed_favorites_response.json()
+                        mixed_favorites = mixed_favorites_data.get('favorites', [])
+                        
+                        google_count = len([f for f in mixed_favorites if f['id'].startswith('google_')])
+                        db_count = len([f for f in mixed_favorites if not f['id'].startswith('google_')])
+                        
+                        print(f"✅ Step 5.2: Mixed favorites working - {google_count} Google Places + {db_count} database restaurants")
+                        
+                        if google_count >= 3 and db_count >= 1:
+                            mixed_success = True
+                            mixed_details = f"Mixed favorites working correctly: {google_count} Google Places + {db_count} database restaurants"
+                        else:
+                            mixed_success = False
+                            mixed_details = f"Mixed favorites issue: Expected ≥3 Google + ≥1 DB, got {google_count} Google + {db_count} DB"
+                    else:
+                        mixed_success = False
+                        mixed_details = f"Failed to retrieve mixed favorites: {mixed_favorites_response.status_code}"
+                else:
+                    mixed_success = False
+                    mixed_details = f"Failed to add database restaurant: {add_db_response.status_code}"
+            else:
+                mixed_success = True
+                mixed_details = "No database restaurants available for mixed testing (Google Places only test passed)"
+                
+        except Exception as e:
+            mixed_success = False
+            mixed_details = str(e)
+        
+        # Final assessment
+        overall_success = success and mixed_success
+        
+        if overall_success:
+            final_details = f"🎉 FIXED FAVORITES FUNCTIONALITY WORKING CORRECTLY! Google Places restaurants are now properly retrieved with details from Google Places API. {details}. {mixed_details}"
+            print(f"\n🎉 SUCCESS: Fixed Google Places favorites functionality is working correctly!")
+            print(f"   - Google Places restaurants are properly retrieved with details")
+            print(f"   - Mixed favorites (Google Places + Database) working correctly")
+            print(f"   - Heart icon state management issue should now be resolved")
+        else:
+            final_details = f"❌ FIXED FAVORITES STILL HAS ISSUES: {details}. Mixed test: {mixed_details}"
+            print(f"\n❌ FAILURE: Fixed Google Places favorites functionality still has issues")
+        
+        self.log_test("FIXED Google Places Favorites - Complete Workflow", overall_success, final_details)
+        return overall_success, favorites_data if overall_success else {}
+
+    def test_google_places_api_integration(self):
+        """Test Google Places API integration for favorites retrieval"""
+        try:
+            # Create test user
+            test_email = f"places_api_test_{uuid.uuid4().hex[:8]}@example.com"
+            registration_data = {
+                "email": test_email,
+                "password": "PlacesTest123!",
+                "first_name": "Places",
+                "last_name": "Tester"
+            }
+            
+            reg_response = self.session.post(f"{self.api_url}/users/register", json=registration_data)
+            if reg_response.status_code != 200:
+                self.log_test("Google Places API Integration", False, "Failed to create test user")
+                return False, {}
+            
+            reg_data = reg_response.json()
+            test_token = reg_data.get('access_token')
+            headers = {'Authorization': f'Bearer {test_token}'}
+            
+            # Get restaurants from search
+            search_params = {
+                'latitude': 37.7749,
+                'longitude': -122.4194,
+                'radius': 8047
+            }
+            
+            search_response = self.session.get(f"{self.api_url}/restaurants/search", params=search_params)
+            if search_response.status_code != 200:
+                self.log_test("Google Places API Integration", False, "Restaurant search failed")
+                return False, {}
+            
+            search_data = search_response.json()
+            restaurants = search_data.get('restaurants', [])
+            google_restaurants = [r for r in restaurants if r['id'].startswith('google_')]
+            
+            if not google_restaurants:
+                self.log_test("Google Places API Integration", False, "No Google Places restaurants found")
+                return False, {}
+            
+            # Add a Google Places restaurant to favorites
+            test_restaurant = google_restaurants[0]
+            restaurant_id = test_restaurant['id']
+            
+            add_response = self.session.post(f"{self.api_url}/users/favorites/{restaurant_id}", headers=headers)
+            if add_response.status_code != 200:
+                self.log_test("Google Places API Integration", False, f"Failed to add favorite: {add_response.status_code}")
+                return False, {}
+            
+            # Retrieve favorites and check Google Places API integration
+            favorites_response = self.session.get(f"{self.api_url}/users/favorites", headers=headers)
+            if favorites_response.status_code != 200:
+                self.log_test("Google Places API Integration", False, f"Failed to get favorites: {favorites_response.status_code}")
+                return False, {}
+            
+            favorites_data = favorites_response.json()
+            favorites = favorites_data.get('favorites', [])
+            
+            # Verify the Google Places restaurant is returned with proper details
+            google_favorite = None
+            for favorite in favorites:
+                if favorite['id'] == restaurant_id:
+                    google_favorite = favorite
+                    break
+            
+            if not google_favorite:
+                self.log_test("Google Places API Integration", False, "Google Places restaurant not found in favorites")
+                return False, {}
+            
+            # Check if the restaurant has proper details from Google Places API
+            required_fields = ['name', 'address']
+            missing_fields = [field for field in required_fields if not google_favorite.get(field)]
+            
+            if missing_fields:
+                details = f"Google Places restaurant missing fields: {missing_fields}. Data: {google_favorite}"
+                success = False
+            elif google_favorite.get('name') == 'Restaurant (Details Unavailable)':
+                details = f"Google Places API call failed - restaurant shows as unavailable: {google_favorite}"
+                success = False
+            else:
+                details = f"Google Places API integration working - Restaurant: {google_favorite.get('name')} at {google_favorite.get('address')} (Rating: {google_favorite.get('rating', 'N/A')})"
+                success = True
+            
+            self.log_test("Google Places API Integration", success, details)
+            return success, favorites_data if success else {}
+            
+        except Exception as e:
+            self.log_test("Google Places API Integration", False, str(e))
+            return False, {}
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting On-the-Cheap API Tests")
