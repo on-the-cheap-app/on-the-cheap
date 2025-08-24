@@ -562,6 +562,14 @@ function App() {
         )}
       </div>
 
+      {/* User Authentication Modal */}
+      {showUserAuth && (
+        <UserAuth 
+          onClose={() => setShowUserAuth(false)}
+          onUserLogin={handleUserLogin}
+        />
+      )}
+
       {/* Footer */}
       <footer className="bg-white border-t mt-12">
         <div className="max-w-6xl mx-auto px-4 py-8">
