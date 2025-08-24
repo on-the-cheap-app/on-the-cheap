@@ -160,14 +160,12 @@ function App() {
 
   // Enhanced handler for AddressInput component
   const handleAddressSelect = (geocodeResult) => {
-    console.log('AddressInput geocode result:', geocodeResult);
     setSearchLocation(geocodeResult.formatted_address);
     setCoordinates({
       latitude: geocodeResult.latitude,
       longitude: geocodeResult.longitude
     });
     setLoading(true);
-    console.log('Starting restaurant search with coordinates:', geocodeResult.latitude, geocodeResult.longitude);
     searchRestaurants(geocodeResult.latitude, geocodeResult.longitude);
   };
 
