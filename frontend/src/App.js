@@ -208,6 +208,47 @@ function App() {
     return colors[type] || "bg-gray-100 text-gray-800 border-gray-200";
   };
 
+  const toggleFavorite = async (restaurantId) => {
+    if (!currentUser) {
+      setShowUserAuth(true);
+      return;
+    }
+
+    try {
+      const userToken = localStorage.getItem('user_token');
+      const isFavorite = userFavorites.includes(restaurantId);
+      
+      if (isFavorite) {
+        await axios.delete(`${API}/users/favorites/${restaurantId}`, {
+          headers: { Authorization: `Bearer ${userToken}` }
+        });
+        setUserFavorites(userFavorites.filter(id => id !== restaurantId));
+      } else {
+        await axios.post(`${API}/users/favorites/${restaurantId}`, {}, {
+          headers: { Authorization: `Bearer ${userToken}` }
+        });
+        setUserFavorites([...userFavorites, restaurantId]);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
+  };
+
+  const handleUserLogin = (userData) => {
+    setCurrentUser(userData);
+    if (userData) {
+      fetchUserFavorites();
+    } else {
+      setUserFavorites([]);
+    }
+  };
+
+  const handleUserLogout = () => {
+    setCurrentUser(null);
+    setUserFavorites([]);
+    localStorage.removeItem('user_token');
+  };
+
   // If showing owner portal, render it
   if (showOwnerPortal) {
     return <OwnerPortal />;
