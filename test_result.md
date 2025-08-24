@@ -273,11 +273,11 @@ frontend:
 
   - task: "Favorites Heart Icon Integration"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
@@ -285,6 +285,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ TESTED SUCCESSFULLY: Favorites Heart Icon Integration working correctly. Restaurant search displays 20 restaurants with heart icons visible on each card, heart icons are clickable and properly integrated into restaurant cards, user must be logged in to use favorites (prompts login if not authenticated), favorites state management implemented correctly. Heart icons display properly and are ready for favoriting functionality when restaurants are loaded."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL BUG FOUND: Favorites functionality is completely broken due to geocoding API format mismatch. The AddressInput component uses new forward geocoding API (/api/geocode/forward) returning {latitude, longitude} format, but App.js geocodeLocation expects legacy format {coordinates: {latitude, longitude}}. This prevents restaurant search from triggering after geocoding, so no restaurants display on frontend despite backend working correctly. User authentication works, but core search functionality is broken. Heart icons cannot be tested because no restaurants are displayed."
 
 metadata:
   created_by: "main_agent"
