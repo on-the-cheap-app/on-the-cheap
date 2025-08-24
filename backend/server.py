@@ -788,12 +788,13 @@ async def register_owner(owner_data: RestaurantOwnerCreate):
         result = await db.restaurant_owners.insert_one(owner_dict)
         
         # Create access token
-        token = create_access_token({"user_id": owner.id, "email": owner.email})
+        token = create_access_token({"user_id": owner.id, "email": owner.email, "user_type": "owner"})
         
         return {
             "message": "Registration successful",
             "access_token": token,
             "token_type": "bearer",
+            "user_type": "owner",
             "user": {
                 "id": owner.id,
                 "email": owner.email,
