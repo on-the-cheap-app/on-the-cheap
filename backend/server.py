@@ -139,6 +139,44 @@ class UserUpdate(BaseModel):
     last_name: Optional[str] = None
     preferences: Optional[dict] = None
 
+# =================== GEOCODING MODELS ===================
+
+class GeocodeRequest(BaseModel):
+    address: str
+    region: Optional[str] = None
+    bounds: Optional[str] = None
+
+class ReverseGeocodeRequest(BaseModel):
+    latitude: float = Field(..., ge=-90, le=90)
+    longitude: float = Field(..., ge=-180, le=180)
+    result_type: Optional[List[str]] = None
+    location_type: Optional[List[str]] = None
+
+class BatchGeocodeRequest(BaseModel):
+    addresses: List[str] = Field(..., max_items=10)
+    region: Optional[str] = None
+    max_results: Optional[int] = Field(default=10, ge=1, le=10)
+
+class GeocodeResponse(BaseModel):
+    formatted_address: str
+    latitude: float
+    longitude: float
+    place_id: str
+    address_components: List[Dict[str, Any]]
+    geometry_type: str
+
+class BatchGeocodeResponse(BaseModel):
+    results: List[GeocodeResponse]
+    errors: List[Dict[str, str]]
+
+# Custom Exception for Geocoding
+class GeocodingError(Exception):
+    def __init__(self, message: str, error_code: str = None, retry_after: int = None):
+        self.message = message
+        self.error_code = error_code
+        self.retry_after = retry_after
+        super().__init__(self.message)
+
 class RestaurantClaim(BaseModel):
     google_place_id: str
     business_name: str
