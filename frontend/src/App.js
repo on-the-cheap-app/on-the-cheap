@@ -23,6 +23,9 @@ function App() {
   const [searchRadius, setSearchRadius] = useState(8047); // 5 miles default
   const [lastSearch, setLastSearch] = useState(null);
   const [showOwnerPortal, setShowOwnerPortal] = useState(false);
+  const [showUserAuth, setShowUserAuth] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [userFavorites, setUserFavorites] = useState([]);
 
   useEffect(() => {
     fetchSpecialTypes();
