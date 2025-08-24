@@ -945,6 +945,8 @@ async def geocode_address(address: str = Query(...)):
         }
     except HTTPException:
         raise
+    except HTTPException:
+        raise
     except Exception as e:
         logging.error(f"Error in legacy geocode endpoint: {e}")
         raise HTTPException(status_code=500, detail="Geocoding failed")
