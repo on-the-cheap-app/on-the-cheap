@@ -78,7 +78,7 @@ const UserAuth = ({ onClose, onUserLogin, currentFavorites = [], onFavoritesUpda
       });
       setUser(response.data);
       onUserLogin(response.data); // Notify parent component
-      fetchFavorites();
+      // Don't fetch favorites here - let parent handle it via currentFavorites prop
     } catch (error) {
       console.error('Error fetching user data:', error);
       if (error.response?.status === 401) {
@@ -87,14 +87,27 @@ const UserAuth = ({ onClose, onUserLogin, currentFavorites = [], onFavoritesUpda
     }
   };
 
-  const fetchFavorites = async () => {
+  const removeFavorite = async (restaurantId) => {
     try {
-      const response = await axios.get(`${API}/users/favorites`, {
+      await axios.delete(`${API}/users/favorites/${restaurantId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setFavorites(response.data.favorites);
+      
+      // Update parent's favorites state
+      const newFavorites = currentFavorites.filter(id => id !== restaurantId);
+      if (onFavoritesUpdate) {
+        onFavoritesUpdate(newFavorites);
+      }
+      
+      // Update local detailed favorites
+      setFavorites(favorites.filter(fav => fav.id !== restaurantId));
+      
+      setSuccess('Restaurant removed from favorites!');
+      setTimeout(() => setSuccess(''), 3000);
     } catch (error) {
-      console.error('Error fetching favorites:', error);
+      console.error('Error removing favorite:', error);
+      setError('Failed to remove favorite');
+      setTimeout(() => setError(''), 3000);
     }
   };
 
