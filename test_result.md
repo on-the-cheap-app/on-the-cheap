@@ -165,6 +165,54 @@ backend:
         agent: "testing"
         comment: "✅ TESTED SUCCESSFULLY: All favorites management APIs working correctly. POST /api/users/favorites/{restaurant_id} adds restaurants to favorites, DELETE removes them, GET /api/users/favorites retrieves user's favorite restaurants with details. All endpoints require JWT authentication and work properly."
 
+  - task: "Forward Geocoding API"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Forward geocoding endpoint (/api/geocode/forward) implemented using Google Maps API. Converts addresses to coordinates with optional region parameter. Needs testing."
+
+  - task: "Reverse Geocoding API"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Reverse geocoding endpoint (/api/geocode/reverse) implemented using Google Maps API. Converts coordinates to addresses with optional result_type and location_type filters. Needs testing."
+
+  - task: "Batch Geocoding API"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Batch geocoding endpoint (/api/geocode/batch) implemented for processing multiple addresses at once. Supports up to 10 addresses per request with error handling. Needs testing."
+
+  - task: "Legacy Geocoding API"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Legacy geocoding endpoint (/api/geocode) implemented for backward compatibility. Uses forward geocoding internally but returns simplified response format. Needs testing."
+
 frontend:
   - task: "User Authentication UI"
     implemented: true
