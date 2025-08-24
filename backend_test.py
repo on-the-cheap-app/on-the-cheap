@@ -624,6 +624,383 @@ class OnTheCheapAPITester:
         self.log_test("Authentication Edge Cases", all_passed, "; ".join(details_list))
         return all_passed
 
+    def test_user_registration(self):
+        """Test regular user registration"""
+        try:
+            test_email = f"user_{uuid.uuid4().hex[:8]}@example.com"
+            registration_data = {
+                "email": test_email,
+                "password": "UserPassword123!",
+                "first_name": "John",
+                "last_name": "Doe"
+            }
+            
+            response = self.session.post(f"{self.api_url}/users/register", json=registration_data)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                self.user_token = data.get('access_token')
+                self.user_data = data.get('user')
+                user_type = data.get('user_type')
+                details = f"Registered user: {data.get('user', {}).get('email', 'N/A')}, User type: {user_type}, Token received: {bool(self.user_token)}"
+                
+                # Verify user_type is "user"
+                if user_type != "user":
+                    success = False
+                    details += f" - ERROR: Expected user_type 'user', got '{user_type}'"
+            else:
+                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
+            
+            self.log_test("User Registration", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("User Registration", False, str(e))
+            return False, {}
+
+    def test_user_login(self):
+        """Test regular user login with existing credentials"""
+        try:
+            # First register a user
+            test_email = f"user_login_{uuid.uuid4().hex[:8]}@example.com"
+            registration_data = {
+                "email": test_email,
+                "password": "UserPassword123!",
+                "first_name": "Jane",
+                "last_name": "Smith"
+            }
+            
+            reg_response = self.session.post(f"{self.api_url}/users/register", json=registration_data)
+            if reg_response.status_code != 200:
+                self.log_test("User Login", False, "Failed to create test user for login")
+                return False, {}
+            
+            # Now test login
+            login_data = {
+                "email": test_email,
+                "password": "UserPassword123!"
+            }
+            
+            response = self.session.post(f"{self.api_url}/users/login", json=login_data)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                token = data.get('access_token')
+                user = data.get('user')
+                user_type = data.get('user_type')
+                details = f"Login successful for: {user.get('email', 'N/A')}, User type: {user_type}, Token received: {bool(token)}"
+                
+                # Store token for subsequent tests
+                if not hasattr(self, 'user_token') or not self.user_token:
+                    self.user_token = token
+                    self.user_data = user
+                
+                # Verify user_type is "user"
+                if user_type != "user":
+                    success = False
+                    details += f" - ERROR: Expected user_type 'user', got '{user_type}'"
+            else:
+                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
+            
+            self.log_test("User Login", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("User Login", False, str(e))
+            return False, {}
+
+    def test_user_auth_me(self):
+        """Test getting current user info with JWT token"""
+        if not hasattr(self, 'user_token') or not self.user_token:
+            self.log_test("User Auth Me", False, "No user token available - registration may have failed")
+            return False, {}
+        
+        try:
+            headers = {'Authorization': f'Bearer {self.user_token}'}
+            response = self.session.get(f"{self.api_url}/users/me", headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                details = f"User info retrieved: {data.get('email', 'N/A')}, Name: {data.get('first_name', '')} {data.get('last_name', '')}"
+                
+                # Verify expected fields are present
+                expected_fields = ['id', 'email', 'first_name', 'last_name', 'favorite_restaurant_ids']
+                missing_fields = [field for field in expected_fields if field not in data]
+                if missing_fields:
+                    details += f" - Missing fields: {missing_fields}"
+            else:
+                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
+            
+            self.log_test("User Auth Me", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("User Auth Me", False, str(e))
+            return False, {}
+
+    def test_add_favorite_restaurant(self):
+        """Test adding restaurant to user's favorites"""
+        if not hasattr(self, 'user_token') or not self.user_token:
+            self.log_test("Add Favorite Restaurant", False, "No user token available")
+            return False, {}
+        
+        try:
+            headers = {'Authorization': f'Bearer {self.user_token}'}
+            
+            # First, get a restaurant ID from the search results
+            search_params = {
+                'latitude': 37.7749,
+                'longitude': -122.4194,
+                'radius': 8047
+            }
+            
+            search_response = self.session.get(f"{self.api_url}/restaurants/search", params=search_params)
+            if search_response.status_code != 200:
+                self.log_test("Add Favorite Restaurant", False, "Failed to get restaurants for testing")
+                return False, {}
+            
+            search_data = search_response.json()
+            restaurants = search_data.get('restaurants', [])
+            if not restaurants:
+                self.log_test("Add Favorite Restaurant", False, "No restaurants found for testing")
+                return False, {}
+            
+            # Use the first restaurant
+            restaurant_id = restaurants[0]['id']
+            restaurant_name = restaurants[0]['name']
+            
+            # Add to favorites
+            response = self.session.post(f"{self.api_url}/users/favorites/{restaurant_id}", headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                details = f"Added '{restaurant_name}' (ID: {restaurant_id}) to favorites. Message: {data.get('message', 'N/A')}"
+                self.test_restaurant_id = restaurant_id  # Store for removal test
+                self.test_restaurant_name = restaurant_name
+            else:
+                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
+            
+            self.log_test("Add Favorite Restaurant", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Add Favorite Restaurant", False, str(e))
+            return False, {}
+
+    def test_remove_favorite_restaurant(self):
+        """Test removing restaurant from user's favorites"""
+        if not hasattr(self, 'user_token') or not self.user_token:
+            self.log_test("Remove Favorite Restaurant", False, "No user token available")
+            return False, {}
+        
+        if not hasattr(self, 'test_restaurant_id'):
+            self.log_test("Remove Favorite Restaurant", False, "No restaurant ID available - add favorite test may have failed")
+            return False, {}
+        
+        try:
+            headers = {'Authorization': f'Bearer {self.user_token}'}
+            restaurant_id = self.test_restaurant_id
+            restaurant_name = getattr(self, 'test_restaurant_name', 'Unknown')
+            
+            # Remove from favorites
+            response = self.session.delete(f"{self.api_url}/users/favorites/{restaurant_id}", headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                details = f"Removed '{restaurant_name}' (ID: {restaurant_id}) from favorites. Message: {data.get('message', 'N/A')}"
+            else:
+                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
+            
+            self.log_test("Remove Favorite Restaurant", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Remove Favorite Restaurant", False, str(e))
+            return False, {}
+
+    def test_get_favorite_restaurants(self):
+        """Test getting user's favorite restaurants"""
+        if not hasattr(self, 'user_token') or not self.user_token:
+            self.log_test("Get Favorite Restaurants", False, "No user token available")
+            return False, {}
+        
+        try:
+            headers = {'Authorization': f'Bearer {self.user_token}'}
+            
+            # First add a restaurant to favorites for testing
+            search_params = {
+                'latitude': 37.7749,
+                'longitude': -122.4194,
+                'radius': 8047
+            }
+            
+            search_response = self.session.get(f"{self.api_url}/restaurants/search", params=search_params)
+            if search_response.status_code == 200:
+                search_data = search_response.json()
+                restaurants = search_data.get('restaurants', [])
+                if restaurants:
+                    # Add first restaurant to favorites
+                    restaurant_id = restaurants[0]['id']
+                    add_response = self.session.post(f"{self.api_url}/users/favorites/{restaurant_id}", headers=headers)
+            
+            # Now get favorites
+            response = self.session.get(f"{self.api_url}/users/favorites", headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                favorites = data.get('favorites', [])
+                details = f"Retrieved {len(favorites)} favorite restaurants"
+                
+                if favorites:
+                    first_favorite = favorites[0]
+                    expected_fields = ['id', 'name', 'address']
+                    missing_fields = [field for field in expected_fields if field not in first_favorite]
+                    if missing_fields:
+                        details += f" - Missing fields in favorite: {missing_fields}"
+                    else:
+                        details += f". First favorite: {first_favorite.get('name', 'Unknown')}"
+            else:
+                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
+            
+            self.log_test("Get Favorite Restaurants", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Get Favorite Restaurants", False, str(e))
+            return False, {}
+
+    def test_user_auth_edge_cases(self):
+        """Test user authentication edge cases"""
+        test_cases = [
+            {
+                'name': 'Duplicate User Email Registration',
+                'test_func': self._test_duplicate_user_registration
+            },
+            {
+                'name': 'Invalid User Login Credentials',
+                'test_func': self._test_invalid_user_login
+            },
+            {
+                'name': 'Invalid Token Access to User Endpoints',
+                'test_func': self._test_invalid_token_user_access
+            },
+            {
+                'name': 'Add Non-existent Restaurant to Favorites',
+                'test_func': self._test_add_nonexistent_favorite
+            },
+            {
+                'name': 'Access User Endpoints with Owner Token',
+                'test_func': self._test_owner_token_user_access
+            }
+        ]
+        
+        all_passed = True
+        details_list = []
+        
+        for case in test_cases:
+            try:
+                success, details = case['test_func']()
+                details_list.append(f"{case['name']}: {details}")
+                if not success:
+                    all_passed = False
+            except Exception as e:
+                details_list.append(f"{case['name']}: Exception - {str(e)}")
+                all_passed = False
+        
+        self.log_test("User Authentication Edge Cases", all_passed, "; ".join(details_list))
+        return all_passed
+
+    def _test_duplicate_user_registration(self):
+        """Test duplicate user email registration"""
+        try:
+            test_email = f"duplicate_user_{uuid.uuid4().hex[:8]}@example.com"
+            registration_data = {
+                "email": test_email,
+                "password": "TestPassword123!",
+                "first_name": "Duplicate",
+                "last_name": "User"
+            }
+            
+            # Register once
+            response1 = self.session.post(f"{self.api_url}/users/register", json=registration_data)
+            # Register again with same email
+            response2 = self.session.post(f"{self.api_url}/users/register", json=registration_data)
+            
+            success = response1.status_code == 200 and response2.status_code == 400
+            details = f"First: {response1.status_code}, Second: {response2.status_code}"
+            return success, details
+            
+        except Exception as e:
+            return False, str(e)
+
+    def _test_invalid_user_login(self):
+        """Test invalid user login credentials"""
+        try:
+            login_data = {
+                "email": "nonexistent_user@example.com",
+                "password": "WrongPassword123!"
+            }
+            
+            response = self.session.post(f"{self.api_url}/users/login", json=login_data)
+            success = response.status_code == 401
+            details = f"Status: {response.status_code}"
+            return success, details
+            
+        except Exception as e:
+            return False, str(e)
+
+    def _test_invalid_token_user_access(self):
+        """Test invalid token access to user endpoints"""
+        try:
+            headers = {'Authorization': 'Bearer invalid_user_token_here'}
+            response = self.session.get(f"{self.api_url}/users/me", headers=headers)
+            success = response.status_code == 401
+            details = f"Status: {response.status_code}"
+            return success, details
+            
+        except Exception as e:
+            return False, str(e)
+
+    def _test_add_nonexistent_favorite(self):
+        """Test adding non-existent restaurant to favorites"""
+        if not hasattr(self, 'user_token') or not self.user_token:
+            return False, "No user token available"
+        
+        try:
+            headers = {'Authorization': f'Bearer {self.user_token}'}
+            fake_restaurant_id = f"nonexistent_{uuid.uuid4().hex[:8]}"
+            
+            response = self.session.post(f"{self.api_url}/users/favorites/{fake_restaurant_id}", headers=headers)
+            # This should succeed (the API doesn't validate restaurant existence)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            return success, details
+            
+        except Exception as e:
+            return False, str(e)
+
+    def _test_owner_token_user_access(self):
+        """Test accessing user endpoints with owner token"""
+        if not hasattr(self, 'owner_token') or not self.owner_token:
+            return True, "No owner token available - skipping test"
+        
+        try:
+            headers = {'Authorization': f'Bearer {self.owner_token}'}
+            response = self.session.get(f"{self.api_url}/users/me", headers=headers)
+            # Should fail because owner token shouldn't work for user endpoints
+            success = response.status_code == 401
+            details = f"Status: {response.status_code}"
+            return success, details
+            
+        except Exception as e:
+            return False, str(e)
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting On-the-Cheap API Tests")
