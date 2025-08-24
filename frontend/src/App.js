@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import axios from "axios";
-import { MapPin, Clock, DollarSign, Phone, Globe, Star, Search, Navigation, Building2, ArrowLeft } from "lucide-react";
+import { MapPin, Clock, DollarSign, Phone, Globe, Star, Search, Navigation, Building2, ArrowLeft, User, Heart } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/card";
 import { Badge } from "./components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
 import OwnerPortal from "./OwnerPortal";
+import UserAuth from "./UserAuth";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -22,10 +23,50 @@ function App() {
   const [searchRadius, setSearchRadius] = useState(8047); // 5 miles default
   const [lastSearch, setLastSearch] = useState(null);
   const [showOwnerPortal, setShowOwnerPortal] = useState(false);
-
+  const [showUserAuth, setShowUserAuth] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [userFavorites, setUserFavorites] = useState([]);
+  
   useEffect(() => {
-    fetchSpecialTypes();
-  }, []);
+  fetchSpecialTypes();
+  
+  // Check if user is already logged in
+  const userToken = localStorage.getItem('user_token');
+  if (userToken) {
+    fetchCurrentUser();
+  }
+}, []);
+
+const fetchCurrentUser = async () => {
+  try {
+    const userToken = localStorage.getItem('user_token');
+    if (userToken) {
+      const response = await axios.get(`${API}/users/me`, {
+        headers: { Authorization: `Bearer ${userToken}` }
+      });
+      setCurrentUser(response.data);
+      fetchUserFavorites();
+    }
+  } catch (error) {
+    console.error('Error fetching current user:', error);
+    // If token is invalid, clear it
+    localStorage.removeItem('user_token');
+  }
+};
+
+const fetchUserFavorites = async () => {
+  try {
+    const userToken = localStorage.getItem('user_token');
+    if (userToken) {
+      const response = await axios.get(`${API}/users/favorites`, {
+        headers: { Authorization: `Bearer ${userToken}` }
+      });
+      setUserFavorites(response.data.favorites.map(fav => fav.id));
+    }
+  } catch (error) {
+    console.error('Error fetching user favorites:', error);
+  }
+};
 
   const fetchSpecialTypes = async () => {
     try {
@@ -167,6 +208,47 @@ const geocodeLocation = async (location) => {
     return colors[type] || "bg-gray-100 text-gray-800 border-gray-200";
   };
 
+  const toggleFavorite = async (restaurantId) => {
+  if (!currentUser) {
+    setShowUserAuth(true);
+    return;
+  }
+
+  try {
+    const userToken = localStorage.getItem('user_token');
+    const isFavorite = userFavorites.includes(restaurantId);
+    
+    if (isFavorite) {
+      await axios.delete(`${API}/users/favorites/${restaurantId}`, {
+        headers: { Authorization: `Bearer ${userToken}` }
+      });
+      setUserFavorites(userFavorites.filter(id => id !== restaurantId));
+    } else {
+      await axios.post(`${API}/users/favorites/${restaurantId}`, {}, {
+        headers: { Authorization: `Bearer ${userToken}` }
+      });
+      setUserFavorites([...userFavorites, restaurantId]);
+    }
+  } catch (error) {
+    console.error('Error toggling favorite:', error);
+  }
+};
+
+const handleUserLogin = (userData) => {
+  setCurrentUser(userData);
+  if (userData) {
+    fetchUserFavorites();
+  } else {
+    setUserFavorites([]);
+  }
+};
+
+const handleUserLogout = () => {
+  setCurrentUser(null);
+  setUserFavorites([]);
+  localStorage.removeItem('user_token');
+};
+  
   // If showing owner portal, render it
   if (showOwnerPortal) {
     return <OwnerPortal />;
@@ -187,6 +269,27 @@ const geocodeLocation = async (location) => {
               </p>
             </div>
             <div className="flex gap-2">
+              {currentUser ? (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowUserAuth(true)}
+                    className="border-orange-600 text-orange-600 hover:bg-orange-50"
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    {currentUser.first_name}
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  onClick={() => setShowUserAuth(true)}
+                  className="border-orange-600 text-orange-600 hover:bg-orange-50"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Sign In
+                </Button>
+              )}
               <Button
                 variant="outline"
                 onClick={() => setShowOwnerPortal(true)}
@@ -311,12 +414,29 @@ const geocodeLocation = async (location) => {
                       {restaurant.distance && formatDistance(restaurant.distance)}
                     </CardDescription>
                   </div>
-                  {restaurant.rating && (
-                    <div className="flex items-center">
-                      <Star className="w-4 h-4 text-yellow-400 fill-current mr-1" />
-                      <span className="text-sm font-medium">{restaurant.rating}</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => toggleFavorite(restaurant.id)}
+                      className={`p-1 rounded-full transition-colors ${
+                        userFavorites.includes(restaurant.id)
+                          ? 'text-red-500 hover:text-red-600'
+                          : 'text-gray-400 hover:text-red-500'
+                      }`}
+                      title={userFavorites.includes(restaurant.id) ? 'Remove from favorites' : 'Add to favorites'}
+                    >
+                      <Heart 
+                        className={`w-5 h-5 ${
+                          userFavorites.includes(restaurant.id) ? 'fill-current' : ''
+                        }`} 
+                      />
+                    </button>
+                    {restaurant.rating && (
+                        <div className="flex items-center">
+                          <Star className="w-4 h-4 text-yellow-400 fill-current mr-1" />
+                          <span className="text-sm font-medium">{restaurant.rating}</span>
+                        </div>
+                      )}
                     </div>
-                  )}
                 </div>
               </CardHeader>
               <CardContent>
@@ -441,6 +561,14 @@ const geocodeLocation = async (location) => {
           </div>
         )}
       </div>
+
+      {/* User Authentication Modal */}
+      {showUserAuth && (
+        <UserAuth 
+          onClose={() => setShowUserAuth(false)}
+          onUserLogin={handleUserLogin}
+        />
+      )}
 
       {/* Footer */}
       <footer className="bg-white border-t mt-12">
