@@ -985,6 +985,489 @@ class OnTheCheapAPITester:
         except Exception as e:
             return False, str(e)
 
+    def test_forward_geocoding_basic(self):
+        """Test basic forward geocoding with valid address"""
+        try:
+            test_data = {
+                "address": "1600 Amphitheatre Parkway, Mountain View, CA"
+            }
+            
+            response = self.session.post(f"{self.api_url}/geocode/forward", json=test_data)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                required_fields = ['formatted_address', 'latitude', 'longitude', 'place_id', 'address_components', 'geometry_type']
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details = f"Missing required fields: {missing_fields}"
+                else:
+                    details = f"Address: {data.get('formatted_address', 'N/A')}, Coordinates: ({data.get('latitude', 'N/A')}, {data.get('longitude', 'N/A')}), Place ID: {data.get('place_id', 'N/A')}"
+                    
+                    # Validate coordinate ranges
+                    lat = data.get('latitude')
+                    lng = data.get('longitude')
+                    if lat is None or lng is None or not (-90 <= lat <= 90) or not (-180 <= lng <= 180):
+                        success = False
+                        details += " - Invalid coordinate values"
+            else:
+                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
+            
+            self.log_test("Forward Geocoding - Basic Address", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Forward Geocoding - Basic Address", False, str(e))
+            return False, {}
+
+    def test_forward_geocoding_with_region(self):
+        """Test forward geocoding with region parameter"""
+        try:
+            test_data = {
+                "address": "Main Street",
+                "region": "US"
+            }
+            
+            response = self.session.post(f"{self.api_url}/geocode/forward", json=test_data)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                details = f"Address with region: {data.get('formatted_address', 'N/A')}, Coordinates: ({data.get('latitude', 'N/A')}, {data.get('longitude', 'N/A')})"
+                
+                # Verify address components contain US-related information
+                address_components = data.get('address_components', [])
+                has_us_component = any('United States' in str(component) or 'US' in str(component) for component in address_components)
+                if not has_us_component:
+                    details += " - Warning: No US component found in address"
+            else:
+                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
+            
+            self.log_test("Forward Geocoding - With Region Parameter", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Forward Geocoding - With Region Parameter", False, str(e))
+            return False, {}
+
+    def test_forward_geocoding_invalid_address(self):
+        """Test forward geocoding with invalid address"""
+        try:
+            test_data = {
+                "address": "ThisIsNotARealAddressAnywhere12345XYZ"
+            }
+            
+            response = self.session.post(f"{self.api_url}/geocode/forward", json=test_data)
+            # Should return 404 for address not found
+            success = response.status_code == 404
+            
+            if success:
+                details = "Correctly returned 404 for invalid address"
+            else:
+                details = f"Expected 404, got {response.status_code}. Response: {response.text[:200]}"
+            
+            self.log_test("Forward Geocoding - Invalid Address", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Forward Geocoding - Invalid Address", False, str(e))
+            return False
+
+    def test_reverse_geocoding_basic(self):
+        """Test basic reverse geocoding with valid coordinates"""
+        try:
+            test_data = {
+                "latitude": 37.7749,
+                "longitude": -122.4194
+            }
+            
+            response = self.session.post(f"{self.api_url}/geocode/reverse", json=test_data)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                if isinstance(data, list) and len(data) > 0:
+                    first_result = data[0]
+                    required_fields = ['formatted_address', 'latitude', 'longitude', 'place_id', 'address_components', 'geometry_type']
+                    missing_fields = [field for field in required_fields if field not in first_result]
+                    
+                    if missing_fields:
+                        success = False
+                        details = f"Missing required fields in first result: {missing_fields}"
+                    else:
+                        details = f"Found {len(data)} addresses. First: {first_result.get('formatted_address', 'N/A')}"
+                        
+                        # Verify coordinates are close to input
+                        result_lat = first_result.get('latitude')
+                        result_lng = first_result.get('longitude')
+                        if result_lat and result_lng:
+                            lat_diff = abs(result_lat - test_data['latitude'])
+                            lng_diff = abs(result_lng - test_data['longitude'])
+                            if lat_diff > 0.01 or lng_diff > 0.01:  # Allow small differences
+                                details += f" - Warning: Coordinates differ significantly (lat: {lat_diff:.4f}, lng: {lng_diff:.4f})"
+                else:
+                    success = False
+                    details = "Expected list of results, got different format"
+            else:
+                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
+            
+            self.log_test("Reverse Geocoding - Basic Coordinates", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Reverse Geocoding - Basic Coordinates", False, str(e))
+            return False, {}
+
+    def test_reverse_geocoding_with_filters(self):
+        """Test reverse geocoding with result_type filter"""
+        try:
+            test_data = {
+                "latitude": 37.7749,
+                "longitude": -122.4194,
+                "result_type": ["street_address", "route"]
+            }
+            
+            response = self.session.post(f"{self.api_url}/geocode/reverse", json=test_data)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                if isinstance(data, list):
+                    details = f"Found {len(data)} filtered results"
+                    if data:
+                        first_result = data[0]
+                        details += f". First: {first_result.get('formatted_address', 'N/A')}"
+                else:
+                    success = False
+                    details = "Expected list of results"
+            else:
+                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
+            
+            self.log_test("Reverse Geocoding - With Filters", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Reverse Geocoding - With Filters", False, str(e))
+            return False, {}
+
+    def test_reverse_geocoding_invalid_coordinates(self):
+        """Test reverse geocoding with invalid coordinates"""
+        try:
+            test_data = {
+                "latitude": 91,  # Invalid latitude (> 90)
+                "longitude": -122.4194
+            }
+            
+            response = self.session.post(f"{self.api_url}/geocode/reverse", json=test_data)
+            # Should return 422 for validation error
+            success = response.status_code == 422
+            
+            if success:
+                details = "Correctly returned 422 for invalid coordinates"
+            else:
+                details = f"Expected 422, got {response.status_code}. Response: {response.text[:200]}"
+            
+            self.log_test("Reverse Geocoding - Invalid Coordinates", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Reverse Geocoding - Invalid Coordinates", False, str(e))
+            return False
+
+    def test_batch_geocoding_basic(self):
+        """Test basic batch geocoding with multiple addresses"""
+        try:
+            test_data = {
+                "addresses": [
+                    "1600 Amphitheatre Parkway, Mountain View, CA",
+                    "1 Infinite Loop, Cupertino, CA",
+                    "410 Terry Ave N, Seattle, WA"
+                ]
+            }
+            
+            response = self.session.post(f"{self.api_url}/geocode/batch", json=test_data)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                required_fields = ['results', 'errors']
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details = f"Missing required fields: {missing_fields}"
+                else:
+                    results = data.get('results', [])
+                    errors = data.get('errors', [])
+                    details = f"Processed {len(test_data['addresses'])} addresses: {len(results)} successful, {len(errors)} errors"
+                    
+                    # Verify each result has required fields
+                    for i, result in enumerate(results):
+                        result_fields = ['formatted_address', 'latitude', 'longitude', 'place_id']
+                        missing_result_fields = [field for field in result_fields if field not in result]
+                        if missing_result_fields:
+                            details += f" - Result {i} missing fields: {missing_result_fields}"
+                    
+                    if results:
+                        first_result = results[0]
+                        details += f". First result: {first_result.get('formatted_address', 'N/A')}"
+            else:
+                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
+            
+            self.log_test("Batch Geocoding - Multiple Valid Addresses", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Batch Geocoding - Multiple Valid Addresses", False, str(e))
+            return False, {}
+
+    def test_batch_geocoding_with_errors(self):
+        """Test batch geocoding with mix of valid and invalid addresses"""
+        try:
+            test_data = {
+                "addresses": [
+                    "1600 Amphitheatre Parkway, Mountain View, CA",  # Valid
+                    "ThisIsNotARealAddressAnywhere12345XYZ",         # Invalid
+                    "1 Infinite Loop, Cupertino, CA"                 # Valid
+                ]
+            }
+            
+            response = self.session.post(f"{self.api_url}/geocode/batch", json=test_data)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                results = data.get('results', [])
+                errors = data.get('errors', [])
+                
+                # Should have some results and some errors
+                details = f"Results: {len(results)}, Errors: {len(errors)}"
+                
+                # Verify error format
+                if errors:
+                    first_error = errors[0]
+                    error_fields = ['index', 'address', 'error']
+                    missing_error_fields = [field for field in error_fields if field not in first_error]
+                    if missing_error_fields:
+                        details += f" - Error missing fields: {missing_error_fields}"
+                    else:
+                        details += f". First error: {first_error.get('error', 'N/A')} for address at index {first_error.get('index', 'N/A')}"
+                
+                # Should have at least 2 successful results and 1 error
+                expected_success = len(results) >= 2 and len(errors) >= 1
+                if not expected_success:
+                    details += " - Expected at least 2 results and 1 error"
+                    success = False
+            else:
+                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
+            
+            self.log_test("Batch Geocoding - Mixed Valid/Invalid Addresses", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Batch Geocoding - Mixed Valid/Invalid Addresses", False, str(e))
+            return False, {}
+
+    def test_batch_geocoding_max_limit(self):
+        """Test batch geocoding with maximum number of addresses"""
+        try:
+            # Create 10 addresses (the maximum allowed)
+            test_addresses = [
+                f"Main Street, City {i}, CA" for i in range(10)
+            ]
+            
+            test_data = {
+                "addresses": test_addresses,
+                "max_results": 10
+            }
+            
+            response = self.session.post(f"{self.api_url}/geocode/batch", json=test_data)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                results = data.get('results', [])
+                errors = data.get('errors', [])
+                total_processed = len(results) + len(errors)
+                
+                details = f"Processed {total_processed}/10 addresses: {len(results)} successful, {len(errors)} errors"
+                
+                # Should process all 10 addresses
+                if total_processed != 10:
+                    details += f" - Expected 10 total processed, got {total_processed}"
+            else:
+                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
+            
+            self.log_test("Batch Geocoding - Maximum Limit (10 addresses)", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Batch Geocoding - Maximum Limit (10 addresses)", False, str(e))
+            return False, {}
+
+    def test_batch_geocoding_over_limit(self):
+        """Test batch geocoding with more than maximum addresses"""
+        try:
+            # Create 15 addresses (over the 10 limit)
+            test_addresses = [
+                f"Main Street, City {i}, CA" for i in range(15)
+            ]
+            
+            test_data = {
+                "addresses": test_addresses
+            }
+            
+            response = self.session.post(f"{self.api_url}/geocode/batch", json=test_data)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                results = data.get('results', [])
+                errors = data.get('errors', [])
+                total_processed = len(results) + len(errors)
+                
+                # Should only process first 10 addresses
+                details = f"Processed {total_processed} addresses (should be ≤10 due to limit)"
+                
+                if total_processed > 10:
+                    details += f" - Warning: Processed more than limit ({total_processed})"
+            else:
+                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
+            
+            self.log_test("Batch Geocoding - Over Limit (15 addresses)", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Batch Geocoding - Over Limit (15 addresses)", False, str(e))
+            return False, {}
+
+    def test_legacy_geocoding_basic(self):
+        """Test legacy geocoding endpoint for backward compatibility"""
+        try:
+            params = {
+                'address': '1600 Amphitheatre Parkway, Mountain View, CA'
+            }
+            
+            response = self.session.get(f"{self.api_url}/geocode", params=params)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                required_fields = ['coordinates', 'formatted_address']
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details = f"Missing required fields: {missing_fields}"
+                else:
+                    coordinates = data.get('coordinates', {})
+                    coord_fields = ['latitude', 'longitude']
+                    missing_coord_fields = [field for field in coord_fields if field not in coordinates]
+                    
+                    if missing_coord_fields:
+                        success = False
+                        details = f"Missing coordinate fields: {missing_coord_fields}"
+                    else:
+                        lat = coordinates.get('latitude')
+                        lng = coordinates.get('longitude')
+                        formatted_address = data.get('formatted_address')
+                        details = f"Address: {formatted_address}, Coordinates: ({lat}, {lng})"
+                        
+                        # Validate coordinate ranges
+                        if not (-90 <= lat <= 90) or not (-180 <= lng <= 180):
+                            success = False
+                            details += " - Invalid coordinate values"
+            else:
+                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
+            
+            self.log_test("Legacy Geocoding - Basic Address", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Legacy Geocoding - Basic Address", False, str(e))
+            return False, {}
+
+    def test_legacy_geocoding_invalid_address(self):
+        """Test legacy geocoding with invalid address"""
+        try:
+            params = {
+                'address': 'ThisIsNotARealAddressAnywhere12345XYZ'
+            }
+            
+            response = self.session.get(f"{self.api_url}/geocode", params=params)
+            # Should return 404 for address not found
+            success = response.status_code == 404
+            
+            if success:
+                details = "Correctly returned 404 for invalid address"
+            else:
+                details = f"Expected 404, got {response.status_code}. Response: {response.text[:200]}"
+            
+            self.log_test("Legacy Geocoding - Invalid Address", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Legacy Geocoding - Invalid Address", False, str(e))
+            return False
+
+    def test_geocoding_error_handling(self):
+        """Test geocoding endpoints error handling"""
+        test_cases = [
+            {
+                'name': 'Forward Geocoding - Missing Address',
+                'endpoint': '/geocode/forward',
+                'method': 'POST',
+                'data': {},  # Missing required address field
+                'expected_status': 422
+            },
+            {
+                'name': 'Reverse Geocoding - Invalid Latitude Range',
+                'endpoint': '/geocode/reverse',
+                'method': 'POST',
+                'data': {'latitude': 100, 'longitude': -122.4194},  # lat > 90
+                'expected_status': 422
+            },
+            {
+                'name': 'Batch Geocoding - Empty Address List',
+                'endpoint': '/geocode/batch',
+                'method': 'POST',
+                'data': {'addresses': []},  # Empty list
+                'expected_status': 422
+            },
+            {
+                'name': 'Legacy Geocoding - Missing Address Parameter',
+                'endpoint': '/geocode',
+                'method': 'GET',
+                'params': {},  # Missing required address parameter
+                'expected_status': 422
+            }
+        ]
+        
+        all_passed = True
+        details_list = []
+        
+        for case in test_cases:
+            try:
+                if case['method'] == 'POST':
+                    response = self.session.post(f"{self.api_url}{case['endpoint']}", json=case['data'])
+                else:  # GET
+                    response = self.session.get(f"{self.api_url}{case['endpoint']}", params=case.get('params', {}))
+                
+                success = response.status_code == case['expected_status']
+                details_list.append(f"{case['name']}: {response.status_code} (expected {case['expected_status']})")
+                
+                if not success:
+                    all_passed = False
+                    
+            except Exception as e:
+                details_list.append(f"{case['name']}: Exception - {str(e)}")
+                all_passed = False
+        
+        self.log_test("Geocoding Error Handling", all_passed, "; ".join(details_list))
+        return all_passed
+
     def _test_owner_token_user_access(self):
         """Test accessing user endpoints with owner token"""
         if not hasattr(self, 'owner_token') or not self.owner_token:
