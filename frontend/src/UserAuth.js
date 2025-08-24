@@ -50,9 +50,12 @@ const UserAuth = ({ onClose, onUserLogin, currentFavorites = [], onFavoritesUpda
 
   // Update local favorites when parent favorites change
   useEffect(() => {
+    console.log('UserAuth - currentFavorites changed:', currentFavorites);
     if (currentFavorites.length > 0) {
+      console.log('UserAuth - Fetching favorites details for:', currentFavorites);
       fetchFavoritesDetails();
     } else {
+      console.log('UserAuth - No favorites, clearing favorites array');
       setFavorites([]);
     }
   }, [currentFavorites, token]);
