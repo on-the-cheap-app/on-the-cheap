@@ -170,7 +170,6 @@ function App() {
   };
 
   const searchRestaurants = async (lat, lng) => {
-    console.log('searchRestaurants called with:', lat, lng);
     try {
       const params = {
         latitude: lat,
@@ -183,9 +182,7 @@ function App() {
         params.special_type = selectedSpecialType;
       }
 
-      console.log('Making API call with params:', params);
       const response = await axios.get(`${API}/restaurants/search`, { params });
-      console.log('Restaurant search response:', response.data);
       setRestaurants(response.data.restaurants);
       setLastSearch(response.data.search_location);
       setLoading(false);
