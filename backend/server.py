@@ -1241,36 +1241,53 @@ async def get_favorite_restaurants(current_user: dict = Depends(get_current_regu
                             place_id = google_id.replace('google_', '')
                             logger.info(f"DEBUG: Processing Google ID {google_id}, extracted place_id: {place_id}")
                             
-                            # Get place details from Google Places API
+                            # Use the new Places API (same as restaurant search)
+                            headers = {
+                                "Content-Type": "application/json",
+                                "X-Goog-Api-Key": google_api_key,
+                                "X-Goog-FieldMask": "id,displayName,types,rating,priceLevel,location,formattedAddress,nationalPhoneNumber,websiteUri"
+                            }
+                            
+                            # Get place details using the new Places API
                             response = await client.get(
-                                "https://maps.googleapis.com/maps/api/place/details/json",
-                                params={
-                                    "place_id": place_id,
-                                    "fields": "name,formatted_address,rating,types,place_id",
-                                    "key": google_api_key
-                                }
+                                f"https://places.googleapis.com/v1/places/{place_id}",
+                                headers=headers
                             )
                             
-                            logger.info(f"DEBUG: Google Places API response status: {response.status_code}")
+                            logger.info(f"DEBUG: Google Places API (New) response status: {response.status_code}")
                             
                             if response.status_code == 200:
-                                data = response.json()
-                                logger.info(f"DEBUG: Google Places API response data: {data}")
+                                place = response.json()
+                                logger.info(f"DEBUG: Google Places API (New) response data: {place}")
                                 
-                                if data.get('status') == 'OK' and data.get('result'):
-                                    place = data['result']
-                                    favorite_item = {
-                                        "id": google_id,  # Keep our format
-                                        "name": place.get('name', 'Unknown Restaurant'),
-                                        "address": place.get('formatted_address', ''),
-                                        "rating": place.get('rating'),
-                                        "cuisine_type": place.get('types', []),
-                                        "specials_count": 0  # Google Places restaurants don't have our specials
-                                    }
-                                    favorites.append(favorite_item)
-                                    logger.info(f"DEBUG: Added Google Places favorite: {favorite_item}")
-                                else:
-                                    logger.warning(f"DEBUG: Google Places API returned status: {data.get('status')}")
+                                # Extract data from new API format
+                                display_name = place.get('displayName', {})
+                                name = display_name.get('text', 'Unknown Restaurant') if display_name else 'Unknown Restaurant'
+                                
+                                favorite_item = {
+                                    "id": google_id,  # Keep our format
+                                    "name": name,
+                                    "address": place.get('formattedAddress', ''),
+                                    "rating": place.get('rating'),
+                                    "cuisine_type": place.get('types', []),
+                                    "specials_count": 0  # Google Places restaurants don't have our specials
+                                }
+                                favorites.append(favorite_item)
+                                logger.info(f"DEBUG: Added Google Places favorite: {favorite_item}")
+                            else:
+                                logger.warning(f"DEBUG: Google Places API (New) returned status: {response.status_code}, response: {response.text}")
+                                # Add placeholder for failed API call
+                                placeholder = {
+                                    "id": google_id,
+                                    "name": "Restaurant (Details Unavailable)",
+                                    "address": "",
+                                    "rating": None,
+                                    "cuisine_type": [],
+                                    "specials_count": 0
+                                }
+                                favorites.append(placeholder)
+                                logger.info(f"DEBUG: Added placeholder for failed API call: {placeholder}")
+                                
                         except Exception as e:
                             logger.warning(f"Failed to get Google Place details for {google_id}: {e}")
                             # Add a placeholder for failed lookups so user knows it exists
