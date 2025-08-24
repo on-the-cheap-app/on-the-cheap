@@ -1846,6 +1846,13 @@ class OnTheCheapAPITester:
         self.test_get_favorite_restaurants()
         self.test_user_auth_edge_cases()
         
+        print("\n" + "🔧 FIXED GOOGLE PLACES FAVORITES TESTS")
+        print("=" * 50)
+        
+        # Test the FIXED Google Places favorites functionality
+        self.test_fixed_google_places_favorites_workflow()
+        self.test_google_places_api_integration()
+        
         # Print summary
         print("\n" + "=" * 50)
         print(f"📊 Test Results: {self.tests_passed}/{self.tests_run} tests passed")
