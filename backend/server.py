@@ -921,6 +921,8 @@ async def batch_geocode(request: BatchGeocodeRequest):
                 
         return BatchGeocodeResponse(results=results, errors=errors)
         
+    except HTTPException:
+        raise
     except Exception as e:
         logging.error(f"Unexpected error in batch geocoding: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
