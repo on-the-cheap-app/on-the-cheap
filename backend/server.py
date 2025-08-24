@@ -912,12 +912,12 @@ async def batch_geocode(request: BatchGeocodeRequest):
                         geometry_type=result["geometry"]["location_type"]
                     ))
                 else:
-                    errors.append({"index": i, "address": address, "error": "Address not found"})
+                    errors.append({"index": str(i), "address": address, "error": "Address not found"})
                     
             except gmaps_exceptions.ApiError as e:
-                errors.append({"index": i, "address": address, "error": str(e)})
+                errors.append({"index": str(i), "address": address, "error": str(e)})
             except Exception as e:
-                errors.append({"index": i, "address": address, "error": "Processing error"})
+                errors.append({"index": str(i), "address": address, "error": "Processing error"})
                 
         return BatchGeocodeResponse(results=results, errors=errors)
         
