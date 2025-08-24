@@ -1197,10 +1197,8 @@ async def get_favorite_restaurants(current_user: dict = Depends(get_current_regu
     """Get user's favorite restaurants with details"""
     try:
         favorite_ids = current_user.get('favorite_restaurant_ids', [])
-        logger.info(f"DEBUG: User {current_user.get('id')} has favorite_ids: {favorite_ids}")
         
         if not favorite_ids:
-            logger.info("DEBUG: No favorite_ids found, returning empty list")
             return {"favorites": []}
         
         favorites = []
@@ -1209,13 +1207,10 @@ async def get_favorite_restaurants(current_user: dict = Depends(get_current_regu
         google_ids = [fid for fid in favorite_ids if fid.startswith('google_')]
         db_ids = [fid for fid in favorite_ids if not fid.startswith('google_')]
         
-        logger.info(f"DEBUG: Separated IDs - Google: {google_ids}, DB: {db_ids}")
-        
         # Get database restaurants (mock restaurants)
         if db_ids:
             restaurants_cursor = db.restaurants.find({"id": {"$in": db_ids}})
             restaurants = await restaurants_cursor.to_list(length=None)
-            logger.info(f"DEBUG: Found {len(restaurants)} database restaurants")
             
             for restaurant in restaurants:
                 restaurant = prepare_from_mongo(restaurant)
@@ -1231,7 +1226,6 @@ async def get_favorite_restaurants(current_user: dict = Depends(get_current_regu
         # Get Google Places restaurants
         if google_ids:
             google_api_key = os.environ.get('GOOGLE_PLACES_API_KEY')
-            logger.info(f"DEBUG: Processing {len(google_ids)} Google Places IDs, API key available: {bool(google_api_key)}")
             
             if google_api_key:
                 async with httpx.AsyncClient(timeout=30.0) as client:
@@ -1239,7 +1233,6 @@ async def get_favorite_restaurants(current_user: dict = Depends(get_current_regu
                         try:
                             # Extract the Google Place ID from our format (google_PLACE_ID)
                             place_id = google_id.replace('google_', '')
-                            logger.info(f"DEBUG: Processing Google ID {google_id}, extracted place_id: {place_id}")
                             
                             # Use the new Places API (same as restaurant search)
                             headers = {
@@ -1254,55 +1247,45 @@ async def get_favorite_restaurants(current_user: dict = Depends(get_current_regu
                                 headers=headers
                             )
                             
-                            logger.info(f"DEBUG: Google Places API (New) response status: {response.status_code}")
-                            
                             if response.status_code == 200:
                                 place = response.json()
-                                logger.info(f"DEBUG: Google Places API (New) response data: {place}")
                                 
                                 # Extract data from new API format
                                 display_name = place.get('displayName', {})
                                 name = display_name.get('text', 'Unknown Restaurant') if display_name else 'Unknown Restaurant'
                                 
-                                favorite_item = {
+                                favorites.append({
                                     "id": google_id,  # Keep our format
                                     "name": name,
                                     "address": place.get('formattedAddress', ''),
                                     "rating": place.get('rating'),
                                     "cuisine_type": place.get('types', []),
                                     "specials_count": 0  # Google Places restaurants don't have our specials
-                                }
-                                favorites.append(favorite_item)
-                                logger.info(f"DEBUG: Added Google Places favorite: {favorite_item}")
+                                })
                             else:
-                                logger.warning(f"DEBUG: Google Places API (New) returned status: {response.status_code}, response: {response.text}")
+                                logger.warning(f"Failed to get Google Place details for {google_id}: HTTP {response.status_code}")
                                 # Add placeholder for failed API call
-                                placeholder = {
+                                favorites.append({
                                     "id": google_id,
                                     "name": "Restaurant (Details Unavailable)",
                                     "address": "",
                                     "rating": None,
                                     "cuisine_type": [],
                                     "specials_count": 0
-                                }
-                                favorites.append(placeholder)
-                                logger.info(f"DEBUG: Added placeholder for failed API call: {placeholder}")
+                                })
                                 
                         except Exception as e:
                             logger.warning(f"Failed to get Google Place details for {google_id}: {e}")
                             # Add a placeholder for failed lookups so user knows it exists
-                            placeholder = {
+                            favorites.append({
                                 "id": google_id,
                                 "name": "Restaurant (Details Unavailable)",
                                 "address": "",
                                 "rating": None,
                                 "cuisine_type": [],
                                 "specials_count": 0
-                            }
-                            favorites.append(placeholder)
-                            logger.info(f"DEBUG: Added placeholder for failed lookup: {placeholder}")
+                            })
         
-        logger.info(f"DEBUG: Final favorites list has {len(favorites)} items: {[f.get('name') for f in favorites]}")
         return {"favorites": favorites}
         
     except Exception as e:
