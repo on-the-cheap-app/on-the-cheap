@@ -228,7 +228,11 @@ function App() {
   };
 
   const toggleFavorite = async (restaurantId) => {
+    console.log('toggleFavorite called - restaurantId:', restaurantId);
+    console.log('toggleFavorite called - currentUser:', currentUser);
+    
     if (!currentUser) {
+      console.log('No user logged in, showing auth modal');
       setShowUserAuth(true);
       return;
     }
@@ -237,16 +241,39 @@ function App() {
       const userToken = localStorage.getItem('user_token');
       const isFavorite = userFavorites.includes(restaurantId);
       
+      console.log('toggleFavorite - Current state:', {
+        restaurantId,
+        isFavorite,
+        currentFavorites: userFavorites,
+        tokenExists: !!userToken
+      });
+      
       if (isFavorite) {
-        await axios.delete(`${API}/users/favorites/${restaurantId}`, {
+        console.log('Removing from favorites...');
+        const response = await axios.delete(`${API}/users/favorites/${restaurantId}`, {
           headers: { Authorization: `Bearer ${userToken}` }
         });
-        setUserFavorites(userFavorites.filter(id => id !== restaurantId));
+        console.log('Remove API response:', response.status, response.data);
+        
+        const newFavorites = userFavorites.filter(id => id !== restaurantId);
+        setUserFavorites(newFavorites);
+        console.log('Updated favorites after removal:', newFavorites);
       } else {
-        await axios.post(`${API}/users/favorites/${restaurantId}`, {}, {
+        console.log('Adding to favorites...');
+        const response = await axios.post(`${API}/users/favorites/${restaurantId}`, {}, {
           headers: { Authorization: `Bearer ${userToken}` }
         });
-        setUserFavorites([...userFavorites, restaurantId]);
+        console.log('Add API response:', response.status, response.data);
+        
+        const newFavorites = [...userFavorites, restaurantId];
+        setUserFavorites(newFavorites);
+        console.log('Updated favorites after addition:', newFavorites);
+        
+        // Also refresh favorites from server to make sure we're in sync
+        setTimeout(() => {
+          console.log('Refreshing favorites from server...');
+          fetchUserFavorites();
+        }, 500);
       }
     } catch (error) {
       console.error('Error toggling favorite:', error.response?.data || error.message);
