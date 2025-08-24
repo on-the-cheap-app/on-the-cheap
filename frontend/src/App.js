@@ -223,37 +223,25 @@ function App() {
   };
 
   const toggleFavorite = async (restaurantId) => {
-    console.log('toggleFavorite called with restaurantId:', restaurantId);
-    console.log('currentUser:', currentUser);
-    console.log('userFavorites:', userFavorites);
-    
     if (!currentUser) {
-      console.log('No current user, showing auth modal');
       setShowUserAuth(true);
       return;
     }
 
     try {
       const userToken = localStorage.getItem('user_token');
-      console.log('userToken:', userToken ? 'exists' : 'not found');
-      
       const isFavorite = userFavorites.includes(restaurantId);
-      console.log('isFavorite:', isFavorite);
       
       if (isFavorite) {
-        console.log('Removing from favorites');
         await axios.delete(`${API}/users/favorites/${restaurantId}`, {
           headers: { Authorization: `Bearer ${userToken}` }
         });
         setUserFavorites(userFavorites.filter(id => id !== restaurantId));
-        console.log('Successfully removed from favorites');
       } else {
-        console.log('Adding to favorites');
         await axios.post(`${API}/users/favorites/${restaurantId}`, {}, {
           headers: { Authorization: `Bearer ${userToken}` }
         });
         setUserFavorites([...userFavorites, restaurantId]);
-        console.log('Successfully added to favorites');
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);
