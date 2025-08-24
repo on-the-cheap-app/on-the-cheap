@@ -620,6 +620,8 @@ function App() {
         <UserAuth 
           onClose={() => setShowUserAuth(false)}
           onUserLogin={handleUserLogin}
+          currentFavorites={userFavorites}
+          onFavoritesUpdate={setUserFavorites}
         />
       )}
 
