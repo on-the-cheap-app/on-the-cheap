@@ -874,6 +874,8 @@ async def reverse_geocode(request: ReverseGeocodeRequest):
     except (gmaps_exceptions.ApiError, gmaps_exceptions.TransportError, gmaps_exceptions.Timeout) as e:
         logging.error(f"Google Maps API error: {e}")
         raise handle_geocoding_error(e)
+    except HTTPException:
+        raise
     except Exception as e:
         logging.error(f"Unexpected error in reverse geocoding: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
