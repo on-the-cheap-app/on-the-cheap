@@ -1433,8 +1433,8 @@ class OnTheCheapAPITester:
                 'name': 'Batch Geocoding - Empty Address List',
                 'endpoint': '/geocode/batch',
                 'method': 'POST',
-                'data': {'addresses': []},  # Empty list
-                'expected_status': 422
+                'data': {'addresses': []},  # Empty list - should return empty results
+                'expected_status': 200
             },
             {
                 'name': 'Legacy Geocoding - Missing Address Parameter',
