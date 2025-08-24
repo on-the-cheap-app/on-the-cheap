@@ -269,6 +269,27 @@ function App() {
               </p>
             </div>
             <div className="flex gap-2">
+              {currentUser ? (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowUserAuth(true)}
+                    className="border-orange-600 text-orange-600 hover:bg-orange-50"
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    {currentUser.first_name}
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  onClick={() => setShowUserAuth(true)}
+                  className="border-orange-600 text-orange-600 hover:bg-orange-50"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Sign In
+                </Button>
+              )}
               <Button
                 variant="outline"
                 onClick={() => setShowOwnerPortal(true)}
