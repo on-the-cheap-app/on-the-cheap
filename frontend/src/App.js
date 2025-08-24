@@ -29,7 +29,44 @@ function App() {
 
   useEffect(() => {
     fetchSpecialTypes();
+    
+    // Check if user is already logged in
+    const userToken = localStorage.getItem('user_token');
+    if (userToken) {
+      fetchCurrentUser();
+    }
   }, []);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const userToken = localStorage.getItem('user_token');
+      if (userToken) {
+        const response = await axios.get(`${API}/users/me`, {
+          headers: { Authorization: `Bearer ${userToken}` }
+        });
+        setCurrentUser(response.data);
+        fetchUserFavorites();
+      }
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+      // If token is invalid, clear it
+      localStorage.removeItem('user_token');
+    }
+  };
+
+  const fetchUserFavorites = async () => {
+    try {
+      const userToken = localStorage.getItem('user_token');
+      if (userToken) {
+        const response = await axios.get(`${API}/users/favorites`, {
+          headers: { Authorization: `Bearer ${userToken}` }
+        });
+        setUserFavorites(response.data.favorites.map(fav => fav.id));
+      }
+    } catch (error) {
+      console.error('Error fetching user favorites:', error);
+    }
+  };
 
   const fetchSpecialTypes = async () => {
     try {
