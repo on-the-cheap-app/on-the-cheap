@@ -156,10 +156,22 @@ const UserAuth = ({ onClose, onUserLogin, currentFavorites = [], onFavoritesUpda
       await axios.delete(`${API}/users/favorites/${restaurantId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      // Update parent's favorites state
+      const newFavorites = currentFavorites.filter(id => id !== restaurantId);
+      if (onFavoritesUpdate) {
+        onFavoritesUpdate(newFavorites);
+      }
+      
+      // Update local detailed favorites
       setFavorites(favorites.filter(fav => fav.id !== restaurantId));
-      setSuccess('Restaurant removed from favorites');
+      
+      setSuccess('Restaurant removed from favorites!');
+      setTimeout(() => setSuccess(''), 3000);
     } catch (error) {
+      console.error('Error removing favorite:', error);
       setError('Failed to remove favorite');
+      setTimeout(() => setError(''), 3000);
     }
   };
 
