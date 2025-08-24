@@ -109,6 +109,34 @@ class RestaurantOwnerLogin(BaseModel):
     email: str
     password: str
 
+# Regular User Models
+class User(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    email: str
+    password_hash: str
+    first_name: str
+    last_name: str
+    favorite_restaurant_ids: List[str] = []
+    search_history: List[dict] = []
+    preferences: dict = {}
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class UserCreate(BaseModel):
+    email: str
+    password: str
+    first_name: str
+    last_name: str
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+class UserUpdate(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    preferences: Optional[dict] = None
+
 class RestaurantClaim(BaseModel):
     google_place_id: str
     business_name: str
