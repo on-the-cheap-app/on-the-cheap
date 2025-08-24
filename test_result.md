@@ -275,9 +275,9 @@ frontend:
     implemented: true
     working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -288,6 +288,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "❌ CRITICAL BUG FOUND: Favorites functionality is completely broken due to geocoding API format mismatch. The AddressInput component uses new forward geocoding API (/api/geocode/forward) returning {latitude, longitude} format, but App.js geocodeLocation expects legacy format {coordinates: {latitude, longitude}}. This prevents restaurant search from triggering after geocoding, so no restaurants display on frontend despite backend working correctly. User authentication works, but core search functionality is broken. Heart icons cannot be tested because no restaurants are displayed."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE CONFIRMED: Comprehensive testing reveals that while restaurant search now works correctly (20 restaurants displayed with heart icons), the heart icon functionality itself is completely broken. Heart icons are visible and clickable, user authentication works properly (login modal appears when not authenticated, registration successful), but clicking heart icons does NOT change their visual state (no fill-current class added), NO API calls are made to /api/users/favorites endpoints, and no favorites are actually saved. The toggleFavorite function in App.js is not working despite being called. User dashboard shows 'No favorites yet' even after clicking multiple hearts. This is a critical functionality failure requiring immediate investigation and fix."
 
 metadata:
   created_by: "main_agent"
