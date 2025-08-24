@@ -17,6 +17,8 @@ import jwt
 import hashlib
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Union
+import googlemaps
+from googlemaps import exceptions as gmaps_exceptions
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
