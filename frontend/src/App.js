@@ -329,11 +329,11 @@ function App() {
           <CardContent className="space-y-4">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
-                <Input
+                <AddressInput
                   placeholder="Enter city or address (e.g., San Francisco, New York)"
-                  value={searchLocation}
-                  onChange={(e) => setSearchLocation(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleLocationSearch()}
+                  initialValue={searchLocation}
+                  onAddressSelect={handleAddressSelect}
+                  region="US"
                   className="w-full"
                 />
               </div>
