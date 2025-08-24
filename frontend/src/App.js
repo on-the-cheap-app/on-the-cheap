@@ -478,7 +478,10 @@ function App() {
                   </div>
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => toggleFavorite(restaurant.id)}
+                      onClick={() => {
+                        alert('Heart button clicked!');
+                        toggleFavorite(restaurant.id);
+                      }}
                       className={`p-1 rounded-full transition-colors ${
                         userFavorites.includes(restaurant.id)
                           ? 'text-red-500 hover:text-red-600'
