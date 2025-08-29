@@ -104,6 +104,13 @@ const UserAuth = ({ onClose, onUserLogin, currentFavorites = [], onFavoritesUpda
       setSuccess(response.data.message);
       onUserLogin(userData);
       
+      // Track analytics
+      if (isLogin) {
+        Analytics.trackUserLogin(userData.user_type || 'user');
+      } else {
+        Analytics.trackUserRegistration(userData.user_type || 'user');
+      }
+      
       // Reset form
       setAuthForm({
         email: '',
@@ -113,6 +120,7 @@ const UserAuth = ({ onClose, onUserLogin, currentFavorites = [], onFavoritesUpda
       });
       
     } catch (error) {
+      Analytics.trackError(error.response?.data?.detail || 'Authentication failed', isLogin ? 'user_login' : 'user_registration');
       setError(error.response?.data?.detail || 'Authentication failed');
     } finally {
       setLoading(false);
