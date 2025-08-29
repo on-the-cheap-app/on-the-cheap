@@ -63,7 +63,6 @@ const UserAuth = ({ onClose, onUserLogin, currentFavorites = [], onFavoritesUpda
         const response = await axios.get(`${API}/users/favorites`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        console.log('UserAuth - Fetched favorites details:', response.data.favorites);
         setFavorites(response.data.favorites);
       }
     } catch (error) {
