@@ -62,6 +62,20 @@ const openShareLink = (url, platform) => {
   }
 };
 
+// Analytics-enabled share function
+const handleShare = (restaurant, platform) => {
+  Analytics.trackRestaurantShare(restaurant, platform);
+  const shareUrls = getShareUrls(restaurant);
+  openShareLink(shareUrls[platform], platform);
+};
+
+// Analytics-enabled ride function  
+const handleRide = (restaurant, service) => {
+  Analytics.trackRideRequest(restaurant, service);
+  const rideUrls = getRideUrls(restaurant);
+  openShareLink(rideUrls[service], service);
+};
+
 function App() {
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(false);
