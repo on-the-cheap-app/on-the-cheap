@@ -553,7 +553,12 @@ function App() {
                 <Button
                   variant={viewMode === 'list' ? 'default' : 'ghost'}
                   size="sm"
-                  onClick={() => setViewMode('list')}
+                  onClick={() => {
+                    if (viewMode !== 'list') {
+                      Analytics.trackViewToggle(viewMode, 'list');
+                      setViewMode('list');
+                    }
+                  }}
                   className={viewMode === 'list' ? 'bg-white shadow-sm' : ''}
                 >
                   <List className="w-4 h-4 mr-1" />
@@ -562,7 +567,12 @@ function App() {
                 <Button
                   variant={viewMode === 'map' ? 'default' : 'ghost'}
                   size="sm"
-                  onClick={() => setViewMode('map')}
+                  onClick={() => {
+                    if (viewMode !== 'map') {
+                      Analytics.trackViewToggle(viewMode, 'map');
+                      setViewMode('map');
+                    }
+                  }}
                   className={viewMode === 'map' ? 'bg-white shadow-sm' : ''}
                 >
                   <Map className="w-4 h-4 mr-1" />
