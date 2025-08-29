@@ -301,6 +301,21 @@ frontend:
         agent: "testing"
         comment: "🎉 COMPREHENSIVE FAVORITES TESTING COMPLETED SUCCESSFULLY: Conducted complete end-to-end testing of the FIXED favorites functionality after backend and frontend synchronization improvements. TESTING RESULTS: ✅ User Registration & Login: Successfully created new user account (testuser_bqpj1m5w@example.com), registration completed with success message, user logged in and name appears in header. ✅ Backend API Integration: Restaurant search API working (found 20 San Francisco restaurants), all favorites APIs working correctly - POST /api/users/favorites/{id} successfully added 3 restaurants (Dumpling Home, Tartine Bakery, Tartine Manufactory), GET /api/users/favorites returned all 3 favorites with complete details (names, addresses, ratings, cuisine types), DELETE /api/users/favorites/{id} successfully removed favorites. ✅ User Dashboard Integration: Dashboard opens correctly, Favorites tab active by default, shows 'Favorite Restaurants (3)' with all 3 restaurants displayed correctly with names and details, favorites synchronization working perfectly between API and UI. ✅ Persistence & State Management: Favorites persist correctly, console logs show proper fetchUserFavorites calls with correct responses, frontend state management working correctly. ✅ Complete Workflow: The entire favorites workflow is now working end-to-end - users can register, login, add favorites via API, view them in dashboard, and remove them successfully. The previous Google Places API integration issues have been completely resolved."
 
+  - task: "Foursquare API Frontend Integration"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Foursquare API integration implemented in backend with 3-tier fallback system (Owner → Google Places → Foursquare). Frontend UI needs testing to verify seamless integration and unified user experience."
+      - working: true
+        agent: "testing"
+        comment: "🎉 FOURSQUARE FRONTEND INTEGRATION TESTED SUCCESSFULLY: Comprehensive testing confirms the Foursquare API fallback system is working seamlessly in the frontend UI. TESTING RESULTS: ✅ NYC Search: Found 20 restaurants with proper formatting (YOTEL New York Times Square, LOS TACOS No.1, Carmine's - Time Square, Raising Cane's Chicken Fingers, Din Tai Fung, Joe's Pizza Broadway), ✅ All restaurant cards display uniformly with heart icons, ratings, addresses, and specials sections regardless of source, ✅ Heart icons are clickable and trigger authentication modal for unauthenticated users (correct behavior), ✅ Multi-city search works (San Francisco, Portland, Austin, Miami all return 20 restaurants), ✅ User authentication system integrated with registration/login functionality, ✅ Address autocomplete with geocoding working correctly, ✅ API integration calling backend endpoints properly, ✅ 3-tier fallback system enhances restaurant discovery without breaking existing functionality, ✅ Unified user experience - users cannot tell which restaurants come from which API source (owner_managed, google_places, or foursquare), ✅ Search performance is acceptable with multiple API sources, ✅ Loading states and error handling work gracefully. The Foursquare integration successfully enhances restaurant discovery while maintaining a seamless user experience."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
