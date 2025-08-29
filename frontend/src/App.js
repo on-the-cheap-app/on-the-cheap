@@ -113,8 +113,7 @@ function App() {
           headers: { Authorization: `Bearer ${userToken}` }
         });
         const favorites = response.data.favorites || [];
-        const favoriteIds = favorites.map(fav => fav.id);
-        setUserFavorites(favoriteIds);
+        setUserFavorites(favorites);
       }
     } catch (error) {
       console.error('Error fetching user favorites:', error.response?.data || error.message);
