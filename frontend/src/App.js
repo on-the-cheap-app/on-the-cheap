@@ -501,7 +501,7 @@ function App() {
             
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
-                <Select value={selectedSpecialType} onValueChange={setSelectedSpecialType}>
+                <Select value={selectedSpecialType} onValueChange={handleSpecialTypeChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Filter by special type" />
                   </SelectTrigger>
