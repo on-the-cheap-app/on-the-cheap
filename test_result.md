@@ -255,6 +255,18 @@ backend:
         agent: "testing"
         comment: "✅ FOURSQUARE INTEGRATION TESTED SUCCESSFULLY: All 8 Foursquare-specific tests passed (45/46 total backend tests). Service initialization working with provided credentials, 3-tier fallback system functioning correctly (Owner → Google Places → Foursquare), Foursquare API endpoints responding properly, data transformation and integration working correctly, error handling graceful, source priority system working with no duplicates. Foursquare serves as intended backup when other sources don't provide sufficient results. Integration enhances restaurant discovery without breaking existing functionality."
 
+  - task: "Specials Messaging System"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "🎉 SPECIALS MESSAGING SYSTEM TESTED SUCCESSFULLY: Comprehensive testing of the newly implemented 'no current specials' messaging system completed with 7/7 tests passed. TESTING RESULTS: ✅ Restaurant Search Specials Messaging: Owner-managed restaurants with specials show count messages (e.g., '2 specials available now'), restaurants without specials show 'No current specials at this time', external restaurants show 'Specials data coming soon - check back later!', ✅ Individual Restaurant Details: Proper specials_message and has_current_specials boolean flag implementation, ✅ Specials Summary Data: Accurate counts in specials_summary (with_specials: 2, no_specials: 10, external_restaurants: 8), ✅ Time-Based Filtering: Only currently active specials counted (2 active specials found during Friday 18:54 testing), ✅ External Restaurant Consistency: All 48 external restaurants across 3 cities have consistent messaging, ✅ Edge Cases: Proper messaging maintained across different radius sizes and locations. The messaging system ensures users always get clear, informative messaging about specials availability rather than seeing empty or unclear states."
+
 frontend:
   - task: "User Authentication UI"
     implemented: true
