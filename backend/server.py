@@ -653,7 +653,7 @@ async def search_external_restaurants(latitude: float, longitude: float, radius:
                         venue.longitude or longitude
                     ),
                     'created_at': datetime.now(timezone.utc).isoformat(),
-                    'note': 'Restaurant found via Foursquare - specials data coming soon!'
+                    'specials_message': 'Specials data coming soon - check back later!'
                 }
                 restaurants.append(restaurant)
             except Exception as e:
