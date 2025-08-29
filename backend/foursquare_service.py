@@ -309,7 +309,7 @@ class FoursquareService:
         params = {
             "near": address,
             "radius": radius_meters,
-            "categories": restaurant_categories,
+            "categories": categories_string,
             "limit": limit,
             "fields": "fsq_id,name,location,categories,rating,price,photos,website,tel"
         }
