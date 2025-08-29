@@ -30,13 +30,11 @@ const generateShareMessage = (restaurant) => {
 const getShareUrls = (restaurant) => {
   const message = generateShareMessage(restaurant);
   const encodedMessage = encodeURIComponent(message);
-  const encodedAppLink = encodeURIComponent(APP_LINK);
   
   return {
     sms: `sms:?body=${encodedMessage}`,
     whatsapp: `https://wa.me/?text=${encodedMessage}`,
-    telegram: `https://t.me/share/url?url=${encodedAppLink}&text=${encodeURIComponent(`${restaurant.name} - ${restaurant.address}`)}`,
-    messenger: `https://www.facebook.com/dialog/send?link=${encodedAppLink}&app_id=YOUR_APP_ID&redirect_uri=${encodedAppLink}`
+    // Removed telegram and messenger - unreliable
   };
 };
 
