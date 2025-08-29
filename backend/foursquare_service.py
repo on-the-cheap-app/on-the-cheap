@@ -229,10 +229,23 @@ class FoursquareService:
         elif location.get('address'):
             address = location['address']
         
-        # Extract categories
+        # Extract categories and determine if mobile vendor
         categories = []
+        is_mobile_vendor = False
+        mobile_keywords = ['food truck', 'truck', 'cart', 'stand', 'mobile', 'pop-up', 'popup', 'street food']
+        
         for cat in venue_data.get('categories', []):
-            categories.append(cat.get('name', ''))
+            category_name = cat.get('name', '')
+            categories.append(category_name)
+            
+            # Check if this is a mobile vendor based on category
+            if any(keyword in category_name.lower() for keyword in mobile_keywords):
+                is_mobile_vendor = True
+        
+        # Also check venue name for mobile vendor indicators
+        venue_name = venue_data.get('name', '')
+        if any(keyword in venue_name.lower() for keyword in mobile_keywords):
+            is_mobile_vendor = True
         
         # Extract photos
         photos = []
@@ -247,9 +260,9 @@ class FoursquareService:
         if 'price' in venue_data:
             price = venue_data['price']
         
-        return FoursquareVenue(
+        venue = FoursquareVenue(
             id=f"foursquare_{venue_data.get('fsq_id', '')}",
-            name=venue_data.get('name', ''),
+            name=venue_name,
             address=address,
             latitude=latitude,
             longitude=longitude,
@@ -261,6 +274,11 @@ class FoursquareService:
             photos=photos,
             source="foursquare"
         )
+        
+        # Add mobile vendor flag as custom attribute
+        venue.is_mobile_vendor = is_mobile_vendor
+        
+        return venue
     
     async def search_venues_near_address(self, address: str, radius_meters: int = 5000, 
                                        query: Optional[str] = None, limit: int = 20) -> List[FoursquareVenue]:
