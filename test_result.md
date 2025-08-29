@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the newly implemented comprehensive Google Geocoding API endpoints in the On-the-Cheap restaurant app backend. The geocoding features include forward geocoding, reverse geocoding, batch geocoding, and legacy geocoding endpoints."
+user_problem_statement: "Test the newly implemented social sharing and ride-sharing functionality in the On-the-Cheap restaurant discovery app."
 
 backend:
   - task: "User Registration API"
