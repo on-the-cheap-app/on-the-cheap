@@ -359,12 +359,6 @@ function App() {
                 />
               </div>
               <div className="flex gap-2">
-                <button 
-                  onClick={() => alert('Test alert - JavaScript is working!')}
-                  className="bg-blue-500 text-white px-3 py-2 rounded text-sm"
-                >
-                  Test Alert
-                </button>
                 <Button 
                   onClick={handleLocationSearch}
                   disabled={!searchLocation.trim() || loading}
