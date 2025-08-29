@@ -765,7 +765,8 @@ async def search_restaurants(
                 for restaurant in google_restaurants:
                     if restaurant.get('distance', 0) <= radius:
                         restaurant['specials'] = []
-                        restaurant['note'] = 'Real restaurant - specials data coming soon!'
+                        if 'specials_message' not in restaurant:
+                            restaurant['specials_message'] = 'Specials data coming soon - check back later!'
                         all_restaurants.append(restaurant)
         
         # STEP 3: If we still need more restaurants, try external APIs (Foursquare)
