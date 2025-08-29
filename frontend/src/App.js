@@ -319,10 +319,12 @@ function App() {
       return;
     }
 
+    const isFavorite = userFavorites.some(fav => fav.id === restaurant.id);
+    const action = isFavorite ? 'remove' : 'add';
+
     try {
       const userToken = localStorage.getItem('user_token');
       const restaurantId = restaurant.id;
-      const isFavorite = userFavorites.some(fav => fav.id === restaurantId);
       
       if (isFavorite) {
         await axios.delete(`${API}/users/favorites/${restaurantId}`, {
@@ -342,8 +344,13 @@ function App() {
           fetchUserFavorites();
         }, 500);
       }
+      
+      // Track favorite analytics
+      Analytics.trackRestaurantFavorite(restaurant, action);
+      
     } catch (error) {
       console.error('Error toggling favorite:', error.response?.data || error.message);
+      Analytics.trackError(error.message, 'toggle_favorite');
     }
   };
 
