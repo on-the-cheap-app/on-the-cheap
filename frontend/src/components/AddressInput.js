@@ -83,7 +83,7 @@ const AddressInput = ({
             })
             .catch(err => {
               console.error('Geocoding failed:', err);
-              setError('Unable to find location. Please try a different address.');
+              // Error will be handled by the useGeocoding hook
             });
         }
       }
@@ -119,7 +119,7 @@ const AddressInput = ({
             })
             .catch(err => {
               console.error('Geocoding failed:', err);
-              setError('Unable to find location. Please try a different address.');
+              // Error will be handled by the useGeocoding hook
             });
         }
         break;
