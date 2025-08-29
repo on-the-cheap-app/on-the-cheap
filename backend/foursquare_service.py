@@ -142,11 +142,29 @@ class FoursquareService:
             raise FoursquareAPIError(f"Network error: {str(e)}")
     
     async def search_restaurants(self, latitude: float, longitude: float, radius_meters: int = 5000, 
-                               query: Optional[str] = None, limit: int = 20) -> List[FoursquareVenue]:
-        """Search for restaurants using Foursquare Places API"""
+                               query: Optional[str] = None, limit: int = 20, include_mobile_vendors: bool = True) -> List[FoursquareVenue]:
+        """Search for restaurants and mobile vendors using Foursquare Places API"""
         
-        # Restaurant categories in Foursquare (some common ones)
-        restaurant_categories = "13065"  # General restaurant category
+        # Restaurant and food service categories in Foursquare
+        restaurant_categories = [
+            "13065",  # Restaurant (general)
+            "13003",  # Bar/Pub  
+            "13032",  # Café
+            "13040",  # Diner
+            "13001",  # Food Truck (mobile vendor)
+            "13068",  # Street Food/Hot Dog Stand
+        ]
+        
+        # If mobile vendors not wanted, exclude food trucks and street food
+        if not include_mobile_vendors:
+            restaurant_categories = [
+                "13065",  # Restaurant (general)
+                "13003",  # Bar/Pub  
+                "13032",  # Café
+                "13040",  # Diner
+            ]
+        
+        categories_string = ",".join(restaurant_categories)
         
         params = {
             "ll": f"{latitude},{longitude}",
