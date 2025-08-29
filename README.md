@@ -29,7 +29,7 @@ A full-stack restaurant discovery platform that helps users find active specials
 
 ## 🚀 Live Demo
 
-- **Main App**: [Find Restaurant Specials](https://resto-specials.preview.emergentagent.com)
+- **Main App**: [Find Restaurant Specials](https://special-hunter.preview.emergentagent.com)
 - **Owner Portal**: Click "Restaurant Owner" in the app header
 
 ## 🏗️ Project Structure
