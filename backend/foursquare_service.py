@@ -281,5 +281,16 @@ class FoursquareService:
             logger.error(f"Error searching restaurants near address: {str(e)}")
             raise
 
-# Global service instance
-foursquare_service = FoursquareService()
+# Global service instance - will be initialized on first use
+foursquare_service = None
+
+def get_foursquare_service():
+    """Get or create the Foursquare service instance"""
+    global foursquare_service
+    if foursquare_service is None:
+        try:
+            foursquare_service = FoursquareService()
+        except ValueError as e:
+            logger.warning(f"Foursquare service not available: {e}")
+            foursquare_service = None
+    return foursquare_service
