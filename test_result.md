@@ -393,7 +393,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Food Trucks & Pop-ups Feature Implementation"
+    - "Google Analytics 4 (GA4) Integration"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
