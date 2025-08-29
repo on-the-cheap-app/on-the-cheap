@@ -312,14 +312,6 @@ const UserAuth = ({ onClose, onUserLogin, currentFavorites = [], onFavoritesUpda
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Favorite Restaurants ({favorites.length})</h3>
                 
-                {/* Debug info */}
-                <div className="text-xs text-gray-500 bg-gray-100 p-2 rounded">
-                  <div>Debug Info:</div>
-                  <div>Parent favorites: {JSON.stringify(currentFavorites)}</div>
-                  <div>Local favorites: {favorites.length} items</div>
-                  <div>User token: {token ? 'exists' : 'missing'}</div>
-                </div>
-                
                 {favorites.length === 0 ? (
                   <div className="text-center py-8">
                     <Heart className="w-12 h-12 mx-auto text-gray-400 mb-4" />
