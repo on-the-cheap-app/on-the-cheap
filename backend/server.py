@@ -584,7 +584,7 @@ async def search_google_places_real(latitude: float, longitude: float, radius: i
                             'cuisine_type': [t.replace('_', ' ').title() for t in place.get('types', []) if t in ['restaurant', 'bar', 'cafe', 'meal_takeaway']],
                             'rating': place.get('rating'),
                             'price_level': place.get('priceLevel'),
-                            'specials': [],  # Real restaurants don't have specials in our system yet
+                            'specials': [],  # External restaurants don't have specials in our system yet
                             'is_verified': True,
                             'source': 'google_places',
                             'distance': calculate_distance(
@@ -592,7 +592,8 @@ async def search_google_places_real(latitude: float, longitude: float, radius: i
                                 location.get('latitude', latitude),
                                 location.get('longitude', longitude)
                             ),
-                            'created_at': datetime.now(timezone.utc).isoformat()
+                            'created_at': datetime.now(timezone.utc).isoformat(),
+                            'specials_message': 'Specials data coming soon - check back later!'
                         }
                         restaurants.append(restaurant)
                     except Exception as e:
