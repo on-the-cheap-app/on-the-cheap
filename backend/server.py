@@ -709,21 +709,17 @@ async def search_restaurants(
     special_type: Optional[SpecialType] = Query(None),
     limit: int = Query(default=20, ge=1, le=50)
 ):
-    """Search for restaurants with specials near a location"""
+    """Search for restaurants with specials near a location using fallback system"""
     try:
-        # Get real restaurants from Google Places API
-        google_restaurants = await search_google_places_real(latitude, longitude, radius, query, limit)
-        
-        # Get mock restaurants from database (with specials)
-        restaurants_cursor = db.restaurants.find({})
-        all_restaurants_raw = await restaurants_cursor.to_list(length=None)
-        mock_restaurants = [prepare_from_mongo(restaurant) for restaurant in all_restaurants_raw]
-
-        # Combine real restaurants with mock specials data
         all_restaurants = []
         
-        # First, add mock restaurants (they have specials)
-        for restaurant in mock_restaurants:
+        # STEP 1: Get restaurants with owner-managed specials (highest priority)
+        restaurants_cursor = db.restaurants.find({})
+        all_restaurants_raw = await restaurants_cursor.to_list(length=None)
+        owner_restaurants = [prepare_from_mongo(restaurant) for restaurant in all_restaurants_raw]
+
+        # Filter owner restaurants by location and add active specials
+        for restaurant in owner_restaurants:
             location = restaurant.get('location', {})
             rest_lat = location.get('latitude', 0)
             rest_lon = location.get('longitude', 0)
@@ -732,7 +728,7 @@ async def search_restaurants(
             
             if distance <= radius:
                 restaurant['distance'] = round(distance)
-                restaurant['source'] = 'mock_with_specials'
+                restaurant['source'] = 'owner_managed'
                 
                 # Filter specials by type if specified
                 if special_type:
@@ -748,19 +744,37 @@ async def search_restaurants(
                             active_specials.append(special)
                     restaurant['specials'] = active_specials
                 
-                # Only include restaurants with active specials
-                if restaurant['specials']:
+                # Include restaurants with active specials (or all if no special_type filter)
+                if restaurant['specials'] or not special_type:
                     all_restaurants.append(restaurant)
         
-        # Then add Google Places restaurants (they don't have specials yet)
-        # We'll show them only if no special_type filter is applied
-        if not special_type:
-            for restaurant in google_restaurants:
-                if restaurant.get('distance', 0) <= radius:
-                    # Add a note that these are real restaurants without specials data
-                    restaurant['specials'] = []
-                    restaurant['note'] = 'Real restaurant - specials data coming soon!'
-                    all_restaurants.append(restaurant)
+        # STEP 2: If we need more restaurants, try Google Places API
+        google_restaurants = []
+        if len(all_restaurants) < limit:
+            remaining_limit = limit - len(all_restaurants)
+            google_restaurants = await search_google_places_real(latitude, longitude, radius, query, remaining_limit)
+            
+            # Add Google Places restaurants (no specials data yet)
+            if not special_type:  # Only show when not filtering by special type
+                for restaurant in google_restaurants:
+                    if restaurant.get('distance', 0) <= radius:
+                        restaurant['specials'] = []
+                        restaurant['note'] = 'Real restaurant - specials data coming soon!'
+                        all_restaurants.append(restaurant)
+        
+        # STEP 3: If we still need more restaurants, try external APIs (Foursquare)
+        if len(all_restaurants) < limit:
+            remaining_limit = limit - len(all_restaurants)
+            external_restaurants = await search_external_restaurants(latitude, longitude, radius, query, remaining_limit)
+            
+            # Add external restaurants (no specials data yet)
+            if not special_type:  # Only show when not filtering by special type
+                for restaurant in external_restaurants:
+                    if restaurant.get('distance', 0) <= radius:
+                        # Avoid duplicates by checking if we already have this restaurant from other sources
+                        existing_names = [r.get('name', '').lower() for r in all_restaurants]
+                        if restaurant.get('name', '').lower() not in existing_names:
+                            all_restaurants.append(restaurant)
 
         nearby_restaurants = all_restaurants
         
@@ -773,17 +787,36 @@ async def search_restaurants(
                    any(query_lower in cuisine.lower() for cuisine in r.get('cuisine_type', []))
             ]
         
-        # Sort by distance
-        nearby_restaurants.sort(key=lambda x: x.get('distance', float('inf')))
+        # Sort by priority: owner-managed first, then by distance
+        def sort_key(restaurant):
+            source_priority = {
+                'owner_managed': 0,  # Highest priority
+                'google_places': 1,
+                'foursquare': 2
+            }
+            source = restaurant.get('source', 'unknown')
+            priority = source_priority.get(source, 999)
+            distance = restaurant.get('distance', float('inf'))
+            return (priority, distance)
+        
+        nearby_restaurants.sort(key=sort_key)
         
         # Limit results
         nearby_restaurants = nearby_restaurants[:limit]
+        
+        # Add source summary for debugging
+        source_summary = {}
+        for restaurant in nearby_restaurants:
+            source = restaurant.get('source', 'unknown')
+            source_summary[source] = source_summary.get(source, 0) + 1
         
         return {
             "restaurants": nearby_restaurants,
             "total": len(nearby_restaurants),
             "search_location": {"latitude": latitude, "longitude": longitude},
-            "radius_meters": radius
+            "radius_meters": radius,
+            "source_summary": source_summary,
+            "fallback_system_used": True
         }
         
     except Exception as e:
