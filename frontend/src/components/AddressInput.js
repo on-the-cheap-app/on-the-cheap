@@ -34,11 +34,15 @@ const AddressInput = ({
       debounceRef.current = setTimeout(async () => {
         try {
           const result = await forwardGeocode(inputValue, { region });
-          setSuggestions([result]);
-          setShowSuggestions(true);
+          if (result) {
+            setSuggestions([result]);
+            setShowSuggestions(true);
+          }
         } catch (err) {
+          console.error('Geocoding error:', err);
           setSuggestions([]);
           setShowSuggestions(false);
+          // Don't show error for auto-suggestions to avoid UI interruptions
         }
       }, 500);
     } else {
