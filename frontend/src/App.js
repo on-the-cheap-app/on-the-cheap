@@ -630,7 +630,7 @@ function App() {
                             className="text-xs"
                           >
                             <MessageCircle className="w-3 h-3 mr-1" />
-                            Text
+                            Text Message
                           </Button>
                           <Button
                             variant="outline"
@@ -639,23 +639,6 @@ function App() {
                             className="text-xs bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
                           >
                             💬 WhatsApp
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openShareLink(getShareUrls(restaurant).telegram, 'telegram')}
-                            className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
-                          >
-                            <Send className="w-3 h-3 mr-1" />
-                            Telegram
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openShareLink(getShareUrls(restaurant).messenger, 'messenger')}
-                            className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200"
-                          >
-                            📨 Messenger
                           </Button>
                         </div>
                       </div>
