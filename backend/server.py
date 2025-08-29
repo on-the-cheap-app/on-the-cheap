@@ -716,6 +716,7 @@ async def search_restaurants(
     radius: int = Query(default=8047, ge=100, le=80467),  # 5 miles default
     query: Optional[str] = Query(None),
     special_type: Optional[SpecialType] = Query(None),
+    vendor_type: Optional[str] = Query(None, regex="^(all|permanent|mobile)$"),  # New filter
     limit: int = Query(default=20, ge=1, le=50)
 ):
     """Search for restaurants with specials near a location using fallback system"""
