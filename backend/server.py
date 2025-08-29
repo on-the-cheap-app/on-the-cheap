@@ -809,11 +809,37 @@ async def search_restaurants(
         # Limit results
         nearby_restaurants = nearby_restaurants[:limit]
         
+        # Add proper specials messaging for each restaurant
+        for restaurant in nearby_restaurants:
+            specials = restaurant.get('specials', [])
+            source = restaurant.get('source', 'unknown')
+            
+            if source == 'owner_managed':
+                # Restaurants with registered owners
+                if not specials:
+                    restaurant['specials_message'] = "No current specials at this time"
+                else:
+                    restaurant['specials_message'] = f"{len(specials)} special{'s' if len(specials) != 1 else ''} available now"
+            else:
+                # External API restaurants (Google Places, Foursquare)
+                restaurant['specials_message'] = "Specials data coming soon - check back later!"
+        
         # Add source summary for debugging
         source_summary = {}
+        specials_summary = {'with_specials': 0, 'no_specials': 0, 'external_restaurants': 0}
+        
         for restaurant in nearby_restaurants:
             source = restaurant.get('source', 'unknown')
             source_summary[source] = source_summary.get(source, 0) + 1
+            
+            # Count specials availability
+            if source == 'owner_managed':
+                if restaurant.get('specials', []):
+                    specials_summary['with_specials'] += 1
+                else:
+                    specials_summary['no_specials'] += 1
+            else:
+                specials_summary['external_restaurants'] += 1
         
         return {
             "restaurants": nearby_restaurants,
@@ -821,6 +847,7 @@ async def search_restaurants(
             "search_location": {"latitude": latitude, "longitude": longitude},
             "radius_meters": radius,
             "source_summary": source_summary,
+            "specials_summary": specials_summary,
             "fallback_system_used": True
         }
         
