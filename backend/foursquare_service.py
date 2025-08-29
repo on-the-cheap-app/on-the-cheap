@@ -282,10 +282,29 @@ class FoursquareService:
         return venue
     
     async def search_venues_near_address(self, address: str, radius_meters: int = 5000, 
-                                       query: Optional[str] = None, limit: int = 20) -> List[FoursquareVenue]:
+                                       query: Optional[str] = None, limit: int = 20, include_mobile_vendors: bool = True) -> List[FoursquareVenue]:
         """Search for restaurants near an address (using Foursquare's address resolution)"""
         
-        restaurant_categories = "13065"  # General restaurant category
+        # Restaurant and food service categories in Foursquare
+        restaurant_categories = [
+            "13065",  # Restaurant (general)
+            "13003",  # Bar/Pub  
+            "13032",  # Café
+            "13040",  # Diner
+            "13001",  # Food Truck (mobile vendor)
+            "13068",  # Street Food/Hot Dog Stand
+        ]
+        
+        # If mobile vendors not wanted, exclude food trucks and street food
+        if not include_mobile_vendors:
+            restaurant_categories = [
+                "13065",  # Restaurant (general)
+                "13003",  # Bar/Pub  
+                "13032",  # Café
+                "13040",  # Diner
+            ]
+        
+        categories_string = ",".join(restaurant_categories)
         
         params = {
             "near": address,
