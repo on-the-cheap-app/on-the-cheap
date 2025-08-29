@@ -34,6 +34,7 @@ class FoursquareVenue(BaseModel):
     price: Optional[int] = None
     photos: List[str] = []
     source: str = "foursquare"
+    is_mobile_vendor: Optional[bool] = False
 
 class FoursquareAPIError(Exception):
     """Base exception for Foursquare API errors"""
