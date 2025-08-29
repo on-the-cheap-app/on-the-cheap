@@ -487,13 +487,39 @@ function App() {
         {/* Results Header */}
         {restaurants.length > 0 && (
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Current Specials Near You
-            </h2>
-            <p className="text-gray-600">
-              Found {restaurants.length} restaurants with active specials
-              {lastSearch && ` within ${formatDistance(searchRadius)} of your search location`}
-            </p>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  Current Specials Near You
+                </h2>
+                <p className="text-gray-600">
+                  Found {restaurants.length} restaurants with active specials
+                  {lastSearch && ` within ${formatDistance(searchRadius)} of your search location`}
+                </p>
+              </div>
+              
+              {/* View Toggle Buttons */}
+              <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className={viewMode === 'list' ? 'bg-white shadow-sm' : ''}
+                >
+                  <List className="w-4 h-4 mr-1" />
+                  List
+                </Button>
+                <Button
+                  variant={viewMode === 'map' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('map')}
+                  className={viewMode === 'map' ? 'bg-white shadow-sm' : ''}
+                >
+                  <Map className="w-4 h-4 mr-1" />
+                  Map
+                </Button>
+              </div>
+            </div>
           </div>
         )}
 
