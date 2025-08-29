@@ -871,6 +871,15 @@ async def get_restaurant(restaurant_id: str):
             active_specials.append(special)
     
     restaurant['specials'] = active_specials
+    
+    # Add specials messaging
+    if active_specials:
+        restaurant['specials_message'] = f"{len(active_specials)} special{'s' if len(active_specials) != 1 else ''} available now"
+        restaurant['has_current_specials'] = True
+    else:
+        restaurant['specials_message'] = "No current specials at this time"
+        restaurant['has_current_specials'] = False
+    
     return restaurant
 
 @api_router.post("/restaurants", response_model=dict)
