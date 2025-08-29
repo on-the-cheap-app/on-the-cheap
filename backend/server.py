@@ -776,7 +776,13 @@ async def search_restaurants(
         # STEP 3: If we still need more restaurants, try external APIs (Foursquare)
         if len(all_restaurants) < limit:
             remaining_limit = limit - len(all_restaurants)
-            external_restaurants = await search_external_restaurants(latitude, longitude, radius, query, remaining_limit)
+            
+            # Determine if we should include mobile vendors based on vendor_type filter
+            include_mobile_vendors = vendor_type != 'permanent'
+            
+            external_restaurants = await search_external_restaurants(
+                latitude, longitude, radius, query, remaining_limit, include_mobile_vendors
+            )
             
             # Add external restaurants (no specials data yet)
             if not special_type:  # Only show when not filtering by special type
