@@ -218,13 +218,15 @@ function App() {
     searchRestaurants(geocodeResult.latitude, geocodeResult.longitude);
   };
 
-  const searchRestaurants = async (lat, lng) => {
+  const searchRestaurants = async (latitude, longitude) => {
+    if (!latitude || !longitude) return;
+    
+    setLoading(true);
     try {
       const params = {
-        latitude: lat,
-        longitude: lng,
+        latitude,
+        longitude,
         radius: searchRadius,
-        limit: 20
       };
 
       if (selectedSpecialType && selectedSpecialType !== "all") {
@@ -239,6 +241,16 @@ function App() {
       console.error("Error searching restaurants:", error);
       setLoading(false);
     }
+  };
+
+  const clearSearch = () => {
+    setRestaurants([]);
+    setSearchLocation("");
+    setCoordinates(null);
+    setLastSearch(null);
+    setSelectedSpecialType("");
+    setSearchRadius(8047); // Reset to 5 miles default
+    console.log("Search cleared - ready for new search");
   };
 
   const formatTime = (timeStr) => {
