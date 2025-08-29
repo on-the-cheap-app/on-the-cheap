@@ -169,7 +169,7 @@ class FoursquareService:
         params = {
             "ll": f"{latitude},{longitude}",
             "radius": radius_meters,
-            "categories": restaurant_categories,
+            "categories": categories_string,
             "limit": limit,
             "fields": "fsq_id,name,location,categories,rating,price,photos,website,tel"
         }
