@@ -76,6 +76,7 @@ function App() {
   const [userFavorites, setUserFavorites] = useState([]);
   const [showGeocodingDemo, setShowGeocodingDemo] = useState(false);
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
+  const [selectedVendorType, setSelectedVendorType] = useState('all'); // 'all', 'permanent', 'mobile'
 
   useEffect(() => {
     fetchSpecialTypes();
