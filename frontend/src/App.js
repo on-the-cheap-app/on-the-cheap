@@ -15,6 +15,53 @@ import GeocodingDemo from "./components/GeocodingDemo";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// App link for sharing (update this when you have a production domain)
+const APP_LINK = "https://on-the-cheap.app"; // Placeholder - update with your actual domain
+
+// Helper functions for sharing and rides
+const generateShareMessage = (restaurant) => {
+  const specialsText = restaurant.specials?.length > 0 
+    ? `Current specials: ${restaurant.specials.map(s => `${s.title} - $${s.price}`).join(', ')}`
+    : restaurant.specials_message || 'Check for current specials';
+  
+  return `Check out ${restaurant.name}! 📍 ${restaurant.address} - ${specialsText}. Found via On-the-Cheap app 🍴 ${APP_LINK}`;
+};
+
+const getShareUrls = (restaurant) => {
+  const message = generateShareMessage(restaurant);
+  const encodedMessage = encodeURIComponent(message);
+  const encodedAppLink = encodeURIComponent(APP_LINK);
+  
+  return {
+    sms: `sms:?body=${encodedMessage}`,
+    whatsapp: `https://wa.me/?text=${encodedMessage}`,
+    telegram: `https://t.me/share/url?url=${encodedAppLink}&text=${encodeURIComponent(`${restaurant.name} - ${restaurant.address}`)}`,
+    messenger: `https://www.facebook.com/dialog/send?link=${encodedAppLink}&app_id=YOUR_APP_ID&redirect_uri=${encodedAppLink}`
+  };
+};
+
+const getRideUrls = (restaurant) => {
+  const address = encodeURIComponent(restaurant.address || '');
+  const lat = restaurant.location?.latitude;
+  const lng = restaurant.location?.longitude;
+  
+  return {
+    uber: `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=${address}${lat && lng ? `&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}` : ''}`,
+    lyft: lat && lng 
+      ? `https://lyft.com/ride?id=lyft&destination[latitude]=${lat}&destination[longitude]=${lng}`
+      : `https://lyft.com/ride?id=lyft&destination[address]=${address}`
+  };
+};
+
+const openShareLink = (url, platform) => {
+  // For mobile apps, try to open the native app first, then fallback to web
+  if (platform === 'sms') {
+    window.location.href = url;
+  } else {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+};
+
 function App() {
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(false);
