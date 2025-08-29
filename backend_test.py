@@ -2210,6 +2210,8 @@ class OnTheCheapAPITester:
 
     def run_all_tests(self):
         """Run all API tests"""
+    def run_all_tests(self):
+        """Run all API tests"""
         print("🚀 Starting On-the-Cheap API Tests")
         print("=" * 50)
         
@@ -2222,6 +2224,18 @@ class OnTheCheapAPITester:
         self.test_restaurant_search_with_filters()
         self.test_restaurant_search_different_radius()
         self.test_restaurant_search_edge_cases()
+        
+        # Foursquare Integration Tests
+        print("\n" + "🏢 FOURSQUARE API INTEGRATION TESTS")
+        print("=" * 50)
+        self.test_foursquare_service_initialization()
+        self.test_foursquare_fallback_system_nyc()
+        self.test_foursquare_fallback_system_sf()
+        self.test_foursquare_search_with_query()
+        self.test_foursquare_data_format()
+        self.test_foursquare_error_handling()
+        self.test_foursquare_no_duplicates()
+        self.test_foursquare_source_priority()
         
         # CRUD operations
         self.test_create_restaurant()
