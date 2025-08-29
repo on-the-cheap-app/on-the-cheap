@@ -280,7 +280,26 @@ function App() {
     setSelectedSpecialType("");
     setSelectedVendorType("all"); // Reset vendor type filter
     setSearchRadius(8047); // Reset to 5 miles default
+    Analytics.trackConversion('search_cleared');
     console.log("Search cleared - ready for new search");
+  };
+
+  // Analytics wrapper functions for filters
+  const handleSpecialTypeChange = (newValue) => {
+    Analytics.trackFilterChange('special_type', selectedSpecialType, newValue);
+    setSelectedSpecialType(newValue);
+  };
+
+  const handleVendorTypeChange = (newValue) => {
+    Analytics.trackFilterChange('vendor_type', selectedVendorType, newValue);
+    setSelectedVendorType(newValue);
+  };
+
+  const handleRadiusChange = (newValue) => {
+    const oldRadius = searchRadius;
+    const newRadius = parseInt(newValue);
+    Analytics.trackFilterChange('search_radius', oldRadius, newRadius);
+    setSearchRadius(newRadius);
   };
 
   const formatTime = (timeStr) => {
