@@ -41,9 +41,13 @@ const AddressInput = ({
         try {
           console.log('Triggering geocoding for:', trimmedValue);
           const result = await forwardGeocode(trimmedValue, { region });
-          if (result) {
+          if (result && result.formatted_address) {
             setSuggestions([result]);
             setShowSuggestions(true);
+          } else {
+            // No results found, clear suggestions without error
+            setSuggestions([]);
+            setShowSuggestions(false);
           }
         } catch (err) {
           console.error('Geocoding error:', err);
