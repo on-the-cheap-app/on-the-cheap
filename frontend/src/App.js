@@ -552,9 +552,17 @@ function App() {
                     <CardHeader>
                       <div className="flex justify-between items-start">
                         <div>
-                          <CardTitle className="text-xl font-bold text-gray-900">
-                            {restaurant.name}
-                          </CardTitle>
+                          <div className="flex items-center gap-2 mb-1">
+                            <CardTitle className="text-xl font-bold text-gray-900">
+                              {restaurant.name}
+                            </CardTitle>
+                            {restaurant.is_mobile_vendor && (
+                              <Badge variant="secondary" className="bg-orange-100 text-orange-800 text-xs">
+                                <Truck className="w-3 h-3 mr-1" />
+                                Mobile
+                              </Badge>
+                            )}
+                          </div>
                           <CardDescription className="flex items-center mt-1">
                             <MapPin className="w-4 h-4 mr-1" />
                             {restaurant.distance && formatDistance(restaurant.distance)}
