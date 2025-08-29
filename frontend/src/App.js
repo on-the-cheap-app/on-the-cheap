@@ -430,6 +430,17 @@ function App() {
                   <Navigation className="w-4 h-4 mr-2" />
                   Use Current Location
                 </Button>
+                {(restaurants.length > 0 || lastSearch) && (
+                  <Button 
+                    variant="outline"
+                    onClick={clearSearch}
+                    disabled={loading}
+                    className="border-gray-400 text-gray-600 hover:bg-gray-50"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Clear Search
+                  </Button>
+                )}
               </div>
             </div>
             
