@@ -11,7 +11,7 @@ from datetime import datetime
 import uuid
 
 class FavoritesWorkflowTester:
-    def __init__(self, base_url="https://special-finder.preview.emergentagent.com"):
+    def __init__(self, base_url="https://resto-specials.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
