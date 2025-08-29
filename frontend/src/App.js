@@ -223,6 +223,8 @@ function App() {
     if (!latitude || !longitude) return;
     
     setLoading(true);
+    const searchStartTime = performance.now();
+    
     try {
       const params = {
         latitude,
@@ -239,11 +241,33 @@ function App() {
       }
 
       const response = await axios.get(`${API}/restaurants/search`, { params });
-      setRestaurants(response.data.restaurants);
+      const searchResults = response.data.restaurants;
+      const searchTime = performance.now() - searchStartTime;
+      
+      setRestaurants(searchResults);
       setLastSearch(response.data.search_location);
+      
+      // Track search analytics
+      Analytics.trackRestaurantSearch({
+        location: searchLocation,
+        latitude,
+        longitude,
+        radius: searchRadius,
+        special_type: selectedSpecialType,
+        vendor_type: selectedVendorType,
+        query: null
+      }, searchResults.length, response.data.source_summary);
+      
+      // Track search performance
+      Analytics.trackPerformance('restaurant_search', searchTime, {
+        results_count: searchResults.length,
+        has_filters: !!(selectedSpecialType || selectedVendorType)
+      });
+      
       setLoading(false);
     } catch (error) {
       console.error("Error searching restaurants:", error);
+      Analytics.trackError(error.message, 'restaurant_search');
       setLoading(false);
     }
   };
