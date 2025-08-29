@@ -78,13 +78,20 @@ const AddressInput = ({
   };
 
   const handleKeyDown = (e) => {
+    // Prevent any unintended behavior on spacebar
+    if (e.key === ' ') {
+      // Allow spacebar but ensure no form submission or navigation
+      e.stopPropagation();
+      return;
+    }
+
     if (!showSuggestions || suggestions.length === 0) {
       // Prevent form submission on Enter when no suggestions
       if (e.key === 'Enter') {
         e.preventDefault();
-        if (inputValue.length > 2) {
+        if (inputValue.trim().length > 4) {
           // Try to geocode current input
-          forwardGeocode(inputValue, { region })
+          forwardGeocode(inputValue.trim(), { region })
             .then(result => {
               setInputValue(result.formatted_address);
               setShowSuggestions(false);
@@ -118,9 +125,9 @@ const AddressInput = ({
         e.preventDefault(); // Always prevent form submission
         if (selectedIndex >= 0) {
           handleSuggestionClick(suggestions[selectedIndex]);
-        } else if (inputValue.length > 2) {
+        } else if (inputValue.trim().length > 4) {
           // Try to geocode current input
-          forwardGeocode(inputValue, { region })
+          forwardGeocode(inputValue.trim(), { region })
             .then(result => {
               setInputValue(result.formatted_address);
               setShowSuggestions(false);
