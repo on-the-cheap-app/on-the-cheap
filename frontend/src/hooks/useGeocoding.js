@@ -25,6 +25,14 @@ const useGeocoding = () => {
       const response = await axios.post(`${getBackendUrl()}/api/geocode/forward`, requestData);
       return response.data;
     } catch (err) {
+      // Handle 404 errors gracefully (address not found)
+      if (err.response?.status === 404) {
+        const errorMessage = 'Address not found';
+        setError(errorMessage);
+        // For auto-suggestions, don't throw error to prevent interruptions
+        return null;
+      }
+      
       const errorMessage = err.response?.data?.detail || 'Geocoding failed';
       setError(errorMessage);
       throw new Error(errorMessage);
