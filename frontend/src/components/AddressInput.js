@@ -67,7 +67,28 @@ const AddressInput = ({
   };
 
   const handleKeyDown = (e) => {
-    if (!showSuggestions || suggestions.length === 0) return;
+    if (!showSuggestions || suggestions.length === 0) {
+      // Prevent form submission on Enter when no suggestions
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (inputValue.length > 2) {
+          // Try to geocode current input
+          forwardGeocode(inputValue, { region })
+            .then(result => {
+              setInputValue(result.formatted_address);
+              setShowSuggestions(false);
+              if (onAddressSelect) {
+                onAddressSelect(result);
+              }
+            })
+            .catch(err => {
+              console.error('Geocoding failed:', err);
+              setError('Unable to find location. Please try a different address.');
+            });
+        }
+      }
+      return;
+    }
 
     switch (e.key) {
       case 'ArrowDown':
@@ -83,7 +104,7 @@ const AddressInput = ({
         );
         break;
       case 'Enter':
-        e.preventDefault();
+        e.preventDefault(); // Always prevent form submission
         if (selectedIndex >= 0) {
           handleSuggestionClick(suggestions[selectedIndex]);
         } else if (inputValue.length > 2) {
@@ -91,11 +112,15 @@ const AddressInput = ({
           forwardGeocode(inputValue, { region })
             .then(result => {
               setInputValue(result.formatted_address);
+              setShowSuggestions(false);
               if (onAddressSelect) {
                 onAddressSelect(result);
               }
             })
-            .catch(err => console.error('Geocoding failed:', err));
+            .catch(err => {
+              console.error('Geocoding failed:', err);
+              setError('Unable to find location. Please try a different address.');
+            });
         }
         break;
       case 'Escape':
