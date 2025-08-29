@@ -30,10 +30,17 @@ const AddressInput = ({
       clearTimeout(debounceRef.current);
     }
 
-    if (inputValue.length > 2 && !disabled) {
+    // Only trigger geocoding for meaningful input (avoid single words, too short phrases)
+    const trimmedValue = inputValue.trim();
+    const shouldTriggerGeocode = trimmedValue.length > 4 && 
+                                !disabled && 
+                                (trimmedValue.includes(',') || trimmedValue.split(' ').length >= 2);
+
+    if (shouldTriggerGeocode) {
       debounceRef.current = setTimeout(async () => {
         try {
-          const result = await forwardGeocode(inputValue, { region });
+          console.log('Triggering geocoding for:', trimmedValue);
+          const result = await forwardGeocode(trimmedValue, { region });
           if (result) {
             setSuggestions([result]);
             setShowSuggestions(true);
@@ -44,7 +51,7 @@ const AddressInput = ({
           setShowSuggestions(false);
           // Don't show error for auto-suggestions to avoid UI interruptions
         }
-      }, 500);
+      }, 1000); // Increased debounce delay
     } else {
       setSuggestions([]);
       setShowSuggestions(false);
