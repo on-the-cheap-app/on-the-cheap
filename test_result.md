@@ -364,6 +364,18 @@ metadata:
         agent: "testing"
         comment: "🎉 MAP VIEW FEATURE TESTED SUCCESSFULLY: Comprehensive testing confirms all major map functionality is working correctly. TESTING RESULTS: ✅ View Toggle Functionality: List/Map toggle buttons appear correctly after restaurant search (hidden on initial load), buttons have proper styling with active states (white background, shadow for active button), seamless switching between List and Map views works perfectly, ✅ Map Display & Features: Leaflet map renders correctly with proper 598px height and rounded border styling, OpenStreetMap tiles load successfully (18+ tiles), map is fully interactive with zoom controls (+/-) working, auto-fit bounds functionality working to show all restaurant markers, ✅ Restaurant Markers: 20 restaurant markers display correctly with food emoji (🍽️), markers have proper gray color (#6b7280) for restaurants without specials, markers are clickable and positioned accurately on map, ✅ Map Popups: Restaurant popups appear when markers are clicked, popups contain comprehensive information (name, address, rating, distance, specials status, source), popup content properly formatted with 'No current specials at this time' messaging, ✅ Mobile Responsiveness: View toggle buttons remain visible and functional on mobile (390x844), map renders responsively (356px width on mobile), touch interactions work correctly for marker clicks and popups, ✅ Integration Testing: Restaurant search integration works with address input (San Francisco, CA), map updates correctly when new searches are performed, Clear Search functionality works with map view. MINOR LIMITATIONS: Current location marker only appears with geolocation (expected behavior for address-based searches), multi-city testing had some timeout issues but core functionality confirmed working. The Map View provides an excellent visual experience for restaurant discovery and complements the existing list view perfectly."
 
+  - task: "Food Trucks & Pop-ups Feature Implementation"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js, /app/backend/server.py, /app/backend/foursquare_service.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented comprehensive Food Trucks & Pop-ups functionality including: Vendor Type filter dropdown with 'All Venues', 'Restaurants Only', and '🚛 Food Trucks & Pop-ups' options, mobile vendor detection in Foursquare API integration (categories 13001, 13068), visual indicators with orange '🚛 Mobile' badges on restaurant cards, enhanced search with vendor_type parameter filtering, map integration with different emoji markers (🍽️ for restaurants, 🚛 for food trucks), backend mobile vendor detection based on categories and names. Ready for comprehensive testing of all food truck discovery features."
+
 test_plan:
   current_focus:
     - "Map View Feature Implementation"
