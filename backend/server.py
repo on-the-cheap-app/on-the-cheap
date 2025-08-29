@@ -610,8 +610,8 @@ async def search_google_places_real(latitude: float, longitude: float, radius: i
         logger.error(f"Error calling Google Places API: {e}")
         return []
 
-async def search_external_restaurants(latitude: float, longitude: float, radius: int, query: Optional[str] = None, limit: int = 20) -> List[dict]:
-    """Search for restaurants using external APIs (Foursquare) as fallback"""
+async def search_external_restaurants(latitude: float, longitude: float, radius: int, query: Optional[str] = None, limit: int = 20, include_mobile_vendors: bool = True) -> List[dict]:
+    """Search for restaurants and mobile vendors using external APIs (Foursquare) as fallback"""
     try:
         # Try Foursquare first
         foursquare_service = get_foursquare_service()
@@ -624,7 +624,8 @@ async def search_external_restaurants(latitude: float, longitude: float, radius:
             longitude=longitude,
             radius_meters=radius,
             query=query,
-            limit=limit
+            limit=limit,
+            include_mobile_vendors=include_mobile_vendors
         )
         
         # Convert Foursquare format to our standard format
