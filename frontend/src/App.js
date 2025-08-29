@@ -60,15 +60,12 @@ function App() {
   const fetchUserFavorites = async () => {
     try {
       const userToken = localStorage.getItem('user_token');
-      console.log('fetchUserFavorites - Token exists:', !!userToken);
       if (userToken) {
         const response = await axios.get(`${API}/users/favorites`, {
           headers: { Authorization: `Bearer ${userToken}` }
         });
-        console.log('fetchUserFavorites - Response:', response.data);
         const favorites = response.data.favorites || [];
         const favoriteIds = favorites.map(fav => fav.id);
-        console.log('fetchUserFavorites - Setting favorites to:', favoriteIds);
         setUserFavorites(favoriteIds);
       }
     } catch (error) {
