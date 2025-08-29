@@ -19,6 +19,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Union
 import googlemaps
 from googlemaps import exceptions as gmaps_exceptions
+from foursquare_service import foursquare_service, FoursquareAPIError
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
