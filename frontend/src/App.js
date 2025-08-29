@@ -94,6 +94,10 @@ function App() {
   const [selectedVendorType, setSelectedVendorType] = useState('all'); // 'all', 'permanent', 'mobile'
 
   useEffect(() => {
+    // Initialize analytics
+    Analytics.trackSessionStart();
+    Analytics.trackPageView('Restaurant Discovery', window.location.href);
+    
     fetchSpecialTypes();
     
     // Check if user is already logged in
