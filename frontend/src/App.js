@@ -516,7 +516,7 @@ function App() {
                 </Select>
               </div>
               <div className="flex-1">
-                <Select value={selectedVendorType} onValueChange={setSelectedVendorType}>
+                <Select value={selectedVendorType} onValueChange={handleVendorTypeChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="All Venues" />
                   </SelectTrigger>
