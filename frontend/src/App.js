@@ -289,7 +289,7 @@ function App() {
     return colors[type] || "bg-gray-100 text-gray-800 border-gray-200";
   };
 
-  const toggleFavorite = async (restaurantId) => {
+  const toggleFavorite = async (restaurant) => {
     if (!currentUser) {
       setShowUserAuth(true);
       return;
@@ -297,19 +297,20 @@ function App() {
 
     try {
       const userToken = localStorage.getItem('user_token');
-      const isFavorite = userFavorites.includes(restaurantId);
+      const restaurantId = restaurant.id;
+      const isFavorite = userFavorites.some(fav => fav.id === restaurantId);
       
       if (isFavorite) {
         await axios.delete(`${API}/users/favorites/${restaurantId}`, {
           headers: { Authorization: `Bearer ${userToken}` }
         });
-        const newFavorites = userFavorites.filter(id => id !== restaurantId);
+        const newFavorites = userFavorites.filter(fav => fav.id !== restaurantId);
         setUserFavorites(newFavorites);
       } else {
         await axios.post(`${API}/users/favorites/${restaurantId}`, {}, {
           headers: { Authorization: `Bearer ${userToken}` }
         });
-        const newFavorites = [...userFavorites, restaurantId];
+        const newFavorites = [...userFavorites, restaurant];
         setUserFavorites(newFavorites);
         
         // Refresh favorites from server to ensure synchronization
