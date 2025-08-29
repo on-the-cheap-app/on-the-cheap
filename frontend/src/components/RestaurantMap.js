@@ -15,7 +15,11 @@ L.Icon.Default.mergeOptions({
 // Custom restaurant marker icon
 const createRestaurantIcon = (restaurant) => {
   const hasSpecials = restaurant.specials?.length > 0;
+  const isMobileVendor = restaurant.is_mobile_vendor;
   const iconColor = hasSpecials ? '#ea580c' : '#6b7280'; // Orange for specials, gray for no specials
+  
+  // Different emoji for mobile vendors vs restaurants
+  const emoji = isMobileVendor ? '🚛' : '🍽️';
   
   return L.divIcon({
     html: `
@@ -33,7 +37,7 @@ const createRestaurantIcon = (restaurant) => {
         font-size: 12px;
         font-weight: bold;
       ">
-        🍽️
+        ${emoji}
       </div>
     `,
     className: 'custom-restaurant-marker',
