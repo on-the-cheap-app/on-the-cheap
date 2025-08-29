@@ -385,6 +385,18 @@ agent_communication:
       - working: true
         agent: "testing"
         comment: "🎉 SPECIALS MESSAGING SYSTEM COMPLETELY FIXED AND WORKING! Comprehensive testing confirms the frontend fix is successful. TESTING RESULTS: ✅ Found 20 restaurant cards in San Francisco search, ✅ ALL restaurant cards now display proper specials messaging - no empty sections found, ✅ 'No current specials at this time' messaging appears in 12 restaurants (owner-managed without specials), ✅ 'Specials data coming soon - check back later!' messaging appears in 8 restaurants (external restaurants), ✅ Messages displayed in gray rounded boxes (bg-gray-50) as designed, ✅ Mobile responsiveness confirmed - messaging visible on mobile devices, ✅ No empty 'Current Specials' sections anywhere - users always see informative messaging, ✅ Frontend properly displays restaurant.specials_message field from backend API, ✅ Messaging styling integrated correctly with rest of interface. CRITICAL FIX VERIFIED: The App.js lines 540-546 conditional rendering fix is working perfectly - when restaurant.specials array is empty, it displays restaurant.specials_message in a styled gray box instead of leaving section blank. Users now receive clear, helpful messaging about specials availability on every restaurant card. The previously reported frontend integration issue has been completely resolved."
+
+  - task: "Social Sharing and Ride-Sharing Functionality"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented comprehensive social sharing (Text/SMS, WhatsApp, Telegram, Facebook Messenger) and ride-sharing (Uber, Lyft) functionality in restaurant cards. Added Share Restaurant and Get a Ride sections with proper styling, icons, and deep links. Includes generateShareMessage, getShareUrls, getRideUrls helper functions. Ready for testing."
   - agent: "testing"
     message: "🎉 FOURSQUARE API INTEGRATION TESTING COMPLETED SUCCESSFULLY: Conducted comprehensive testing of the newly implemented Foursquare Places API integration with 8/8 specialized Foursquare tests passed (45/46 total tests passed - 1 minor geocoding validation failure unrelated to Foursquare). COMPREHENSIVE TEST RESULTS: ✅ Foursquare Service Initialization working with provided credentials, ✅ 3-tier fallback system functioning perfectly (Owner → Google → Foursquare → Mock), ✅ Source priority system correct (owner_managed first, then google_places, then foursquare), ✅ Error handling graceful (no system crashes when Foursquare returns no results), ✅ No duplicate restaurants across sources, ✅ Data format integration proper (foursquare_ ID prefixing, coordinates, metadata), ✅ Query parameter filtering working, ✅ Geographic coverage tested (NYC, SF). KEY INSIGHT: Foursquare API integration is working correctly but not triggered in most scenarios because Google Places API provides sufficient results (20 restaurants), which is the INTENDED behavior of the fallback system. The Foursquare integration serves as a reliable backup when other sources are insufficient. All components (caching, rate limiting, error handling, API integration) are functioning as designed."
   - agent: "testing"
