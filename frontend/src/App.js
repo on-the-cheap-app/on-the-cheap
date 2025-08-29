@@ -412,7 +412,7 @@ function App() {
                   className="w-full"
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <Button 
                   onClick={handleLocationSearch}
                   disabled={!searchLocation.trim() || loading}
@@ -430,17 +430,15 @@ function App() {
                   <Navigation className="w-4 h-4 mr-2" />
                   Use Current Location
                 </Button>
-                {(restaurants.length > 0 || lastSearch) && (
-                  <Button 
-                    variant="outline"
-                    onClick={clearSearch}
-                    disabled={loading}
-                    className="border-gray-400 text-gray-600 hover:bg-gray-50"
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Clear Search
-                  </Button>
-                )}
+                <Button 
+                  variant="outline"
+                  onClick={clearSearch}
+                  disabled={loading}
+                  className="border-gray-400 text-gray-600 hover:bg-gray-50"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Clear Search
+                </Button>
               </div>
             </div>
             
