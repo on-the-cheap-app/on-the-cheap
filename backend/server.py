@@ -804,6 +804,19 @@ async def search_restaurants(
                    any(query_lower in cuisine.lower() for cuisine in r.get('cuisine_type', []))
             ]
         
+        # Filter by vendor type if provided
+        if vendor_type and vendor_type != 'all':
+            if vendor_type == 'mobile':
+                nearby_restaurants = [
+                    r for r in nearby_restaurants 
+                    if r.get('is_mobile_vendor', False) or r.get('vendor_type') == 'mobile'
+                ]
+            elif vendor_type == 'permanent':
+                nearby_restaurants = [
+                    r for r in nearby_restaurants 
+                    if not r.get('is_mobile_vendor', False) and r.get('vendor_type') != 'mobile'
+                ]
+        
         # Sort by priority: owner-managed first, then by distance
         def sort_key(restaurant):
             source_priority = {
