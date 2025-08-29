@@ -378,7 +378,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Map View Feature Implementation"
+    - "Food Trucks & Pop-ups Feature Implementation"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
