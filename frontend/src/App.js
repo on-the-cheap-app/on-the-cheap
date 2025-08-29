@@ -503,39 +503,47 @@ function App() {
                   <div className="border-t pt-3">
                     <h4 className="font-semibold text-gray-900 mb-2">Current Specials</h4>
                     <div className="space-y-3">
-                      {restaurant.specials?.map((special) => (
-                        <div key={special.id} className="bg-gradient-to-r from-orange-50 to-amber-50 p-3 rounded-lg">
-                          <div className="flex justify-between items-start mb-2">
-                            <h5 className="font-medium text-gray-900">{special.title}</h5>
-                            <Badge className={getSpecialTypeBadgeColor(special.special_type)}>
-                              {getSpecialTypeLabel(special.special_type)}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-gray-700 mb-2">{special.description}</p>
-                          <div className="flex items-center justify-between text-sm">
-                            <div className="flex items-center text-green-600 font-medium">
-                              <DollarSign className="w-4 h-4 mr-1" />
-                              ${special.price}
-                              {special.original_price && (
-                                <span className="ml-2 text-gray-500 line-through">
-                                  ${special.original_price}
-                                </span>
-                              )}
+                      {restaurant.specials?.length > 0 ? (
+                        restaurant.specials.map((special) => (
+                          <div key={special.id} className="bg-gradient-to-r from-orange-50 to-amber-50 p-3 rounded-lg">
+                            <div className="flex justify-between items-start mb-2">
+                              <h5 className="font-medium text-gray-900">{special.title}</h5>
+                              <Badge className={getSpecialTypeBadgeColor(special.special_type)}>
+                                {getSpecialTypeLabel(special.special_type)}
+                              </Badge>
                             </div>
-                            <div className="flex items-center text-gray-600">
-                              <Clock className="w-4 h-4 mr-1" />
-                              {formatTime(special.time_start)} - {formatTime(special.time_end)}
+                            <p className="text-sm text-gray-700 mb-2">{special.description}</p>
+                            <div className="flex items-center justify-between text-sm">
+                              <div className="flex items-center text-green-600 font-medium">
+                                <DollarSign className="w-4 h-4 mr-1" />
+                                ${special.price}
+                                {special.original_price && (
+                                  <span className="ml-2 text-gray-500 line-through">
+                                    ${special.original_price}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center text-gray-600">
+                                <Clock className="w-4 h-4 mr-1" />
+                                {formatTime(special.time_start)} - {formatTime(special.time_end)}
+                              </div>
+                            </div>
+                            <div className="mt-2">
+                              <p className="text-xs text-gray-600">
+                                Available: {special.days_available.map(day => 
+                                  day.charAt(0).toUpperCase() + day.slice(1)
+                                ).join(', ')}
+                              </p>
                             </div>
                           </div>
-                          <div className="mt-2">
-                            <p className="text-xs text-gray-600">
-                              Available: {special.days_available.map(day => 
-                                day.charAt(0).toUpperCase() + day.slice(1)
-                              ).join(', ')}
-                            </p>
-                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-4 px-3 bg-gray-50 rounded-lg">
+                          <p className="text-sm text-gray-600">
+                            {restaurant.specials_message || 'No current specials at this time'}
+                          </p>
                         </div>
-                      ))}
+                      )}
                     </div>
                   </div>
                 </div>
