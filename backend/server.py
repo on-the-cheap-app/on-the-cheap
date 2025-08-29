@@ -648,6 +648,8 @@ async def search_external_restaurants(latitude: float, longitude: float, radius:
                     'specials': [],  # External restaurants don't have specials in our system yet
                     'is_verified': True,
                     'source': 'foursquare',
+                    'is_mobile_vendor': getattr(venue, 'is_mobile_vendor', False),
+                    'vendor_type': 'mobile' if getattr(venue, 'is_mobile_vendor', False) else 'permanent',
                     'distance': calculate_distance(
                         latitude, longitude,
                         venue.latitude or latitude,
