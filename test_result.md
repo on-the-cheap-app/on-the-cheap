@@ -240,20 +240,17 @@ backend:
         agent: "testing"
         comment: "✅ TESTED SUCCESSFULLY: Restaurant Search API working correctly in San Francisco (lat=37.7749, lng=-122.4194). Returns 20 restaurants from Google Places API integration. Mock restaurant data properly loaded in database (11 restaurants with specials) but filtered by time-based special availability - this is correct behavior. Search supports radius filtering, special type filtering (weekend_special filter returns Golden Gate Cafe), and provides proper restaurant data structure for favorites integration."
 
-  - task: "User Favorites API Integration"
+  - task: "Foursquare API Integration"
     implemented: true
-    working: true
-    file: "/app/backend/server.py"
+    working: "NA"
+    file: "/app/backend/foursquare_service.py, /app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Complete user favorites workflow including user registration/login, add/remove favorites, and get favorites list. Integrates with restaurant search results for heart icon functionality."
-      - working: true
-        agent: "testing"
-        comment: "✅ TESTED SUCCESSFULLY: Complete User Favorites API Integration working correctly. User registration creates accounts with JWT tokens (user_type='user'), login authentication works properly, add/remove favorites APIs function with restaurant IDs from search results, get favorites API returns restaurant details, and favorites persistence verified through add/remove operations. Heart icon integration ready with proper restaurant ID handling. All workflow components operational."
+        comment: "Implemented comprehensive Foursquare Places API integration as fallback source. Created foursquare_service.py with async client, caching, error handling, and rate limiting. Modified restaurant search endpoint to use 3-tier fallback system: Owner specials → Google Places → Foursquare → Mock data. Added API credentials to .env. Ready for testing."
 
 frontend:
   - task: "User Authentication UI"
