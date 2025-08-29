@@ -593,6 +593,81 @@ function App() {
                       )}
                     </div>
                   </div>
+                  
+                  {/* Share and Ride Actions */}
+                  <div className="border-t pt-4 mt-4">
+                    <div className="flex flex-col space-y-3">
+                      {/* Share Buttons */}
+                      <div>
+                        <h5 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                          <Share2 className="w-4 h-4 mr-1" />
+                          Share Restaurant
+                        </h5>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openShareLink(getShareUrls(restaurant).sms, 'sms')}
+                            className="text-xs"
+                          >
+                            <MessageCircle className="w-3 h-3 mr-1" />
+                            Text
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openShareLink(getShareUrls(restaurant).whatsapp, 'whatsapp')}
+                            className="text-xs bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
+                          >
+                            💬 WhatsApp
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openShareLink(getShareUrls(restaurant).telegram, 'telegram')}
+                            className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
+                          >
+                            <Send className="w-3 h-3 mr-1" />
+                            Telegram
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openShareLink(getShareUrls(restaurant).messenger, 'messenger')}
+                            className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200"
+                          >
+                            📨 Messenger
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      {/* Ride Buttons */}
+                      <div>
+                        <h5 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                          <Car className="w-4 h-4 mr-1" />
+                          Get a Ride
+                        </h5>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openShareLink(getRideUrls(restaurant).uber, 'uber')}
+                            className="text-xs bg-black text-white hover:bg-gray-800 border-black"
+                          >
+                            🚗 Uber
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openShareLink(getRideUrls(restaurant).lyft, 'lyft')}
+                            className="text-xs bg-pink-600 text-white hover:bg-pink-700 border-pink-600"
+                          >
+                            🚙 Lyft
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
