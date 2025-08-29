@@ -814,7 +814,12 @@ function App() {
                   restaurants={restaurants}
                   currentLocation={lastSearch}
                   onRestaurantClick={(restaurant) => {
-                    // Optional: Could open restaurant details modal
+                    Analytics.trackRestaurantView(restaurant);
+                    Analytics.trackMapInteraction('restaurant_marker_click', {
+                      restaurant_id: restaurant.id,
+                      restaurant_source: restaurant.source,
+                      is_mobile_vendor: restaurant.is_mobile_vendor
+                    });
                     console.log('Restaurant clicked:', restaurant.name);
                   }}
                   className="rounded-lg border"
