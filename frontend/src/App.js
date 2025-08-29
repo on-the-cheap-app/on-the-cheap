@@ -528,7 +528,7 @@ function App() {
                 </Select>
               </div>
               <div className="flex-1">
-                <Select value={searchRadius.toString()} onValueChange={(value) => setSearchRadius(parseInt(value))}>
+                <Select value={searchRadius.toString()} onValueChange={handleRadiusChange}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
