@@ -75,6 +75,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [userFavorites, setUserFavorites] = useState([]);
   const [showGeocodingDemo, setShowGeocodingDemo] = useState(false);
+  const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
 
   useEffect(() => {
     fetchSpecialTypes();
