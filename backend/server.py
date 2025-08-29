@@ -614,6 +614,10 @@ async def search_external_restaurants(latitude: float, longitude: float, radius:
     try:
         # Try Foursquare first
         foursquare_service = get_foursquare_service()
+        if not foursquare_service:
+            logger.warning("Foursquare service not available, skipping external search")
+            return []
+            
         foursquare_venues = await foursquare_service.search_restaurants(
             latitude=latitude,
             longitude=longitude,
