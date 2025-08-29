@@ -785,7 +785,7 @@ function App() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => openShareLink(getRideUrls(restaurant).uber, 'uber')}
+                                  onClick={() => handleRide(restaurant, 'uber')}
                                   className="text-xs bg-black text-white hover:bg-gray-800 border-black"
                                 >
                                   🚗 Uber
@@ -793,7 +793,7 @@ function App() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => openShareLink(getRideUrls(restaurant).lyft, 'lyft')}
+                                  onClick={() => handleRide(restaurant, 'lyft')}
                                   className="text-xs bg-pink-600 text-white hover:bg-pink-700 border-pink-600"
                                 >
                                   🚙 Lyft
