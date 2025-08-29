@@ -363,7 +363,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Clear Search Button Functionality"
+    - "Map View Feature Implementation"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
