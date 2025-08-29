@@ -609,6 +609,61 @@ async def search_google_places_real(latitude: float, longitude: float, radius: i
         logger.error(f"Error calling Google Places API: {e}")
         return []
 
+async def search_external_restaurants(latitude: float, longitude: float, radius: int, query: Optional[str] = None, limit: int = 20) -> List[dict]:
+    """Search for restaurants using external APIs (Foursquare) as fallback"""
+    try:
+        # Try Foursquare first
+        foursquare_venues = await foursquare_service.search_restaurants(
+            latitude=latitude,
+            longitude=longitude,
+            radius_meters=radius,
+            query=query,
+            limit=limit
+        )
+        
+        # Convert Foursquare format to our standard format
+        restaurants = []
+        for venue in foursquare_venues:
+            try:
+                restaurant = {
+                    'id': venue.id,  # Already prefixed with 'foursquare_'
+                    'name': venue.name,
+                    'address': venue.address or '',
+                    'location': {
+                        'latitude': venue.latitude or latitude,
+                        'longitude': venue.longitude or longitude
+                    },
+                    'phone': venue.phone,
+                    'website': venue.website,
+                    'cuisine_type': venue.categories,
+                    'rating': venue.rating,
+                    'price_level': venue.price,
+                    'specials': [],  # External restaurants don't have specials in our system yet
+                    'is_verified': True,
+                    'source': 'foursquare',
+                    'distance': calculate_distance(
+                        latitude, longitude,
+                        venue.latitude or latitude,
+                        venue.longitude or longitude
+                    ),
+                    'created_at': datetime.now(timezone.utc).isoformat(),
+                    'note': 'Restaurant found via Foursquare - specials data coming soon!'
+                }
+                restaurants.append(restaurant)
+            except Exception as e:
+                logger.warning(f"Error processing Foursquare venue: {e}")
+                continue
+        
+        logger.info(f"Found {len(restaurants)} restaurants from Foursquare")
+        return restaurants
+        
+    except FoursquareAPIError as e:
+        logger.error(f"Foursquare API error: {e}")
+        return []
+    except Exception as e:
+        logger.error(f"Error calling external restaurant APIs: {e}")
+        return []
+
 # Helper functions
 def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Calculate distance between two points in meters (Haversine formula)"""
