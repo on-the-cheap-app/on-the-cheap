@@ -758,7 +758,7 @@ function App() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => openShareLink(getShareUrls(restaurant).sms, 'sms')}
+                                  onClick={() => handleShare(restaurant, 'sms')}
                                   className="text-xs"
                                 >
                                   <MessageCircle className="w-3 h-3 mr-1" />
@@ -767,7 +767,7 @@ function App() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => openShareLink(getShareUrls(restaurant).whatsapp, 'whatsapp')}
+                                  onClick={() => handleShare(restaurant, 'whatsapp')}
                                   className="text-xs bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
                                 >
                                   💬 WhatsApp
