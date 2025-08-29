@@ -1778,6 +1778,436 @@ class OnTheCheapAPITester:
             self.log_test("Google Places API Integration", False, str(e))
             return False, {}
 
+    def test_foursquare_service_initialization(self):
+        """Test Foursquare service initialization and credentials"""
+        try:
+            # This test checks if the service can be initialized properly
+            # We'll test this indirectly through the restaurant search endpoint
+            params = {
+                'latitude': 40.7589,  # NYC coordinates
+                'longitude': -73.9851,
+                'radius': 5000,
+                'limit': 5
+            }
+            
+            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                source_summary = data.get('source_summary', {})
+                fallback_used = data.get('fallback_system_used', False)
+                
+                details = f"Fallback system active: {fallback_used}, Sources: {source_summary}"
+                
+                # Check if Foursquare is available as a source
+                if 'foursquare' in source_summary:
+                    details += f" - Foursquare returned {source_summary['foursquare']} restaurants"
+                else:
+                    details += " - Foursquare not used (may be due to other sources providing enough results)"
+            else:
+                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
+            
+            self.log_test("Foursquare Service Initialization", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Foursquare Service Initialization", False, str(e))
+            return False, {}
+
+    def test_foursquare_fallback_system_nyc(self):
+        """Test Foursquare fallback system with NYC coordinates"""
+        try:
+            # Use NYC coordinates where we expect good Foursquare coverage
+            params = {
+                'latitude': 40.7589,  # Times Square, NYC
+                'longitude': -73.9851,
+                'radius': 2000,  # 2km radius
+                'limit': 20
+            }
+            
+            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                restaurants = data.get('restaurants', [])
+                source_summary = data.get('source_summary', {})
+                fallback_used = data.get('fallback_system_used', False)
+                
+                details = f"Found {len(restaurants)} restaurants, Fallback system: {fallback_used}"
+                details += f", Sources: {source_summary}"
+                
+                # Analyze source distribution
+                foursquare_count = source_summary.get('foursquare', 0)
+                google_count = source_summary.get('google_places', 0)
+                owner_count = source_summary.get('owner_managed', 0)
+                
+                details += f" (Owner: {owner_count}, Google: {google_count}, Foursquare: {foursquare_count})"
+                
+                # Check for Foursquare restaurants in results
+                foursquare_restaurants = [r for r in restaurants if r.get('source') == 'foursquare']
+                if foursquare_restaurants:
+                    first_foursquare = foursquare_restaurants[0]
+                    details += f". First Foursquare: {first_foursquare.get('name', 'Unknown')}"
+                    
+                    # Verify Foursquare restaurant format
+                    required_fields = ['id', 'name', 'source', 'distance']
+                    missing_fields = [field for field in required_fields if field not in first_foursquare]
+                    if missing_fields:
+                        details += f" - Missing fields: {missing_fields}"
+                        success = False
+                    
+                    # Verify ID format
+                    if not first_foursquare.get('id', '').startswith('foursquare_'):
+                        details += " - Invalid Foursquare ID format"
+                        success = False
+            else:
+                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
+            
+            self.log_test("Foursquare Fallback System (NYC)", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Foursquare Fallback System (NYC)", False, str(e))
+            return False, {}
+
+    def test_foursquare_fallback_system_sf(self):
+        """Test Foursquare fallback system with San Francisco coordinates"""
+        try:
+            # Use SF coordinates to test different location
+            params = {
+                'latitude': 37.7749,  # San Francisco
+                'longitude': -122.4194,
+                'radius': 3000,  # 3km radius
+                'limit': 15
+            }
+            
+            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                restaurants = data.get('restaurants', [])
+                source_summary = data.get('source_summary', {})
+                
+                details = f"SF search: {len(restaurants)} restaurants, Sources: {source_summary}"
+                
+                # Check source priority order (owner_managed should be first, then google_places, then foursquare)
+                source_order = []
+                for restaurant in restaurants:
+                    source = restaurant.get('source')
+                    if source not in source_order:
+                        source_order.append(source)
+                
+                details += f", Source order: {source_order}"
+                
+                # Verify priority system is working
+                expected_priority = ['owner_managed', 'google_places', 'foursquare']
+                actual_priority = [s for s in expected_priority if s in source_order]
+                if source_order[:len(actual_priority)] != actual_priority:
+                    details += " - WARNING: Source priority may not be correct"
+                
+            else:
+                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
+            
+            self.log_test("Foursquare Fallback System (SF)", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Foursquare Fallback System (SF)", False, str(e))
+            return False, {}
+
+    def test_foursquare_search_with_query(self):
+        """Test Foursquare search with query parameter"""
+        try:
+            # Search for pizza restaurants in NYC
+            params = {
+                'latitude': 40.7589,
+                'longitude': -73.9851,
+                'radius': 5000,
+                'query': 'pizza',
+                'limit': 10
+            }
+            
+            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                restaurants = data.get('restaurants', [])
+                source_summary = data.get('source_summary', {})
+                
+                details = f"Pizza search: {len(restaurants)} restaurants, Sources: {source_summary}"
+                
+                # Check if results are relevant to pizza
+                pizza_relevant = 0
+                for restaurant in restaurants:
+                    name = restaurant.get('name', '').lower()
+                    cuisine_types = [c.lower() for c in restaurant.get('cuisine_type', [])]
+                    
+                    if 'pizza' in name or any('pizza' in c for c in cuisine_types):
+                        pizza_relevant += 1
+                
+                details += f", Pizza-relevant results: {pizza_relevant}/{len(restaurants)}"
+                
+                # Check for Foursquare results specifically
+                foursquare_results = [r for r in restaurants if r.get('source') == 'foursquare']
+                if foursquare_results:
+                    details += f", Foursquare results: {len(foursquare_results)}"
+                    first_foursquare = foursquare_results[0]
+                    details += f" (e.g., {first_foursquare.get('name', 'Unknown')})"
+                
+            else:
+                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
+            
+            self.log_test("Foursquare Search with Query (Pizza)", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Foursquare Search with Query (Pizza)", False, str(e))
+            return False, {}
+
+    def test_foursquare_data_format(self):
+        """Test Foursquare restaurant data format and integration"""
+        try:
+            # Get restaurants that should include Foursquare results
+            params = {
+                'latitude': 40.7589,  # NYC
+                'longitude': -73.9851,
+                'radius': 3000,
+                'limit': 20
+            }
+            
+            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                restaurants = data.get('restaurants', [])
+                
+                # Find Foursquare restaurants
+                foursquare_restaurants = [r for r in restaurants if r.get('source') == 'foursquare']
+                
+                if foursquare_restaurants:
+                    restaurant = foursquare_restaurants[0]
+                    
+                    # Check required fields
+                    required_fields = ['id', 'name', 'source', 'distance', 'location']
+                    missing_fields = [field for field in required_fields if field not in restaurant]
+                    
+                    # Check optional fields that should be present if available
+                    optional_fields = ['address', 'rating', 'cuisine_type', 'phone', 'website']
+                    present_optional = [field for field in optional_fields if restaurant.get(field)]
+                    
+                    details = f"Foursquare restaurant: {restaurant.get('name', 'Unknown')}"
+                    details += f", Required fields: {len(required_fields) - len(missing_fields)}/{len(required_fields)}"
+                    details += f", Optional fields present: {present_optional}"
+                    
+                    if missing_fields:
+                        details += f", Missing required: {missing_fields}"
+                        success = False
+                    
+                    # Verify ID format
+                    restaurant_id = restaurant.get('id', '')
+                    if not restaurant_id.startswith('foursquare_'):
+                        details += f" - Invalid ID format: {restaurant_id}"
+                        success = False
+                    
+                    # Verify location format
+                    location = restaurant.get('location', {})
+                    if not isinstance(location, dict) or 'latitude' not in location or 'longitude' not in location:
+                        details += " - Invalid location format"
+                        success = False
+                    
+                    # Verify source metadata
+                    if restaurant.get('source') != 'foursquare':
+                        details += f" - Incorrect source: {restaurant.get('source')}"
+                        success = False
+                    
+                else:
+                    details = f"No Foursquare restaurants found in {len(restaurants)} results"
+                    # This might be OK if other sources provided enough results
+                    
+            else:
+                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
+            
+            self.log_test("Foursquare Data Format Integration", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Foursquare Data Format Integration", False, str(e))
+            return False, {}
+
+    def test_foursquare_error_handling(self):
+        """Test Foursquare API error handling and graceful degradation"""
+        try:
+            # Test with coordinates that might have limited results
+            params = {
+                'latitude': 0,  # Middle of ocean
+                'longitude': 0,
+                'radius': 1000,
+                'limit': 10
+            }
+            
+            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                restaurants = data.get('restaurants', [])
+                source_summary = data.get('source_summary', {})
+                
+                # Should handle gracefully even with no results
+                details = f"Remote location search: {len(restaurants)} restaurants, Sources: {source_summary}"
+                
+                # The system should not crash even if Foursquare returns no results
+                if 'foursquare' in source_summary:
+                    details += f" - Foursquare handled remote location gracefully"
+                else:
+                    details += " - Foursquare not used (expected for remote location)"
+                
+                # Test that fallback system continues to work
+                fallback_used = data.get('fallback_system_used', False)
+                if not fallback_used:
+                    details += " - WARNING: Fallback system not indicated as used"
+                
+            else:
+                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
+            
+            self.log_test("Foursquare Error Handling", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Foursquare Error Handling", False, str(e))
+            return False, {}
+
+    def test_foursquare_no_duplicates(self):
+        """Test that Foursquare integration doesn't create duplicate restaurants"""
+        try:
+            # Search in an area where we might have restaurants from multiple sources
+            params = {
+                'latitude': 37.7749,  # San Francisco
+                'longitude': -122.4194,
+                'radius': 5000,
+                'limit': 30
+            }
+            
+            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                restaurants = data.get('restaurants', [])
+                
+                # Check for duplicate restaurant names
+                restaurant_names = [r.get('name', '').lower().strip() for r in restaurants]
+                unique_names = set(restaurant_names)
+                
+                details = f"Found {len(restaurants)} restaurants, {len(unique_names)} unique names"
+                
+                # Check for potential duplicates
+                duplicates = []
+                name_counts = {}
+                for name in restaurant_names:
+                    if name:
+                        name_counts[name] = name_counts.get(name, 0) + 1
+                        if name_counts[name] > 1:
+                            duplicates.append(name)
+                
+                if duplicates:
+                    details += f", Potential duplicates: {duplicates[:3]}"  # Show first 3
+                    # This might be OK if they're actually different locations
+                    details += " (may be different locations with same name)"
+                else:
+                    details += ", No obvious duplicates found"
+                
+                # Check source distribution
+                source_summary = data.get('source_summary', {})
+                details += f", Sources: {source_summary}"
+                
+                # Verify that restaurants from different sources have different IDs
+                restaurant_ids = [r.get('id', '') for r in restaurants]
+                unique_ids = set(restaurant_ids)
+                
+                if len(restaurant_ids) != len(unique_ids):
+                    details += f" - ERROR: Duplicate IDs found ({len(restaurant_ids)} vs {len(unique_ids)})"
+                    success = False
+                
+            else:
+                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
+            
+            self.log_test("Foursquare No Duplicates", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Foursquare No Duplicates", False, str(e))
+            return False, {}
+
+    def test_foursquare_source_priority(self):
+        """Test that source priority system works correctly with Foursquare"""
+        try:
+            # Search in SF where we have mock data (owner_managed) and should get Google/Foursquare
+            params = {
+                'latitude': 37.7749,
+                'longitude': -122.4194,
+                'radius': 8000,
+                'limit': 25
+            }
+            
+            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                restaurants = data.get('restaurants', [])
+                
+                # Analyze source order in results
+                source_order = []
+                source_positions = {}
+                
+                for i, restaurant in enumerate(restaurants):
+                    source = restaurant.get('source')
+                    if source not in source_positions:
+                        source_positions[source] = i
+                        source_order.append(source)
+                
+                details = f"Found {len(restaurants)} restaurants, Source order: {source_order}"
+                
+                # Check priority: owner_managed should come first, then google_places, then foursquare
+                expected_priority = ['owner_managed', 'google_places', 'foursquare']
+                
+                # Verify that sources appear in correct priority order
+                priority_correct = True
+                for i in range(len(source_order) - 1):
+                    current_source = source_order[i]
+                    next_source = source_order[i + 1]
+                    
+                    if (current_source in expected_priority and 
+                        next_source in expected_priority and
+                        expected_priority.index(current_source) > expected_priority.index(next_source)):
+                        priority_correct = False
+                        break
+                
+                if priority_correct:
+                    details += " - Priority order correct"
+                else:
+                    details += " - WARNING: Priority order may be incorrect"
+                
+                # Check source summary
+                source_summary = data.get('source_summary', {})
+                details += f", Distribution: {source_summary}"
+                
+            else:
+                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
+            
+            self.log_test("Foursquare Source Priority", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Foursquare Source Priority", False, str(e))
+            return False, {}
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting On-the-Cheap API Tests")
