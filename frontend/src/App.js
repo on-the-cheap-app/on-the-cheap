@@ -523,186 +523,206 @@ function App() {
           </div>
         )}
 
-        {/* Restaurant Cards */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {restaurants.map((restaurant) => (
-            <Card key={restaurant.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-xl font-bold text-gray-900">
-                      {restaurant.name}
-                    </CardTitle>
-                    <CardDescription className="flex items-center mt-1">
-                      <MapPin className="w-4 h-4 mr-1" />
-                      {restaurant.distance && formatDistance(restaurant.distance)}
-                    </CardDescription>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => toggleFavorite(restaurant.id)}
-                      className={`p-1 rounded-full transition-colors ${
-                        userFavorites.includes(restaurant.id)
-                          ? 'text-red-500 hover:text-red-600'
-                          : 'text-gray-400 hover:text-red-500'
-                      }`}
-                      title={userFavorites.includes(restaurant.id) ? 'Remove from favorites' : 'Add to favorites'}
-                    >
-                      <Heart 
-                        className={`w-5 h-5 ${
-                          userFavorites.includes(restaurant.id) ? 'fill-current' : ''
-                        }`} 
-                      />
-                    </button>
-                    {restaurant.rating && (
-                      <div className="flex items-center">
-                        <Star className="w-4 h-4 text-yellow-400 fill-current mr-1" />
-                        <span className="text-sm font-medium">{restaurant.rating}</span>
+        {/* Restaurant Results - List and Map Views */}
+        {restaurants.length > 0 && (
+          <div className="mb-6">
+            {viewMode === 'list' ? (
+              /* List View */
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {restaurants.map((restaurant) => (
+                  <Card key={restaurant.id} className="hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-xl font-bold text-gray-900">
+                            {restaurant.name}
+                          </CardTitle>
+                          <CardDescription className="flex items-center mt-1">
+                            <MapPin className="w-4 h-4 mr-1" />
+                            {restaurant.distance && formatDistance(restaurant.distance)}
+                          </CardDescription>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => toggleFavorite(restaurant.id)}
+                            className={`p-1 rounded-full transition-colors ${
+                              userFavorites.includes(restaurant.id)
+                                ? 'text-red-500 hover:text-red-600'
+                                : 'text-gray-400 hover:text-red-500'
+                            }`}
+                            title={userFavorites.includes(restaurant.id) ? 'Remove from favorites' : 'Add to favorites'}
+                          >
+                            <Heart 
+                              className={`w-5 h-5 ${
+                                userFavorites.includes(restaurant.id) ? 'fill-current' : ''
+                              }`} 
+                            />
+                          </button>
+                          {restaurant.rating && (
+                            <div className="flex items-center">
+                              <Star className="w-4 h-4 text-yellow-400 fill-current mr-1" />
+                              <span className="text-sm font-medium">{restaurant.rating}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <p className="text-sm text-gray-600 flex items-center">
-                    <MapPin className="w-4 h-4 mr-2" />
-                    {restaurant.address}
-                  </p>
-                  
-                  {restaurant.phone && (
-                    <p className="text-sm text-gray-600 flex items-center">
-                      <Phone className="w-4 h-4 mr-2" />
-                      {restaurant.phone}
-                    </p>
-                  )}
-                  
-                  {restaurant.website && (
-                    <p className="text-sm text-gray-600 flex items-center">
-                      <Globe className="w-4 h-4 mr-2" />
-                      <a href={restaurant.website} target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:underline">
-                        Visit Website
-                      </a>
-                    </p>
-                  )}
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <p className="text-sm text-gray-600 flex items-center">
+                          <MapPin className="w-4 h-4 mr-2" />
+                          {restaurant.address}
+                        </p>
+                        
+                        {restaurant.phone && (
+                          <p className="text-sm text-gray-600 flex items-center">
+                            <Phone className="w-4 h-4 mr-2" />
+                            {restaurant.phone}
+                          </p>
+                        )}
+                        
+                        {restaurant.website && (
+                          <p className="text-sm text-gray-600 flex items-center">
+                            <Globe className="w-4 h-4 mr-2" />
+                            <a href={restaurant.website} target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:underline">
+                              Visit Website
+                            </a>
+                          </p>
+                        )}
 
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {restaurant.cuisine_type?.map((cuisine) => (
-                      <Badge key={cuisine} variant="secondary" className="text-xs">
-                        {cuisine}
-                      </Badge>
-                    ))}
-                  </div>
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {restaurant.cuisine_type?.map((cuisine) => (
+                            <Badge key={cuisine} variant="secondary" className="text-xs">
+                              {cuisine}
+                            </Badge>
+                          ))}
+                        </div>
 
-                  <div className="border-t pt-3">
-                    <h4 className="font-semibold text-gray-900 mb-2">Current Specials</h4>
-                    <div className="space-y-3">
-                      {restaurant.specials?.length > 0 ? (
-                        restaurant.specials.map((special) => (
-                          <div key={special.id} className="bg-gradient-to-r from-orange-50 to-amber-50 p-3 rounded-lg">
-                            <div className="flex justify-between items-start mb-2">
-                              <h5 className="font-medium text-gray-900">{special.title}</h5>
-                              <Badge className={getSpecialTypeBadgeColor(special.special_type)}>
-                                {getSpecialTypeLabel(special.special_type)}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-gray-700 mb-2">{special.description}</p>
-                            <div className="flex items-center justify-between text-sm">
-                              <div className="flex items-center text-green-600 font-medium">
-                                <DollarSign className="w-4 h-4 mr-1" />
-                                ${special.price}
-                                {special.original_price && (
-                                  <span className="ml-2 text-gray-500 line-through">
-                                    ${special.original_price}
-                                  </span>
-                                )}
+                        <div className="border-t pt-3">
+                          <h4 className="font-semibold text-gray-900 mb-2">Current Specials</h4>
+                          <div className="space-y-3">
+                            {restaurant.specials?.length > 0 ? (
+                              restaurant.specials.map((special) => (
+                                <div key={special.id} className="bg-gradient-to-r from-orange-50 to-amber-50 p-3 rounded-lg">
+                                  <div className="flex justify-between items-start mb-2">
+                                    <h5 className="font-medium text-gray-900">{special.title}</h5>
+                                    <Badge className={getSpecialTypeBadgeColor(special.special_type)}>
+                                      {getSpecialTypeLabel(special.special_type)}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-sm text-gray-700 mb-2">{special.description}</p>
+                                  <div className="flex items-center justify-between text-sm">
+                                    <div className="flex items-center text-green-600 font-medium">
+                                      <DollarSign className="w-4 h-4 mr-1" />
+                                      ${special.price}
+                                      {special.original_price && (
+                                        <span className="ml-2 text-gray-500 line-through">
+                                          ${special.original_price}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center text-gray-600">
+                                      <Clock className="w-4 h-4 mr-1" />
+                                      {formatTime(special.time_start)} - {formatTime(special.time_end)}
+                                    </div>
+                                  </div>
+                                  <div className="mt-2">
+                                    <p className="text-xs text-gray-600">
+                                      Available: {special.days_available.map(day => 
+                                        day.charAt(0).toUpperCase() + day.slice(1)
+                                      ).join(', ')}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="text-center py-4 px-3 bg-gray-50 rounded-lg">
+                                <p className="text-sm text-gray-600">
+                                  {restaurant.specials_message || 'No current specials at this time'}
+                                </p>
                               </div>
-                              <div className="flex items-center text-gray-600">
-                                <Clock className="w-4 h-4 mr-1" />
-                                {formatTime(special.time_start)} - {formatTime(special.time_end)}
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* Share and Ride Actions */}
+                        <div className="border-t pt-4 mt-4">
+                          <div className="flex flex-col space-y-3">
+                            {/* Share Buttons */}
+                            <div>
+                              <h5 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                <Share2 className="w-4 h-4 mr-1" />
+                                Share Restaurant
+                              </h5>
+                              <div className="flex flex-wrap gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openShareLink(getShareUrls(restaurant).sms, 'sms')}
+                                  className="text-xs"
+                                >
+                                  <MessageCircle className="w-3 h-3 mr-1" />
+                                  Text Message
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openShareLink(getShareUrls(restaurant).whatsapp, 'whatsapp')}
+                                  className="text-xs bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
+                                >
+                                  💬 WhatsApp
+                                </Button>
                               </div>
                             </div>
-                            <div className="mt-2">
-                              <p className="text-xs text-gray-600">
-                                Available: {special.days_available.map(day => 
-                                  day.charAt(0).toUpperCase() + day.slice(1)
-                                ).join(', ')}
-                              </p>
+                            
+                            {/* Ride Buttons */}
+                            <div>
+                              <h5 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                <Car className="w-4 h-4 mr-1" />
+                                Get a Ride
+                              </h5>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openShareLink(getRideUrls(restaurant).uber, 'uber')}
+                                  className="text-xs bg-black text-white hover:bg-gray-800 border-black"
+                                >
+                                  🚗 Uber
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openShareLink(getRideUrls(restaurant).lyft, 'lyft')}
+                                  className="text-xs bg-pink-600 text-white hover:bg-pink-700 border-pink-600"
+                                >
+                                  🚙 Lyft
+                                </Button>
+                              </div>
                             </div>
                           </div>
-                        ))
-                      ) : (
-                        <div className="text-center py-4 px-3 bg-gray-50 rounded-lg">
-                          <p className="text-sm text-gray-600">
-                            {restaurant.specials_message || 'No current specials at this time'}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* Share and Ride Actions */}
-                  <div className="border-t pt-4 mt-4">
-                    <div className="flex flex-col space-y-3">
-                      {/* Share Buttons */}
-                      <div>
-                        <h5 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-                          <Share2 className="w-4 h-4 mr-1" />
-                          Share Restaurant
-                        </h5>
-                        <div className="flex flex-wrap gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openShareLink(getShareUrls(restaurant).sms, 'sms')}
-                            className="text-xs"
-                          >
-                            <MessageCircle className="w-3 h-3 mr-1" />
-                            Text Message
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openShareLink(getShareUrls(restaurant).whatsapp, 'whatsapp')}
-                            className="text-xs bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
-                          >
-                            💬 WhatsApp
-                          </Button>
                         </div>
                       </div>
-                      
-                      {/* Ride Buttons */}
-                      <div>
-                        <h5 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-                          <Car className="w-4 h-4 mr-1" />
-                          Get a Ride
-                        </h5>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openShareLink(getRideUrls(restaurant).uber, 'uber')}
-                            className="text-xs bg-black text-white hover:bg-gray-800 border-black"
-                          >
-                            🚗 Uber
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openShareLink(getRideUrls(restaurant).lyft, 'lyft')}
-                            className="text-xs bg-pink-600 text-white hover:bg-pink-700 border-pink-600"
-                          >
-                            🚙 Lyft
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              /* Map View */
+              <div className="h-[600px] w-full">
+                <RestaurantMap
+                  restaurants={restaurants}
+                  currentLocation={lastSearch}
+                  onRestaurantClick={(restaurant) => {
+                    // Optional: Could open restaurant details modal
+                    console.log('Restaurant clicked:', restaurant.name);
+                  }}
+                  className="rounded-lg border"
+                />
+              </div>
+            )}
+          </div>
+        )}
 
         {/* No Results */}
         {!loading && restaurants.length === 0 && coordinates && (
