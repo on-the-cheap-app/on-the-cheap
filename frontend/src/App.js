@@ -452,7 +452,7 @@ function App() {
               <div className="flex-1">
                 <Select value={selectedSpecialType} onValueChange={setSelectedSpecialType}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Filter by special type (optional)" />
+                    <SelectValue placeholder="Filter by special type" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Specials</SelectItem>
@@ -461,6 +461,18 @@ function App() {
                         {type.label}
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex-1">
+                <Select value={selectedVendorType} onValueChange={setSelectedVendorType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Venues" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Venues</SelectItem>
+                    <SelectItem value="permanent">Restaurants Only</SelectItem>
+                    <SelectItem value="mobile">🚛 Food Trucks & Pop-ups</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
