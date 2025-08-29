@@ -11,6 +11,7 @@ import OwnerPortal from "./OwnerPortal";
 import UserAuth from "./UserAuth";
 import AddressInput from "./components/AddressInput";
 import GeocodingDemo from "./components/GeocodingDemo";
+import RestaurantMap from "./components/RestaurantMap";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
