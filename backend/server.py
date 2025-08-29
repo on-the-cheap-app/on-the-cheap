@@ -19,7 +19,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Union
 import googlemaps
 from googlemaps import exceptions as gmaps_exceptions
-from foursquare_service import foursquare_service, FoursquareAPIError
+from foursquare_service import get_foursquare_service, FoursquareAPIError
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -613,6 +613,7 @@ async def search_external_restaurants(latitude: float, longitude: float, radius:
     """Search for restaurants using external APIs (Foursquare) as fallback"""
     try:
         # Try Foursquare first
+        foursquare_service = get_foursquare_service()
         foursquare_venues = await foursquare_service.search_restaurants(
             latitude=latitude,
             longitude=longitude,
