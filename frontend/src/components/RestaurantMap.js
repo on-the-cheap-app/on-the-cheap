@@ -192,7 +192,14 @@ const RestaurantMap = ({
             >
               <Popup maxWidth={300} className="custom-popup">
                 <div className="p-2">
-                  <h3 className="font-semibold text-lg mb-2">{restaurant.name}</h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-semibold text-lg">{restaurant.name}</h3>
+                    {restaurant.is_mobile_vendor && (
+                      <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">
+                        🚛 Mobile
+                      </span>
+                    )}
+                  </div>
                   
                   {restaurant.address && (
                     <div className="flex items-start mb-2">
