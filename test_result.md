@@ -306,7 +306,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Favorites Heart Icon Integration"
+    - "Foursquare API Integration"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
