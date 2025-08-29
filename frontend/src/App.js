@@ -233,6 +233,10 @@ function App() {
       if (selectedSpecialType && selectedSpecialType !== "all") {
         params.special_type = selectedSpecialType;
       }
+      
+      if (selectedVendorType && selectedVendorType !== "all") {
+        params.vendor_type = selectedVendorType;
+      }
 
       const response = await axios.get(`${API}/restaurants/search`, { params });
       setRestaurants(response.data.restaurants);
