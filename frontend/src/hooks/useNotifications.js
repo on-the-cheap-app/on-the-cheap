@@ -101,11 +101,12 @@ export const useNotifications = () => {
 
     // Set a timeout to prevent infinite loading
     timeoutId = setTimeout(() => {
-      console.warn('OneSignal initialization timeout, proceeding without full initialization');
+      console.warn('OneSignal initialization timeout after 15 seconds, proceeding with fallback mode');
       setIsLoading(false);
       setIsInitialized(true); // Set as initialized so user can still access settings
       setIsEnabled(false);
-    }, 10000); // 10 second timeout
+      isOneSignalInitialized = true; // Prevent further initialization attempts
+    }, 15000); // 15 second timeout (increased from 10)
 
     initializeOneSignal();
     
