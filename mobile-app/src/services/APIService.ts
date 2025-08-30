@@ -200,13 +200,26 @@ class APIService {
     }
   }
 
-  // Check authentication status
+  // Check if user is authenticated with server validation
   async isAuthenticated(): Promise<boolean> {
     try {
       const token = await AsyncStorage.getItem('auth_token');
-      return !!token;
+      if (!token) {
+        return false;
+      }
+
+      // Validate token with server
+      try {
+        const response = await this.api.get('/users/me');
+        return response.status === 200;
+      } catch (error) {
+        // Token is invalid, clear it
+        await AsyncStorage.removeItem('auth_token');
+        await AsyncStorage.removeItem('user_data');
+        return false;
+      }
     } catch (error) {
-      console.error('Error checking auth status:', error);
+      console.error('Error checking authentication:', error);
       return false;
     }
   }
