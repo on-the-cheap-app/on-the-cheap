@@ -8,6 +8,8 @@ import MapScreen from '../screens/MapScreen';
 import FavoritesScreen from '../screens/FavoritesScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import RestaurantDetailScreen from '../screens/RestaurantDetailScreen';
+import LoginScreen from '../screens/LoginScreen';
+import RegisterScreen from '../screens/RegisterScreen';
 import { colors } from '../theme/colors';
 
 const Tab = createBottomTabNavigator();
