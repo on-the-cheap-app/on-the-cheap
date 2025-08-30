@@ -742,6 +742,36 @@ def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
     r = 6371000
     return c * r
 
+def get_fallback_photos(restaurant_name: str, venue_types: List[str], is_mobile_vendor: bool = False) -> List[dict]:
+    """Generate fallback photos for restaurants without images"""
+    
+    # Determine primary venue type
+    venue_type = "restaurant"  # default
+    if is_mobile_vendor:
+        venue_type = "food_truck"
+    elif any(t in ['bar', 'night_club', 'liquor_store'] for t in venue_types):
+        venue_type = "bar"
+    elif any(t in ['cafe', 'bakery', 'coffee_shop'] for t in venue_types):
+        venue_type = "cafe"
+    elif any(t in ['fast_food', 'meal_takeaway'] for t in venue_types):
+        venue_type = "fast_food"
+    
+    # Generate fallback image URLs (using placeholder service or default images)
+    fallback_images = {
+        "restaurant": f"https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop&crop=center",
+        "bar": f"https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=300&fit=crop&crop=center", 
+        "cafe": f"https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400&h=300&fit=crop&crop=center",
+        "fast_food": f"https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=crop&crop=center",
+        "food_truck": f"https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop&crop=center"
+    }
+    
+    return [{
+        'url': fallback_images.get(venue_type, fallback_images["restaurant"]),
+        'width': 400,
+        'height': 300,
+        'is_fallback': True
+    }]
+
 def is_special_active_now(special_data: dict) -> bool:
     """Check if special is currently active based on time and day"""
     now = datetime.now()
