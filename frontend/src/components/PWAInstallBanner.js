@@ -8,8 +8,23 @@ const PWAInstallBanner = () => {
     localStorage.getItem('pwa-install-dismissed') === 'true'
   );
 
+  // Debug PWA state
+  console.log('🔍 PWA Banner Debug:', { isInstallable, isInstalled, isDismissed });
+
   // Don't show if already installed, not installable, or dismissed
   if (isInstalled || !isInstallable || isDismissed) {
+    // Show debug info even when not installable (temporarily)
+    if (!isInstallable && !isInstalled && !isDismissed) {
+      return (
+        <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm z-50">
+          <div className="bg-blue-500 text-white p-3 rounded-lg shadow-lg text-sm">
+            🔍 PWA Debug: Install not available yet. Try refreshing or use Chrome/Safari.
+            <br />
+            <small>Installable: {String(isInstallable)}, Installed: {String(isInstalled)}</small>
+          </div>
+        </div>
+      );
+    }
     return null;
   }
 
