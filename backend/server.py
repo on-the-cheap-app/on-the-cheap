@@ -608,18 +608,17 @@ async def search_google_places_real(latitude: float, longitude: float, radius: i
                         location = place.get('location', {})
                         display_name = place.get('displayName', {})
                         
-                        # Process photos if available
+                        # Process photos if available - temporarily using fallback only due to URL issues
                         photos = []
-                        if 'photos' in place and place['photos']:
-                            for photo in place['photos'][:3]:  # Limit to first 3 photos
-                                if 'name' in photo:
-                                    # Construct photo URL using Google Places Photo API
-                                    photo_url = f"https://places.googleapis.com/v1/{photo['name']}/media?maxWidthPx=400&maxHeightPx=300&key={google_api_key}"
-                                    photos.append({
-                                        'url': photo_url,
-                                        'width': photo.get('widthPx', 400),
-                                        'height': photo.get('heightPx', 300)
-                                    })
+                        # TODO: Fix Google Places Photo URL generation - currently returning 404s
+                        # Temporarily use fallback photos for all restaurants
+                        restaurant_types = place.get('types', [])
+                        is_mobile = any(t in ['mobile_vendor', 'food_truck'] for t in restaurant_types)
+                        photos = get_fallback_photos(
+                            display_name.get('text', 'Unknown Restaurant'),
+                            restaurant_types,
+                            is_mobile
+                        )
                         
                         restaurant = {
                             'id': f"google_{place.get('id', str(uuid.uuid4()))}",
