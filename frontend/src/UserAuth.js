@@ -25,7 +25,7 @@ import { Alert, AlertDescription } from "./components/ui/alert";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const UserAuth = ({ onClose, onUserLogin, currentFavorites = [], onFavoritesUpdate }) => {
+const UserAuth = ({ onClose, onUserLogin, currentFavorites = [], onFavoritesUpdate, onShowNotificationPreferences }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('user_token'));
   const [loading, setLoading] = useState(false);
