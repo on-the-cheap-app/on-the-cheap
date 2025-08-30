@@ -871,10 +871,14 @@ async def search_restaurants(
         # Limit results
         nearby_restaurants = nearby_restaurants[:limit]
         
-        # Add proper specials messaging for each restaurant
+        # Add proper specials messaging and mobile vendor flag for each restaurant
         for restaurant in nearby_restaurants:
             specials = restaurant.get('specials', [])
             source = restaurant.get('source', 'unknown')
+            
+            # Ensure is_mobile_vendor field exists for mobile app compatibility
+            if 'is_mobile_vendor' not in restaurant:
+                restaurant['is_mobile_vendor'] = False
             
             if source == 'owner_managed':
                 # Restaurants with registered owners
