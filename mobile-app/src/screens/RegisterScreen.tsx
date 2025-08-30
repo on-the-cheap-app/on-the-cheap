@@ -73,7 +73,9 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation, route }) =>
         {
           text: 'OK',
           onPress: () => {
-            onRegistrationSuccess(response.user);
+            if (onRegistrationSuccess) {
+              onRegistrationSuccess(response.user);
+            }
             navigation.goBack();
           }
         }
