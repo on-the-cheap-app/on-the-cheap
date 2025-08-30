@@ -53,7 +53,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
         {
           text: 'OK',
           onPress: () => {
-            onLoginSuccess(response.user);
+            if (onLoginSuccess) {
+              onLoginSuccess(response.user);
+            }
             navigation.goBack();
           }
         }
