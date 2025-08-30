@@ -414,7 +414,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Mobile App Authentication System Implementation"
     - "Mobile App Core Features Port"
   stuck_tasks: []
   test_all: false
