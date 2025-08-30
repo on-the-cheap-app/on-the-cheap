@@ -150,8 +150,8 @@ const NotificationPreferences = ({ user, onClose }) => {
 
   return (
     <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg max-w-2xl mx-auto min-h-96 w-full">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">
+      <div className="flex justify-between items-center mb-4 sm:mb-6">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900">
           🔔 Notification Preferences
         </h3>
         <button 
