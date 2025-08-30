@@ -431,16 +431,17 @@ function App() {
                 Find the best restaurant specials near you
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2 justify-center sm:justify-end">
               {currentUser ? (
                 <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
                     onClick={() => setShowUserAuth(true)}
-                    className="border-orange-600 text-orange-600 hover:bg-orange-50"
+                    className="border-orange-600 text-orange-600 hover:bg-orange-50 text-xs sm:text-sm"
                   >
-                    <User className="w-4 h-4 mr-2" />
-                    {currentUser.first_name}
+                    <User className="w-4 h-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">{currentUser.first_name}</span>
+                    <span className="sm:hidden">Profile</span>
                   </Button>
                   
                   {notificationsInitialized && (
@@ -450,7 +451,7 @@ function App() {
                       className={`${notificationsEnabled 
                         ? 'border-green-600 text-green-600 hover:bg-green-50' 
                         : 'border-gray-400 text-gray-600 hover:bg-gray-50'
-                      }`}
+                      } p-2 sm:px-4`}
                       title={notificationsEnabled ? 'Manage Notifications' : 'Enable Notifications'}
                     >
                       <Bell className={`w-4 h-4 ${notificationsEnabled ? 'fill-current' : ''}`} />
@@ -461,21 +462,21 @@ function App() {
                 <Button
                   variant="outline"
                   onClick={() => setShowUserAuth(true)}
-                  className="border-orange-600 text-orange-600 hover:bg-orange-50"
+                  className="border-orange-600 text-orange-600 hover:bg-orange-50 text-xs sm:text-sm"
                 >
-                  <User className="w-4 h-4 mr-2" />
+                  <User className="w-4 h-4 mr-1 sm:mr-2" />
                   Sign In
                 </Button>
               )}
               <Button
                 variant="outline"
                 onClick={() => setShowOwnerPortal(true)}
-                className="border-orange-600 text-orange-600 hover:bg-orange-50"
+                className="border-orange-600 text-orange-600 hover:bg-orange-50 text-xs sm:text-sm"
               >
-                <Building2 className="w-4 h-4 mr-2" />
-                Restaurant Owner
+                <Building2 className="w-4 h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Restaurant Owner</span>
+                <span className="sm:hidden">Owner</span>
               </Button>
-
             </div>
           </div>
         </div>
