@@ -522,7 +522,13 @@ async def get_current_regular_user(credentials: HTTPAuthorizationCredentials = D
     
     return prepare_from_mongo(user)
 
-async def get_current_user_optional(credentials: Optional[HTTPAuthorizationCredentials] = Depends(lambda: None)):
+from fastapi.security import HTTPBearer
+from fastapi import Request
+
+# Optional security for endpoints that can work with or without authentication
+optional_security = HTTPBearer(auto_error=False)
+
+async def get_current_user_optional(credentials: Optional[HTTPAuthorizationCredentials] = Depends(optional_security)):
     """Get current authenticated user (optional - returns None if no valid token)"""
     if not credentials:
         return None
