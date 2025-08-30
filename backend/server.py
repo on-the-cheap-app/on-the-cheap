@@ -932,6 +932,14 @@ async def search_restaurants(
             if 'is_mobile_vendor' not in restaurant:
                 restaurant['is_mobile_vendor'] = False
             
+            # Ensure photos field exists - add fallback if needed
+            if 'photos' not in restaurant or not restaurant['photos']:
+                restaurant['photos'] = get_fallback_photos(
+                    restaurant.get('name', ''),
+                    restaurant.get('cuisine_type', []),
+                    restaurant.get('is_mobile_vendor', False)
+                )
+            
             if source == 'owner_managed':
                 # Restaurants with registered owners
                 if not specials:
