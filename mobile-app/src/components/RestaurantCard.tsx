@@ -18,8 +18,11 @@ interface Restaurant {
   website?: string;
   rating?: number;
   specials?: any[];
+  specials_message?: string;
   is_mobile_vendor?: boolean;
   vendor_type?: string;
+  cuisine_type?: string[];
+  distance?: number;
   latitude?: number;
   longitude?: number;
 }
