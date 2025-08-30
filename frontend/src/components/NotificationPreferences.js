@@ -46,7 +46,7 @@ const NotificationPreferences = ({ user, onClose }) => {
       const success = await setUserPreferences(preferences);
       
       if (success) {
-        trackEvent('notification_preferences_updated', {
+        Analytics.trackConversion('notification_preferences_updated', {
           user_id: user?.id,
           preferences: preferences
         });
