@@ -270,12 +270,36 @@ function App() {
         params.vendor_type = selectedVendorType;
       }
 
-      const response = await axios.get(`${API}/restaurants/search`, { params });
-      const searchResults = response.data.restaurants;
+      let searchResults, searchLocation;
+      
+      if (isOnline) {
+        // Online: fetch fresh data
+        const response = await axios.get(`${API}/restaurants/search`, { params });
+        searchResults = response.data.restaurants;
+        searchLocation = response.data.search_location;
+        
+        // Cache results for offline use
+        await cacheRestaurantData(searchResults, { 
+          location: searchLocation,
+          coordinates: { latitude, longitude },
+          params 
+        });
+      } else {
+        // Offline: try to use cached data
+        const cachedData = await getCachedRestaurantData();
+        if (cachedData && cachedData.restaurants) {
+          searchResults = cachedData.restaurants;
+          searchLocation = cachedData.location.location || 'Cached Location';
+          console.log('📦 Using cached restaurant data for offline viewing');
+        } else {
+          throw new Error('No cached data available offline');
+        }
+      }
+      
       const searchTime = performance.now() - searchStartTime;
       
       setRestaurants(searchResults);
-      setLastSearch(response.data.search_location);
+      setLastSearch(searchLocation);
       
       // Track search analytics
       Analytics.trackRestaurantSearch({
