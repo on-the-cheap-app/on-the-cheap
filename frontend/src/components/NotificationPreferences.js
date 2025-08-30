@@ -18,7 +18,7 @@ const NotificationPreferences = ({ user, onClose }) => {
 
   useEffect(() => {
     // Track analytics
-    trackEvent('notification_preferences_view', {
+    Analytics.trackConversion('notification_preferences_view', {
       user_id: user?.id,
       notifications_enabled: isEnabled
     });
