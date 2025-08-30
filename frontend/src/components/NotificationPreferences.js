@@ -194,7 +194,7 @@ const NotificationPreferences = ({ user, onClose }) => {
           </button>
           
           <p className="text-xs text-gray-500 mt-3">
-            {notificationsInitialized 
+            {isInitialized 
               ? 'Powered by OneSignal' 
               : 'Browser notifications (OneSignal enhances delivery when available)'
             }
