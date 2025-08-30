@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
+  Image,
+  Dimensions,
 } from 'react-native';
-import { Card, Title, Paragraph, Chip, Button } from 'react-native-paper';
+import { Card, Title, Paragraph, Chip, Button, ActivityIndicator } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { colors, spacing, borderRadius } from '../theme/colors';
