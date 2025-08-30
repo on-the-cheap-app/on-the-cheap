@@ -273,6 +273,20 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginLeft: spacing.xs,
   },
+  noPhotoContainer: {
+    height: 180,
+    backgroundColor: colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  noPhotoText: {
+    color: colors.textLight,
+    fontSize: 12,
+    marginTop: spacing.sm,
+    textAlign: 'center',
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
