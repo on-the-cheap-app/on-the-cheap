@@ -104,6 +104,14 @@ export const useNotifications = () => {
           console.log('OneSignal was already initialized, setting as ready');
           setIsInitialized(true);
           setIsEnabled(false); // Default to false, user can enable later
+        } else if (error.message && error.message.includes('Init timeout')) {
+          console.warn('OneSignal initialization timed out, enabling fallback mode');
+          setIsInitialized(true); // Enable fallback mode
+          setIsEnabled(false);
+        } else {
+          console.warn('OneSignal initialization failed, enabling fallback mode');
+          setIsInitialized(true); // Enable fallback mode even if init failed
+          setIsEnabled(false);
         }
       } finally {
         setIsLoading(false);
