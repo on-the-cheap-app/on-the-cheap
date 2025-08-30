@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import OwnerPortal from "./OwnerPortal";
 import UserAuth from "./UserAuth";
 import AddressInput from "./components/AddressInput";
-import GeocodingDemo from "./components/GeocodingDemo";
+
 import RestaurantMap from "./components/RestaurantMap";
 import NotificationPreferences from "./components/NotificationPreferences";
 import useNotifications from "./hooks/useNotifications";
