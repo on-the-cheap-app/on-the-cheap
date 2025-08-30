@@ -12,6 +12,13 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { colors, spacing, borderRadius } from '../theme/colors';
 
+interface Photo {
+  url: string;
+  width: number;
+  height: number;
+  is_fallback?: boolean;
+}
+
 interface Restaurant {
   id: string;
   name: string;
@@ -27,6 +34,7 @@ interface Restaurant {
   distance?: number;
   latitude?: number;
   longitude?: number;
+  photos?: Photo[];
 }
 
 interface RestaurantCardProps {
