@@ -522,6 +522,35 @@ async def get_current_regular_user(credentials: HTTPAuthorizationCredentials = D
     
     return prepare_from_mongo(user)
 
+async def get_current_user_optional(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)):
+    """Get current authenticated user (optional - returns None if no valid token)"""
+    if not credentials:
+        return None
+        
+    try:
+        token = credentials.credentials
+        payload = verify_token(token)
+        user_id = payload.get("user_id")
+        user_type = payload.get("user_type", "owner")
+        
+        if not user_id:
+            return None
+        
+        if user_type == "owner":
+            user = await db.restaurant_owners.find_one({"id": user_id})
+        else:
+            user = await db.users.find_one({"id": user_id})
+        
+        if not user:
+            return None
+        
+        user_data = prepare_from_mongo(user)
+        user_data["user_type"] = user_type
+        return user_data
+        
+    except:
+        return None
+
 # Google Places API Integration
 async def search_google_places_real(latitude: float, longitude: float, radius: int, query: Optional[str] = None, limit: int = 20) -> List[dict]:
     """Search for real restaurants using Google Places API"""
