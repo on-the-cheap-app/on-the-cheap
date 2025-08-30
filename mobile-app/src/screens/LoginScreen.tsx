@@ -22,14 +22,16 @@ import { colors, spacing } from '../theme/colors';
 
 interface LoginScreenProps {
   navigation: any;
-  onLoginSuccess: (userData: any) => void;
+  route?: any;
 }
 
-const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, onLoginSuccess }) => {
+const LoginScreen: React.FC<LoginScreenProps> = ({ navigation, route }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const onLoginSuccess = route?.params?.onLoginSuccess;
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
