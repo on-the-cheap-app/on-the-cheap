@@ -106,6 +106,15 @@ const NotificationPreferences = ({ user, onClose }) => {
             </div>
             <p className="text-sm text-gray-600 mt-4">Initializing OneSignal...</p>
             <p className="text-xs text-gray-500 mt-2">If this takes too long, please refresh the page</p>
+            
+            <div className="mt-6">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       </div>
