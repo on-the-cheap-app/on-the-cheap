@@ -408,7 +408,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Google Analytics 4 (GA4) Integration"
+    - "Push Notifications with OneSignal Integration"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
