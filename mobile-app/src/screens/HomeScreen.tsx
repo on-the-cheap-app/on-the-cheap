@@ -128,7 +128,7 @@ const HomeScreen = ({ navigation }: any) => {
       const searchParams = {
         latitude: lat || location!.latitude,
         longitude: lng || location!.longitude,
-        radius: 25, // 25 km radius
+        radius: selectedRadius, // Use selected radius instead of hardcoded 25km
         special_type: selectedSpecialType !== 'all' ? selectedSpecialType : undefined,
         vendor_type: selectedVendorType !== 'all' ? selectedVendorType : undefined,
       };
@@ -136,7 +136,7 @@ const HomeScreen = ({ navigation }: any) => {
       const result = await APIService.searchRestaurants(searchParams);
       setRestaurants(result.restaurants || []);
       
-      console.log(`Found ${result.restaurants?.length || 0} restaurants`);
+      console.log(`Found ${result.restaurants?.length || 0} restaurants within ${formatDistance(selectedRadius)}`);
     } catch (error) {
       console.error('Search error:', error);
       Alert.alert('Search Error', 'Could not search for restaurants. Please try again.');
