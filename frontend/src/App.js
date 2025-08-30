@@ -421,13 +421,13 @@ function App() {
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="flex justify-between items-center">
-            <div className="text-center flex-1">
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+        <div className="max-w-6xl mx-auto px-4 py-4 sm:py-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="text-center sm:flex-1">
+              <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-1 sm:mb-2">
                 On-the-Cheap
               </h1>
-              <p className="text-lg text-gray-600">
+              <p className="text-sm sm:text-lg text-gray-600">
                 Find the best restaurant specials near you
               </p>
             </div>
