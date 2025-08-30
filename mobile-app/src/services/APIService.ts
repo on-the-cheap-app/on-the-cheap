@@ -166,6 +166,16 @@ class APIService {
     }
   }
 
+  async getCurrentUserFromServer() {
+    try {
+      const response = await this.api.get('/users/me');
+      return response.data;
+    } catch (error) {
+      console.error('API Error - Get Current User from Server:', error);
+      throw error;
+    }
+  }
+
   async logout() {
     try {
       await AsyncStorage.multiRemove(['auth_token', 'user_data']);
