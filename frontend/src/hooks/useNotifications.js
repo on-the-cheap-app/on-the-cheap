@@ -16,6 +16,15 @@ export const useNotifications = () => {
       try {
         setIsLoading(true);
         
+        // Check our global flag first
+        if (isOneSignalInitialized) {
+          console.log('OneSignal initialization already in progress or completed');
+          setIsInitialized(true);
+          setIsLoading(false);
+          setIsEnabled(false); // Will be updated when permission is checked
+          return;
+        }
+        
         // Check if OneSignal is already initialized
         if (window.OneSignal && window.OneSignal._initCalled) {
           console.log('OneSignal already initialized, using existing instance');
