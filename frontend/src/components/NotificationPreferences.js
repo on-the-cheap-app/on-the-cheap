@@ -82,13 +82,29 @@ const NotificationPreferences = ({ user, onClose }) => {
 
   if (!isInitialized) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-lg max-w-2xl mx-auto min-h-96 w-full">
-        <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded mb-4"></div>
-          <div className="space-y-3">
-            <div className="h-4 bg-gray-200 rounded"></div>
-            <div className="h-4 bg-gray-200 rounded"></div>
-            <div className="h-4 bg-gray-200 rounded"></div>
+      <div className="bg-white p-6 rounded-lg shadow-lg max-w-2xl mx-auto min-h-96 w-full" style={{minWidth: '600px'}}>
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-lg font-semibold text-gray-900">
+            🔔 Notification Preferences
+          </h3>
+          <button 
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            ✕
+          </button>
+        </div>
+        
+        <div className="text-center py-8">
+          <div className="animate-pulse space-y-4">
+            <div className="text-4xl mb-4">🔄</div>
+            <div className="h-6 bg-gray-200 rounded mx-auto max-w-48"></div>
+            <div className="space-y-3 max-w-64 mx-auto">
+              <div className="h-4 bg-gray-200 rounded"></div>
+              <div className="h-4 bg-gray-200 rounded"></div>
+              <div className="h-4 bg-gray-200 rounded"></div>
+            </div>
+            <p className="text-sm text-gray-600 mt-4">Initializing OneSignal...</p>
           </div>
         </div>
       </div>
