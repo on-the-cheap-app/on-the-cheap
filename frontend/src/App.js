@@ -13,7 +13,10 @@ import AddressInput from "./components/AddressInput";
 
 import RestaurantMap from "./components/RestaurantMap";
 import NotificationPreferences from "./components/NotificationPreferences";
+import PWAInstallBanner from "./components/PWAInstallBanner";
+import OfflineIndicator from "./components/OfflineIndicator";
 import useNotifications from "./hooks/useNotifications";
+import { usePWA } from "./hooks/usePWA";
 import * as Analytics from './utils/analytics';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
