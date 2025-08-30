@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import * as Analytics from './utils/analytics';
+import useNotifications from './hooks/useNotifications';
 import { 
   User, 
   Heart,
@@ -11,7 +12,8 @@ import {
   EyeOff,
   Star,
   MapPin,
-  X
+  X,
+  Bell
 } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
