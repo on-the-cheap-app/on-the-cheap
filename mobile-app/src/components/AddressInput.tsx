@@ -53,7 +53,7 @@ const AddressInput: React.FC<AddressInputProps> = ({
 
     const timeoutId = setTimeout(() => {
       searchAddressSuggestions(query);
-    }, 500); // 500ms debounce
+    }, 800); // Increased debounce from 500ms to 800ms
 
     return () => clearTimeout(timeoutId);
   }, [query]);
