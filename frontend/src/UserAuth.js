@@ -44,6 +44,9 @@ const UserAuth = ({ onClose, onUserLogin, currentFavorites = [], onFavoritesUpda
 
   // User data states - use favorites data passed from parent
   const [favorites, setFavorites] = useState([]);
+  
+  // OneSignal hook
+  const { tagUser, isEnabled: notificationsEnabled, isInitialized: notificationsInitialized } = useNotifications();
 
   useEffect(() => {
     if (token) {
