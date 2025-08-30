@@ -105,6 +105,7 @@ const NotificationPreferences = ({ user, onClose }) => {
               <div className="h-4 bg-gray-200 rounded"></div>
             </div>
             <p className="text-sm text-gray-600 mt-4">Initializing OneSignal...</p>
+            <p className="text-xs text-gray-500 mt-2">If this takes too long, please refresh the page</p>
           </div>
         </div>
       </div>
