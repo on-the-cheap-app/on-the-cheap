@@ -139,12 +139,6 @@ export const useNotifications = () => {
   const requestPermission = useCallback(async () => {
     console.log('🔔 Permission request initiated...');
     
-    if (!isInitialized) {
-      console.error('OneSignal not initialized yet');
-      alert('OneSignal is not ready yet. Please try again in a moment.');
-      return false;
-    }
-
     try {
       setIsLoading(true);
       
@@ -167,14 +161,19 @@ export const useNotifications = () => {
         console.log('🔔 Permission already granted');
         setIsEnabled(true);
         
-        // Tag user as having notifications enabled
-        try {
-          await OneSignal.User.addTags({
-            notifications_enabled: 'true',
-            enabled_date: new Date().toISOString()
-          });
-        } catch (tagError) {
-          console.error('Failed to tag user:', tagError);
+        // Try to tag user in OneSignal if available
+        if (isInitialized && window.OneSignal && window.OneSignal.User) {
+          try {
+            await OneSignal.User.addTags({
+              notifications_enabled: 'true',
+              enabled_date: new Date().toISOString()
+            });
+            console.log('🔔 User tagged in OneSignal successfully');
+          } catch (tagError) {
+            console.log('🔔 OneSignal tagging failed, but notifications still work:', tagError);
+          }
+        } else {
+          console.log('🔔 OneSignal not available, using browser notifications only');
         }
         
         return true;
