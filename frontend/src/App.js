@@ -449,6 +449,9 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50">
+      {/* PWA Components */}
+      <OfflineIndicator />
+      <PWAInstallBanner />
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-6xl mx-auto px-4 py-4 sm:py-6">
