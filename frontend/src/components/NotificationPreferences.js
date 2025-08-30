@@ -28,11 +28,11 @@ const NotificationPreferences = ({ user, onClose }) => {
     const granted = await requestPermission();
     
     if (granted) {
-      trackEvent('notification_permission_granted', {
+      Analytics.trackConversion('notification_permission_granted', {
         user_id: user?.id
       });
     } else {
-      trackEvent('notification_permission_denied', {
+      Analytics.trackConversion('notification_permission_denied', {
         user_id: user?.id
       });
     }
