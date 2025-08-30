@@ -145,40 +145,13 @@ export const useNotifications = () => {
         return true;
       }
       
-      // Try OneSignal slidedown first
+      // Try browser permission API first (more reliable)
       try {
-        console.log('🔔 Attempting OneSignal slidedown prompt...');
-        await OneSignal.Slidedown.promptPush();
-        
-        // Wait a moment for the permission to be processed
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Check the result
-        const permission = await OneSignal.Notifications.permission;
-        const granted = permission === true;
-        console.log('🔔 OneSignal permission result:', granted);
-        
-        setIsEnabled(granted);
-        
-        if (granted) {
-          console.log('Push notifications enabled successfully via OneSignal');
-          
-          // Tag user as having notifications enabled
-          await OneSignal.User.addTags({
-            notifications_enabled: 'true',
-            enabled_date: new Date().toISOString()
-          });
-        }
-        
-        return granted;
-      } catch (slidedownError) {
-        console.log('🔔 OneSignal slidedown failed, trying browser API:', slidedownError);
-        
-        // Fallback to browser permission API
+        console.log('🔔 Requesting permission via browser API...');
         const permission = await Notification.requestPermission();
         const granted = permission === 'granted';
         
-        console.log('🔔 Browser API permission result:', granted);
+        console.log('🔔 Browser API permission result:', permission, 'granted:', granted);
         setIsEnabled(granted);
         
         if (granted) {
@@ -193,9 +166,57 @@ export const useNotifications = () => {
           } catch (tagError) {
             console.error('Failed to tag user:', tagError);
           }
+        } else if (permission === 'denied') {
+          console.log('🔔 User denied permission');
+          alert('Notifications were denied. To enable them later, click the lock icon in your address bar and change notification settings to "Allow".');
+        } else {
+          console.log('🔔 User dismissed permission prompt');
+          // Don't show an error for dismissal, just log it
         }
         
         return granted;
+        
+      } catch (browserError) {
+        console.log('🔔 Browser API failed, trying OneSignal slidedown:', browserError);
+        
+        // Fallback to OneSignal slidedown
+        try {
+          console.log('🔔 Attempting OneSignal slidedown prompt...');
+          await OneSignal.Slidedown.promptPush();
+          
+          // Wait a moment for the permission to be processed
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Check the result
+          const permission = await OneSignal.Notifications.permission;
+          const granted = permission === true;
+          console.log('🔔 OneSignal permission result:', granted);
+          
+          setIsEnabled(granted);
+          
+          if (granted) {
+            console.log('Push notifications enabled successfully via OneSignal');
+            
+            // Tag user as having notifications enabled
+            await OneSignal.User.addTags({
+              notifications_enabled: 'true',
+              enabled_date: new Date().toISOString()
+            });
+          }
+          
+          return granted;
+          
+        } catch (slidedownError) {
+          console.log('🔔 OneSignal slidedown also failed:', slidedownError);
+          
+          // Handle specific OneSignal errors gracefully
+          if (slidedownError.message && slidedownError.message.includes('Permission dismissed')) {
+            console.log('🔔 User dismissed OneSignal permission prompt');
+            return false; // Don't show error for dismissal
+          }
+          
+          throw slidedownError; // Re-throw other errors
+        }
       }
       
     } catch (error) {
