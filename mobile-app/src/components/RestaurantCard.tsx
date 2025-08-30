@@ -117,7 +117,7 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
               <Text style={styles.noSpecialsText}>
                 No current specials
               </Text>
-            </div>
+            </View>
           )}
         </View>
 
