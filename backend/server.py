@@ -1777,6 +1777,180 @@ async def delete_special(
         logger.error(f"Delete special error: {e}")
         raise HTTPException(status_code=500, detail="Failed to delete special")
 
+# =============================================================================
+# PUSH NOTIFICATIONS ENDPOINTS
+# =============================================================================
+
+class NotificationRequest(BaseModel):
+    title: str
+    message: str
+    url: Optional[str] = None
+    image_url: Optional[str] = None
+    segments: Optional[List[str]] = None
+    user_ids: Optional[List[str]] = None
+    tags: Optional[Dict[str, str]] = None
+
+class SendNotificationRequest(BaseModel):
+    type: str  # 'daily_special', 'limited_offer', 'favorite_update', etc.
+    data: Dict[str, Any]  # Notification-specific data
+    target_users: Optional[List[str]] = None
+
+@api_router.post("/notifications/send")
+async def send_notification(
+    request: NotificationRequest,
+    current_user: dict = Depends(get_current_user_optional)
+):
+    """Send a push notification"""
+    try:
+        onesignal_service = get_onesignal_service()
+        
+        payload = NotificationPayload(
+            title=request.title,
+            message=request.message,
+            url=request.url,
+            image_url=request.image_url,
+            segments=request.segments,
+            user_ids=request.user_ids,
+            tags=request.tags
+        )
+        
+        result = await onesignal_service.send_notification(payload)
+        
+        if result:
+            return {
+                "success": True,
+                "notification_id": result.get("id"),
+                "recipients": result.get("recipients", 0),
+                "message": "Notification sent successfully"
+            }
+        else:
+            return {
+                "success": False,
+                "message": "Failed to send notification"
+            }
+    
+    except Exception as e:
+        logging.error(f"Error sending notification: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/notifications/restaurant")
+async def send_restaurant_notification(
+    request: SendNotificationRequest,
+    current_user: dict = Depends(get_current_user_optional)
+):
+    """Send restaurant-specific notifications (daily specials, offers, etc.)"""
+    try:
+        restaurant_service = get_restaurant_notification_service()
+        result = None
+        
+        if request.type == "daily_special":
+            result = await restaurant_service.send_daily_special_notification(
+                request.data, 
+                request.target_users
+            )
+        elif request.type == "limited_offer":
+            result = await restaurant_service.send_limited_time_offer(
+                request.data, 
+                request.target_users
+            )
+        elif request.type == "favorite_update" and request.target_users:
+            result = await restaurant_service.send_favorite_restaurant_update(
+                request.data, 
+                request.target_users
+            )
+        elif request.type == "daily_digest":
+            result = await restaurant_service.send_daily_digest(request.data)
+        elif request.type == "location_special":
+            result = await restaurant_service.send_location_based_special(
+                request.data, 
+                request.data.get("location", "")
+            )
+        else:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Unknown notification type: {request.type}"
+            )
+        
+        if result:
+            return {
+                "success": True,
+                "notification_id": result.get("id"),
+                "recipients": result.get("recipients", 0),
+                "message": f"{request.type} notification sent successfully"
+            }
+        else:
+            return {
+                "success": False,
+                "message": "Failed to send notification"
+            }
+    
+    except Exception as e:
+        logging.error(f"Error sending restaurant notification: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/notifications/{notification_id}/status")
+async def get_notification_status(
+    notification_id: str,
+    current_user: dict = Depends(get_current_user_optional)
+):
+    """Get notification delivery status and analytics"""
+    try:
+        onesignal_service = get_onesignal_service()
+        status = await onesignal_service.get_notification_status(notification_id)
+        
+        if status:
+            return {
+                "success": True,
+                "status": status
+            }
+        else:
+            return {
+                "success": False,
+                "message": "Could not retrieve notification status"
+            }
+    
+    except Exception as e:
+        logging.error(f"Error getting notification status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/notifications/test")
+async def send_test_notification(
+    current_user: dict = Depends(get_current_user_optional)
+):
+    """Send a test notification for debugging"""
+    try:
+        onesignal_service = get_onesignal_service()
+        
+        payload = NotificationPayload(
+            title="🧪 Test Notification",
+            message="This is a test notification from On-the-Cheap app!",
+            url="/",
+            segments=["All"]
+        )
+        
+        result = await onesignal_service.send_notification(payload)
+        
+        if result:
+            return {
+                "success": True,
+                "notification_id": result.get("id"),
+                "recipients": result.get("recipients", 0),
+                "message": "Test notification sent successfully"
+            }
+        else:
+            return {
+                "success": False,
+                "message": "Failed to send test notification"
+            }
+    
+    except Exception as e:
+        logging.error(f"Error sending test notification: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# =============================================================================
+# STATUS CHECK ENDPOINTS
+# =============================================================================
+
 # Original status check endpoints (keeping for compatibility)
 class StatusCheck(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
