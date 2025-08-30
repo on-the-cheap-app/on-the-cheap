@@ -20,22 +20,51 @@ import APIService from '../services/APIService';
 import OneSignalService from '../services/OneSignalService';
 import { colors, spacing } from '../theme/colors';
 
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  ScrollView,
+  StyleSheet,
+  Alert,
+} from 'react-native';
+import {
+  Card,
+  Title,
+  Paragraph,
+  Button,
+  Switch,
+  List,
+  Divider,
+  ActivityIndicator,
+} from 'react-native-paper';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+
+import APIService from '../services/APIService';
+import OneSignalService from '../services/OneSignalService';
+import { colors, spacing } from '../theme/colors';
+
 const ProfileScreen = ({ navigation }: any) => {
   const [user, setUser] = useState<any>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    loadUserData();
+    checkAuthAndLoadUser();
     checkNotificationPermission();
   }, []);
 
-  const loadUserData = async () => {
+  const checkAuthAndLoadUser = async () => {
     try {
-      const userData = await APIService.getCurrentUser();
-      setUser(userData);
+      const authenticated = await APIService.isAuthenticated();
+      setIsAuthenticated(authenticated);
+      
+      if (authenticated) {
+        const userData = await APIService.getCurrentUser();
+        setUser(userData);
+      }
     } catch (error) {
-      console.error('Error loading user data:', error);
+      console.error('Error checking auth status:', error);
     } finally {
       setLoading(false);
     }
@@ -69,6 +98,24 @@ const ProfileScreen = ({ navigation }: any) => {
     }
   };
 
+  const handleLogin = () => {
+    navigation.navigate('Login', {
+      onLoginSuccess: (userData: any) => {
+        setUser(userData);
+        setIsAuthenticated(true);
+      }
+    });
+  };
+
+  const handleRegister = () => {
+    navigation.navigate('Register', {
+      onRegistrationSuccess: (userData: any) => {
+        setUser(userData);
+        setIsAuthenticated(true);
+      }
+    });
+  };
+
   const handleLogout = () => {
     Alert.alert(
       'Logout',
@@ -80,7 +127,9 @@ const ProfileScreen = ({ navigation }: any) => {
           style: 'destructive',
           onPress: async () => {
             await APIService.logout();
-            // Navigate to login screen or restart app
+            setUser(null);
+            setIsAuthenticated(false);
+            setNotificationsEnabled(false);
           },
         },
       ]
@@ -97,8 +146,121 @@ const ProfileScreen = ({ navigation }: any) => {
   };
 
   if (loading) {
-    return <View style={styles.container} />;
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Paragraph style={styles.loadingText}>Loading profile...</Paragraph>
+      </View>
+    );
   }
+
+  // Not authenticated - show login/register options
+  if (!isAuthenticated || !user) {
+    return (
+      <ScrollView style={styles.container}>
+        <View style={styles.authPrompt}>
+          <Icon name="account-circle" size={80} color={colors.textLight} />
+          <Title style={styles.authTitle}>Welcome to On-the-Cheap!</Title>
+          <Paragraph style={styles.authSubtitle}>
+            Sign in to save your favorite restaurants and get personalized recommendations
+          </Paragraph>
+        </View>
+
+        <Card style={styles.authCard}>
+          <Card.Content>
+            <Button 
+              mode="contained" 
+              onPress={handleLogin}
+              style={styles.authButton}
+              contentStyle={styles.buttonContent}
+            >
+              <Icon name="login" size={16} />
+              Sign In
+            </Button>
+            
+            <Button 
+              mode="outlined" 
+              onPress={handleRegister}
+              style={styles.authButton}
+              contentStyle={styles.buttonContent}
+            >
+              <Icon name="account-plus" size={16} />
+              Create Account
+            </Button>
+          </Card.Content>
+        </Card>
+      </ScrollView>
+    );
+  }
+
+  // Authenticated - show user profile
+  return (
+    <ScrollView style={styles.container}>
+      <Card style={styles.userCard}>
+        <Card.Content>
+          <View style={styles.userInfo}>
+            <Icon name="account-circle" size={64} color={colors.primary} />
+            <View style={styles.userDetails}>
+              <Title>{user.first_name} {user.last_name}</Title>
+              <Paragraph>{user.email}</Paragraph>
+            </View>
+          </View>
+        </Card.Content>
+      </Card>
+
+      <Card style={styles.settingsCard}>
+        <Card.Content>
+          <Title>Notification Settings</Title>
+          
+          <List.Item
+            title="Push Notifications"
+            description="Get notified about restaurant specials"
+            left={(props) => <List.Icon {...props} icon="bell" />}
+            right={() => (
+              <Switch
+                value={notificationsEnabled}
+                onValueChange={handleNotificationToggle}
+              />
+            )}
+          />
+          
+          <Divider />
+          
+          <List.Item
+            title="Test Notification"
+            description="Send a test notification"
+            left={(props) => <List.Icon {...props} icon="bell-ring" />}
+            onPress={sendTestNotification}
+            disabled={!notificationsEnabled}
+          />
+        </Card.Content>
+      </Card>
+
+      <Card style={styles.actionsCard}>
+        <Card.Content>
+          <Title>Account Actions</Title>
+          
+          <Button
+            mode="outlined"
+            onPress={handleLogout}
+            style={styles.logoutButton}
+            textColor={colors.error}
+            contentStyle={styles.buttonContent}
+          >
+            <Icon name="logout" size={16} />
+            Logout
+          </Button>
+        </Card.Content>
+      </Card>
+
+      <View style={styles.appInfo}>
+        <Paragraph style={styles.appVersion}>
+          On-the-Cheap v1.0.0
+        </Paragraph>
+      </View>
+    </ScrollView>
+  );
+};
 
   return (
     <ScrollView style={styles.container}>
