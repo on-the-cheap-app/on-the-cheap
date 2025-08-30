@@ -3983,6 +3983,33 @@ def main():
     tester = OnTheCheapAPITester()
     return tester.run_all_tests()
 
+def test_phase3a_restaurant_photos_only():
+    """Test runner specifically for Phase 3A: Restaurant Photos Integration"""
+    print("📸 TESTING PHASE 3A: RESTAURANT PHOTOS INTEGRATION")
+    print("=" * 70)
+    print("This test focuses on verifying the newly implemented restaurant photos integration.")
+    print("Testing Google Places Photos API integration and fallback photo system.")
+    print("=" * 70)
+    
+    tester = OnTheCheapAPITester()
+    
+    # Run the comprehensive restaurant photos integration test
+    print("\n📋 Running Phase 3A restaurant photos integration tests...")
+    
+    success = tester.test_restaurant_photos_integration_phase3a()
+    
+    # Print focused summary
+    print("\n" + "=" * 70)
+    print(f"📊 PHASE 3A RESTAURANT PHOTOS Results: {tester.tests_passed}/{tester.tests_run} tests passed")
+    
+    if success and tester.tests_passed == tester.tests_run:
+        print("🎉 All Phase 3A restaurant photos integration tests passed!")
+        print("✅ Restaurant photos integration is working correctly for mobile app consumption")
+        return 0
+    else:
+        print(f"⚠️  {tester.tests_run - tester.tests_passed} Phase 3A tests failed - photos integration may have issues")
+        return 1
+
 def test_fixed_favorites_only():
     """Test runner specifically for the FIXED Google Places favorites functionality"""
     print("🔧 TESTING FIXED GOOGLE PLACES FAVORITES FUNCTIONALITY")
