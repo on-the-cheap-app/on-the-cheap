@@ -152,6 +152,11 @@ const NotificationPreferences = ({ user, onClose }) => {
           <div className="text-gray-600 mb-4">
             <div className="text-4xl mb-2">🔕</div>
             <p className="text-sm">Push notifications are not enabled</p>
+            {!notificationsInitialized && (
+              <p className="text-xs text-orange-600 mt-1">
+                OneSignal is loading in the background, but you can still enable notifications
+              </p>
+            )}
           </div>
           
           <div className="bg-blue-50 p-4 rounded-lg mb-4">
@@ -172,6 +177,13 @@ const NotificationPreferences = ({ user, onClose }) => {
           >
             {isLoading ? 'Setting up...' : 'Enable Notifications'}
           </button>
+          
+          <p className="text-xs text-gray-500 mt-3">
+            {notificationsInitialized 
+              ? 'Powered by OneSignal' 
+              : 'Browser notifications (OneSignal enhances delivery when available)'
+            }
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
