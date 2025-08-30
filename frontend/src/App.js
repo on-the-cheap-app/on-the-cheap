@@ -640,7 +640,7 @@ function App() {
           <div className="mb-6">
             {viewMode === 'list' ? (
               /* List View */
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 {restaurants.map((restaurant) => (
                   <Card key={restaurant.id} className="hover:shadow-lg transition-shadow">
                     <CardHeader>
