@@ -33,6 +33,13 @@ const ProfileScreen = ({ navigation }: any) => {
     checkNotificationPermission();
   }, []);
 
+  // Add focus effect to refresh auth state when screen becomes active
+  useFocusEffect(
+    React.useCallback(() => {
+      checkAuthAndLoadUser();
+    }, [])
+  );
+
   const checkAuthAndLoadUser = async () => {
     try {
       const authenticated = await APIService.isAuthenticated();
