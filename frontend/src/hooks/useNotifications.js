@@ -14,7 +14,7 @@ export const useNotifications = () => {
         setIsLoading(true);
         
         // Check if OneSignal is already initialized
-        if (window.OneSignal && window.OneSignal.User) {
+        if (window.OneSignal && window.OneSignal._initCalled) {
           console.log('OneSignal already initialized, using existing instance');
           setIsInitialized(true);
           
@@ -28,6 +28,27 @@ export const useNotifications = () => {
           }
           
           setIsLoading(false);
+          return;
+        }
+        
+        // Also check if OneSignal is available and ready
+        if (window.OneSignal && typeof window.OneSignal.push === 'function') {
+          // Use the push method to ensure we don't double-initialize
+          window.OneSignal.push(function() {
+            console.log('OneSignal was already available, setting as initialized');
+            setIsInitialized(true);
+            setIsLoading(false);
+            
+            try {
+              OneSignal.Notifications.permission.then(permission => {
+                setIsEnabled(permission === true);
+              }).catch(() => {
+                setIsEnabled(false);
+              });
+            } catch (e) {
+              setIsEnabled(false);
+            }
+          });
           return;
         }
         
