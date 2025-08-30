@@ -113,14 +113,22 @@ class APIService {
     }
   }
 
-  async toggleFavorite(restaurantId: string) {
+  async addFavorite(restaurantId: string) {
     try {
-      const response = await this.api.post('/users/favorites/toggle', {
-        restaurant_id: restaurantId,
-      });
+      const response = await this.api.post(`/users/favorites/${restaurantId}`);
       return response.data;
     } catch (error) {
-      console.error('API Error - Toggle Favorite:', error);
+      console.error('API Error - Add Favorite:', error);
+      throw error;
+    }
+  }
+
+  async removeFavorite(restaurantId: string) {
+    try {
+      const response = await this.api.delete(`/users/favorites/${restaurantId}`);
+      return response.data;
+    } catch (error) {
+      console.error('API Error - Remove Favorite:', error);
       throw error;
     }
   }
