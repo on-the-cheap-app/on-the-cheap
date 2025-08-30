@@ -2740,6 +2740,23 @@ class OnTheCheapAPITester:
         self.test_fixed_google_places_favorites_workflow()
         self.test_google_places_api_integration()
         
+        print("\n" + "🔔 PUSH NOTIFICATIONS TESTS")
+        print("=" * 50)
+        
+        # Push Notifications functionality tests
+        self.test_onesignal_service_initialization()
+        self.test_send_general_notification()
+        self.test_send_restaurant_daily_special_notification()
+        self.test_send_restaurant_limited_offer_notification()
+        self.test_send_restaurant_favorite_update_notification()
+        self.test_send_restaurant_daily_digest_notification()
+        self.test_send_restaurant_location_special_notification()
+        self.test_send_test_notification()
+        self.test_get_notification_status()
+        self.test_notification_authentication_integration()
+        self.test_notification_error_handling()
+        self.test_notification_payload_validation()
+        
         # Print summary
         print("\n" + "=" * 50)
         print(f"📊 Test Results: {self.tests_passed}/{self.tests_run} tests passed")
