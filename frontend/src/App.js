@@ -894,6 +894,7 @@ function App() {
           onUserLogin={handleUserLogin}
           currentFavorites={userFavorites}
           onFavoritesUpdate={setUserFavorites}
+          onShowNotificationPreferences={() => setShowNotificationPreferences(true)}
         />
       )}
 
