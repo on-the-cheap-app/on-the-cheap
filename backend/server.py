@@ -522,7 +522,7 @@ async def get_current_regular_user(credentials: HTTPAuthorizationCredentials = D
     
     return prepare_from_mongo(user)
 
-async def get_current_user_optional(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)):
+async def get_current_user_optional(credentials: Optional[HTTPAuthorizationCredentials] = Depends(lambda: None)):
     """Get current authenticated user (optional - returns None if no valid token)"""
     if not credentials:
         return None
