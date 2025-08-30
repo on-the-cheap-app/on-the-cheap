@@ -442,6 +442,20 @@ function App() {
                     <User className="w-4 h-4 mr-2" />
                     {currentUser.first_name}
                   </Button>
+                  
+                  {notificationsInitialized && (
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowNotificationPreferences(true)}
+                      className={`${notificationsEnabled 
+                        ? 'border-green-600 text-green-600 hover:bg-green-50' 
+                        : 'border-gray-400 text-gray-600 hover:bg-gray-50'
+                      }`}
+                      title={notificationsEnabled ? 'Manage Notifications' : 'Enable Notifications'}
+                    >
+                      <Bell className={`w-4 h-4 ${notificationsEnabled ? 'fill-current' : ''}`} />
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <Button
