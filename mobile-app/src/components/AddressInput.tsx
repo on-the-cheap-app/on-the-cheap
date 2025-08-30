@@ -91,6 +91,11 @@ const AddressInput: React.FC<AddressInputProps> = ({
     setShowSuggestions(false);
     setSuggestions([]);
     onAddressSelect(suggestion);
+    
+    // Prevent immediate re-triggering of search
+    setTimeout(() => {
+      setQuery(suggestion.formatted_address);
+    }, 100);
   };
 
   const handleQueryChange = (text: string) => {
