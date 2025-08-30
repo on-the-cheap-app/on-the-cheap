@@ -11,6 +11,25 @@ export const useNotifications = () => {
       try {
         setIsLoading(true);
         
+        // Check if OneSignal is already initialized
+        if (window.OneSignal && window.OneSignal.User) {
+          console.log('OneSignal already initialized, using existing instance');
+          setIsInitialized(true);
+          
+          // Check current permission status
+          try {
+            const permission = await OneSignal.Notifications.permission;
+            setIsEnabled(permission === true);
+          } catch (permError) {
+            console.log('Permission check failed, defaulting to false');
+            setIsEnabled(false);
+          }
+          
+          setIsLoading(false);
+          return;
+        }
+        
+        // Initialize OneSignal if not already done
         await OneSignal.init({
           appId: process.env.REACT_APP_ONESIGNAL_APP_ID,
           allowLocalhostAsSecureOrigin: true, // For development/testing
@@ -19,12 +38,24 @@ export const useNotifications = () => {
         setIsInitialized(true);
         
         // Check current permission status
-        const permission = await OneSignal.Notifications.permission;
-        setIsEnabled(permission === true);
+        try {
+          const permission = await OneSignal.Notifications.permission;
+          setIsEnabled(permission === true);
+        } catch (permError) {
+          console.log('Permission check failed, defaulting to false');
+          setIsEnabled(false);
+        }
         
         console.log('OneSignal initialized successfully');
       } catch (error) {
         console.error('Failed to initialize OneSignal:', error);
+        
+        // If it's already initialized error, still set as initialized
+        if (error.message && error.message.includes('already initialized')) {
+          console.log('OneSignal was already initialized, setting as ready');
+          setIsInitialized(true);
+          setIsEnabled(false); // Default to false, user can enable later
+        }
       } finally {
         setIsLoading(false);
       }
