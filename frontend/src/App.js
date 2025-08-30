@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import axios from "axios";
-import { MapPin, Clock, DollarSign, Phone, Globe, Star, Search, Navigation, Building2, ArrowLeft, User, Heart, Share2, MessageCircle, Car, ExternalLink, X, Map, List, Truck } from "lucide-react";
+import { MapPin, Clock, DollarSign, Phone, Globe, Star, Search, Navigation, Building2, ArrowLeft, User, Heart, Share2, MessageCircle, Car, ExternalLink, X, Map, List, Truck, Bell } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/card";
@@ -12,6 +12,8 @@ import UserAuth from "./UserAuth";
 import AddressInput from "./components/AddressInput";
 import GeocodingDemo from "./components/GeocodingDemo";
 import RestaurantMap from "./components/RestaurantMap";
+import NotificationPreferences from "./components/NotificationPreferences";
+import useNotifications from "./hooks/useNotifications";
 import * as Analytics from './utils/analytics';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
