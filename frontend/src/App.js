@@ -920,6 +920,16 @@ function App() {
         </div>
       )}
 
+      {/* Notification Preferences Modal */}
+      {showNotificationPreferences && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <NotificationPreferences 
+            user={currentUser}
+            onClose={() => setShowNotificationPreferences(false)}
+          />
+        </div>
+      )}
+
       {/* Footer */}
       <footer className="bg-white border-t mt-12">
         <div className="max-w-6xl mx-auto px-4 py-8">
