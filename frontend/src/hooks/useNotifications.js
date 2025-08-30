@@ -68,11 +68,22 @@ export const useNotifications = () => {
         isOneSignalInitialized = true;
         
         // Initialize OneSignal if not already done
-        await OneSignal.init({
+        console.log('🔔 Starting OneSignal initialization...');
+        
+        // Add timeout wrapper for the init call itself
+        const initPromise = OneSignal.init({
           appId: process.env.REACT_APP_ONESIGNAL_APP_ID,
           allowLocalhostAsSecureOrigin: true, // For development/testing
         });
         
+        // Race between init and a 8-second timeout
+        const initTimeout = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Init timeout')), 8000);
+        });
+        
+        await Promise.race([initPromise, initTimeout]);
+        
+        console.log('🔔 OneSignal initialization completed');
         setIsInitialized(true);
         
         // Check current permission status
