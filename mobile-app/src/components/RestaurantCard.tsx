@@ -118,7 +118,7 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
             <View style={styles.specialsInfo}>
               <Icon name="information-outline" size={16} color={colors.textLight} />
               <Text style={styles.noSpecialsText}>
-                No current specials
+                {restaurant.specials_message || 'No current specials'}
               </Text>
             </View>
           )}
