@@ -22,10 +22,10 @@ import { colors, spacing } from '../theme/colors';
 
 interface RegisterScreenProps {
   navigation: any;
-  onRegistrationSuccess: (userData: any) => void;
+  route?: any;
 }
 
-const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation, onRegistrationSuccess }) => {
+const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation, route }) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -34,6 +34,8 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation, onRegistrat
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const onRegistrationSuccess = route?.params?.onRegistrationSuccess;
 
   const handleRegister = async () => {
     // Validation
