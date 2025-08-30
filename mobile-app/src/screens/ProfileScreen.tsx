@@ -16,6 +16,7 @@ import {
   ActivityIndicator,
 } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useFocusEffect } from '@react-navigation/native';
 
 import APIService from '../services/APIService';
 import OneSignalService from '../services/OneSignalService';
