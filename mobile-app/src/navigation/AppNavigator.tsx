@@ -119,6 +119,22 @@ const AppNavigator = () => {
           title: 'Restaurant Details',
         }}
       />
+      <Stack.Screen 
+        name="Login" 
+        component={LoginScreen}
+        options={{
+          title: 'Sign In',
+          presentation: 'modal',
+        }}
+      />
+      <Stack.Screen 
+        name="Register" 
+        component={RegisterScreen}
+        options={{
+          title: 'Create Account',
+          presentation: 'modal',
+        }}
+      />
     </Stack.Navigator>
   );
 };
