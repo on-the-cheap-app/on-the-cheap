@@ -236,59 +236,152 @@ const HomeScreen = ({ navigation }: any) => {
       }
     >
       <View style={styles.searchSection}>
-        <Searchbar
-          placeholder="Enter city or address"
-          onChangeText={setSearchQuery}
-          value={searchQuery}
-          onSubmitEditing={searchByAddress}
-          style={styles.searchbar}
-        />
-        
-        <View style={styles.buttonRow}>
-          <Button
-            mode="contained"
-            onPress={searchByAddress}
-            style={styles.searchButton}
-            disabled={loading}
-          >
-            Search Area
-          </Button>
-          
-          <Button
-            mode="outlined"
-            onPress={getCurrentLocation}
-            style={styles.locationButton}
-            disabled={loading}
-          >
-            <Icon name="crosshairs-gps" size={16} />
-            Near Me
-          </Button>
-        </View>
+        <Card style={styles.searchCard}>
+          <Card.Content>
+            <Title style={styles.searchTitle}>Find Restaurant Specials</Title>
+            <Paragraph style={styles.searchSubtitle}>
+              Search by location or use your current position
+            </Paragraph>
+            
+            {/* Enhanced Address Input */}
+            <AddressInput
+              placeholder="Enter city or address (e.g., San Francisco, New York)"
+              onAddressSelect={handleAddressSelect}
+              initialValue={searchLocation}
+              region="US"
+              style={styles.addressInput}
+            />
+            
+            <View style={styles.buttonRow}>
+              <Button
+                mode="outlined"
+                onPress={getCurrentLocation}
+                style={styles.locationButton}
+                disabled={loading}
+                icon="crosshairs-gps"
+              >
+                Near Me
+              </Button>
+              
+              {restaurants.length > 0 && (
+                <Button
+                  mode="outlined"
+                  onPress={clearSearch}
+                  style={styles.clearButton}
+                  disabled={loading}
+                  icon="close"
+                >
+                  Clear
+                </Button>
+              )}
+            </View>
+          </Card.Content>
+        </Card>
 
-        {/* Filter chips */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterSection}>
-          <Chip
-            selected={selectedVendorType === 'all'}
-            onPress={() => setSelectedVendorType('all')}
-            style={styles.filterChip}
-          >
-            All Venues
-          </Chip>
-          <Chip
-            selected={selectedVendorType === 'permanent'}
-            onPress={() => setSelectedVendorType('permanent')}
-            style={styles.filterChip}
-          >
-            Restaurants
-          </Chip>
-          <Chip
-            selected={selectedVendorType === 'mobile'}
-            onPress={() => setSelectedVendorType('mobile')}
-            style={styles.filterChip}
-          >
-            Food Trucks
-          </Chip>
-        </ScrollView>
+        {/* Advanced Filters */}
+        <Card style={styles.filtersCard}>
+          <Card.Content>
+            <Title style={styles.filtersTitle}>Filters</Title>
+            
+            {/* Vendor Type Filter */}
+            <View style={styles.filterSection}>
+              <Text style={styles.filterLabel}>Venue Type</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
+                <Chip
+                  selected={selectedVendorType === 'all'}
+                  onPress={() => setSelectedVendorType('all')}
+                  style={styles.filterChip}
+                >
+                  All Venues
+                </Chip>
+                <Chip
+                  selected={selectedVendorType === 'permanent'}
+                  onPress={() => setSelectedVendorType('permanent')}
+                  style={styles.filterChip}
+                >
+                  Restaurants
+                </Chip>
+                <Chip
+                  selected={selectedVendorType === 'mobile'}
+                  onPress={() => setSelectedVendorType('mobile')}
+                  style={styles.filterChip}
+                >
+                  🚛 Food Trucks
+                </Chip>
+              </ScrollView>
+            </View>
+
+            {/* Special Type Filter */}
+            <View style={styles.filterSection}>
+              <Text style={styles.filterLabel}>Special Type</Text>
+              <Menu
+                visible={specialTypeMenuVisible}
+                onDismiss={() => setSpecialTypeMenuVisible(false)}
+                anchor={
+                  <Button
+                    mode="outlined"
+                    onPress={() => setSpecialTypeMenuVisible(true)}
+                    style={styles.dropdownButton}
+                    contentStyle={styles.dropdownContent}
+                  >
+                    {selectedSpecialType === 'all' ? 'All Specials' : getSpecialTypeLabel(selectedSpecialType)}
+                    <Icon name="chevron-down" size={16} />
+                  </Button>
+                }
+              >
+                <Menu.Item 
+                  onPress={() => {
+                    setSelectedSpecialType('all');
+                    setSpecialTypeMenuVisible(false);
+                  }} 
+                  title="All Specials" 
+                />
+                <Divider />
+                {specialTypes.map((type) => (
+                  <Menu.Item
+                    key={type.value}
+                    onPress={() => {
+                      setSelectedSpecialType(type.value);
+                      setSpecialTypeMenuVisible(false);
+                    }}
+                    title={type.label}
+                  />
+                ))}
+              </Menu>
+            </View>
+
+            {/* Radius Filter */}
+            <View style={styles.filterSection}>
+              <Text style={styles.filterLabel}>Search Radius</Text>
+              <Menu
+                visible={radiusMenuVisible}
+                onDismiss={() => setRadiusMenuVisible(false)}
+                anchor={
+                  <Button
+                    mode="outlined"
+                    onPress={() => setRadiusMenuVisible(true)}
+                    style={styles.dropdownButton}
+                    contentStyle={styles.dropdownContent}
+                  >
+                    {getRadiusLabel(selectedRadius)}
+                    <Icon name="chevron-down" size={16} />
+                  </Button>
+                }
+              >
+                {radiusOptions.map((option) => (
+                  <Menu.Item
+                    key={option.value}
+                    onPress={() => {
+                      setSelectedRadius(option.value);
+                      setRadiusMenuVisible(false);
+                    }}
+                    title={option.label}
+                  />
+                ))}
+              </Menu>
+            </View>
+          </Card.Content>
+        </Card>
       </View>
 
       {/* Loading indicator */}
@@ -299,13 +392,30 @@ const HomeScreen = ({ navigation }: any) => {
         </View>
       )}
 
+      {/* Search Results Header */}
+      {!loading && restaurants.length > 0 && lastSearchLocation && (
+        <View style={styles.resultsHeader}>
+          <Card style={styles.resultsCard}>
+            <Card.Content>
+              <View style={styles.resultsInfo}>
+                <Icon name="map-marker" size={20} color={colors.primary} />
+                <View style={styles.resultsText}>
+                  <Text style={styles.resultsTitle}>
+                    Found {restaurants.length} restaurant{restaurants.length !== 1 ? 's' : ''}
+                  </Text>
+                  <Text style={styles.resultsSubtitle}>
+                    within {getRadiusLabel(selectedRadius)} of {lastSearchLocation}
+                  </Text>
+                </View>
+              </View>
+            </Card.Content>
+          </Card>
+        </View>
+      )}
+
       {/* Results */}
       {!loading && restaurants.length > 0 && (
-        <View style={styles.resultsSection}>
-          <Text style={styles.resultsTitle}>
-            Found {restaurants.length} restaurant{restaurants.length !== 1 ? 's' : ''}
-          </Text>
-          
+        <View style={styles.resultsSection}>          
           {restaurants.map((restaurant) => (
             <RestaurantCard
               key={restaurant.id}
@@ -317,20 +427,43 @@ const HomeScreen = ({ navigation }: any) => {
       )}
 
       {/* No results */}
-      {!loading && restaurants.length === 0 && location && (
+      {!loading && restaurants.length === 0 && lastSearchLocation && (
         <View style={styles.noResultsContainer}>
-          <Icon name="silverware-fork-knife" size={64} color={colors.textLight} />
-          <Text style={styles.noResultsTitle}>No restaurants found</Text>
-          <Text style={styles.noResultsText}>
-            Try expanding your search area or removing filters
-          </Text>
-          <Button
-            mode="outlined"
-            onPress={() => searchNearbyRestaurants()}
-            style={styles.retryButton}
-          >
-            Search Again
-          </Button>
+          <Card style={styles.noResultsCard}>
+            <Card.Content style={styles.noResultsContent}>
+              <Icon name="silverware-fork-knife" size={64} color={colors.textLight} />
+              <Text style={styles.noResultsTitle}>No restaurants found</Text>
+              <Text style={styles.noResultsText}>
+                Try expanding your search radius or removing filters
+              </Text>
+              <Button
+                mode="outlined"
+                onPress={() => {
+                  if (location) {
+                    searchNearbyRestaurants();
+                  }
+                }}
+                style={styles.retryButton}
+              >
+                Search Again
+              </Button>
+            </Card.Content>
+          </Card>
+        </View>
+      )}
+
+      {/* Welcome message */}
+      {!loading && restaurants.length === 0 && !lastSearchLocation && (
+        <View style={styles.welcomeContainer}>
+          <Card style={styles.welcomeCard}>
+            <Card.Content style={styles.welcomeContent}>
+              <Icon name="silverware-fork-knife" size={80} color={colors.primary} />
+              <Text style={styles.welcomeTitle}>Welcome to On-the-Cheap!</Text>
+              <Text style={styles.welcomeText}>
+                Enter a location or enable location services to discover amazing restaurant deals near you
+              </Text>
+            </Card.Content>
+          </Card>
         </View>
       )}
     </ScrollView>
