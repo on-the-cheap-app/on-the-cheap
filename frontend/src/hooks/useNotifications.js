@@ -81,35 +81,105 @@ export const useNotifications = () => {
   }, []);
 
   const requestPermission = useCallback(async () => {
+    console.log('🔔 Permission request initiated...');
+    
     if (!isInitialized) {
       console.error('OneSignal not initialized yet');
+      alert('OneSignal is not ready yet. Please try again in a moment.');
       return false;
     }
 
     try {
       setIsLoading(true);
       
-      // Show the permission prompt
-      await OneSignal.Slidedown.promptPush();
-      
-      // Check the result
-      const permission = await OneSignal.Notifications.permission;
-      const granted = permission === true;
-      setIsEnabled(granted);
-      
-      if (granted) {
-        console.log('Push notifications enabled successfully');
-        
-        // Tag user as having notifications enabled
-        await OneSignal.User.addTags({
-          notifications_enabled: 'true',
-          enabled_date: new Date().toISOString()
-        });
+      // First check if browser supports notifications
+      if (!('Notification' in window)) {
+        alert('This browser does not support notifications');
+        return false;
       }
       
-      return granted;
+      console.log('🔔 Browser supports notifications, current permission:', Notification.permission);
+      
+      // If permission is already denied, guide user to enable manually
+      if (Notification.permission === 'denied') {
+        alert('Notifications are blocked. Please click the lock icon in your address bar and allow notifications, then refresh the page.');
+        return false;
+      }
+      
+      // If permission is already granted, just update state
+      if (Notification.permission === 'granted') {
+        console.log('🔔 Permission already granted');
+        setIsEnabled(true);
+        
+        // Tag user as having notifications enabled
+        try {
+          await OneSignal.User.addTags({
+            notifications_enabled: 'true',
+            enabled_date: new Date().toISOString()
+          });
+        } catch (tagError) {
+          console.error('Failed to tag user:', tagError);
+        }
+        
+        return true;
+      }
+      
+      // Try OneSignal slidedown first
+      try {
+        console.log('🔔 Attempting OneSignal slidedown prompt...');
+        await OneSignal.Slidedown.promptPush();
+        
+        // Wait a moment for the permission to be processed
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Check the result
+        const permission = await OneSignal.Notifications.permission;
+        const granted = permission === true;
+        console.log('🔔 OneSignal permission result:', granted);
+        
+        setIsEnabled(granted);
+        
+        if (granted) {
+          console.log('Push notifications enabled successfully via OneSignal');
+          
+          // Tag user as having notifications enabled
+          await OneSignal.User.addTags({
+            notifications_enabled: 'true',
+            enabled_date: new Date().toISOString()
+          });
+        }
+        
+        return granted;
+      } catch (slidedownError) {
+        console.log('🔔 OneSignal slidedown failed, trying browser API:', slidedownError);
+        
+        // Fallback to browser permission API
+        const permission = await Notification.requestPermission();
+        const granted = permission === 'granted';
+        
+        console.log('🔔 Browser API permission result:', granted);
+        setIsEnabled(granted);
+        
+        if (granted) {
+          console.log('Push notifications enabled successfully via browser API');
+          
+          // Tag user as having notifications enabled
+          try {
+            await OneSignal.User.addTags({
+              notifications_enabled: 'true',
+              enabled_date: new Date().toISOString()
+            });
+          } catch (tagError) {
+            console.error('Failed to tag user:', tagError);
+          }
+        }
+        
+        return granted;
+      }
+      
     } catch (error) {
       console.error('Failed to request notification permission:', error);
+      alert('Failed to enable notifications. Please try refreshing the page.');
       return false;
     } finally {
       setIsLoading(false);
