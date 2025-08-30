@@ -91,7 +91,7 @@ function App() {
   const [showUserAuth, setShowUserAuth] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [userFavorites, setUserFavorites] = useState([]);
-  const [showGeocodingDemo, setShowGeocodingDemo] = useState(false);
+
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
   const [selectedVendorType, setSelectedVendorType] = useState('all'); // 'all', 'permanent', 'mobile'
   const [showNotificationPreferences, setShowNotificationPreferences] = useState(false);
