@@ -70,7 +70,7 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
   return (
     <Card style={styles.card} onPress={onPress}>
       {/* Restaurant Photo */}
-      {primaryPhoto && (
+      {primaryPhoto ? (
         <View style={styles.photoContainer}>
           <Image
             source={{ uri: primaryPhoto.url }}
@@ -101,6 +101,11 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
               <Text style={styles.photoCountText}>{restaurant.photos.length}</Text>
             </View>
           )}
+        </View>
+      ) : (
+        <View style={styles.noPhotoContainer}>
+          <Icon name="image-off" size={48} color={colors.textLight} />
+          <Text style={styles.noPhotoText}>No Photo Available</Text>
         </View>
       )}
 
