@@ -144,6 +144,8 @@ const HomeScreen = ({ navigation }: any) => {
       }
       
       console.log(`Found ${result.restaurants?.length || 0} restaurants within ${formatDistance(selectedRadius)}`);
+      console.log('Restaurants array:', result.restaurants?.length || 0, 'total restaurants');
+      console.log('First restaurant structure:', result.restaurants?.[0] ? Object.keys(result.restaurants[0]) : 'No restaurants');
     } catch (error) {
       console.error('Search error:', error);
       Alert.alert('Search Error', 'Could not search for restaurants. Please try again.');
