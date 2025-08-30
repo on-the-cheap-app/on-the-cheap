@@ -483,7 +483,7 @@ function App() {
       </div>
 
       {/* Search Section */}
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="text-xl font-semibold">Find Restaurant Specials</CardTitle>
