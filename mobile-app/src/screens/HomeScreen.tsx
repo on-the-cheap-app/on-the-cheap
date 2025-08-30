@@ -423,13 +423,16 @@ const HomeScreen = ({ navigation }: any) => {
       {/* Results */}
       {!loading && restaurants.length > 0 && (
         <View style={styles.resultsSection}>          
-          {restaurants.map((restaurant) => (
-            <RestaurantCard
-              key={restaurant.id}
-              restaurant={restaurant}
-              onPress={() => navigation.navigate('RestaurantDetail', { restaurant })}
-            />
-          ))}
+          {restaurants.map((restaurant, index) => {
+            console.log(`Rendering restaurant ${index}:`, restaurant.name, 'Photos:', restaurant.photos?.length || 0);
+            return (
+              <RestaurantCard
+                key={restaurant.id}
+                restaurant={restaurant}
+                onPress={() => navigation.navigate('RestaurantDetail', { restaurant })}
+              />
+            );
+          })}
         </View>
       )}
 
