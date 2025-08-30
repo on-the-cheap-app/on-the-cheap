@@ -173,10 +173,14 @@ async function handleResourceRequest(request) {
     // If not in cache, try network
     const networkResponse = await fetch(request);
     
-    // Cache successful responses
-    if (networkResponse.ok) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, networkResponse.clone());
+    // Only cache GET requests and successful responses
+    if (networkResponse.ok && request.method === 'GET') {
+      try {
+        const cache = await caches.open(CACHE_NAME);
+        cache.put(request, networkResponse.clone());
+      } catch (cacheError) {
+        console.log('Cache put failed:', cacheError.message);
+      }
     }
     
     return networkResponse;
