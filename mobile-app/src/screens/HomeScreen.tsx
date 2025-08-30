@@ -157,12 +157,13 @@ const HomeScreen = ({ navigation }: any) => {
       // First geocode the address
       const geocodeResult = await APIService.geocodeAddress(searchQuery);
       
-      if (geocodeResult.results && geocodeResult.results.length > 0) {
-        const { lat, lng } = geocodeResult.results[0].geometry.location;
-        setLocation({ latitude: lat, longitude: lng });
+      if (geocodeResult.coordinates) {
+        const { latitude, longitude } = geocodeResult.coordinates;
+        setLocation({ latitude, longitude });
+        setLastSearchLocation(geocodeResult.formatted_address || searchQuery);
         
         // Then search restaurants
-        await searchNearbyRestaurants(lat, lng);
+        await searchNearbyRestaurants(latitude, longitude);
       } else {
         Alert.alert('Address Not Found', 'Could not find the specified address');
       }
@@ -172,6 +173,48 @@ const HomeScreen = ({ navigation }: any) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle address selection from AddressInput component
+  const handleAddressSelect = (result: any) => {
+    setSearchLocation(result.formatted_address);
+    setLocation({ latitude: result.latitude, longitude: result.longitude });
+    setLastSearchLocation(result.formatted_address);
+    setLoading(true);
+    searchNearbyRestaurants(result.latitude, result.longitude);
+  };
+
+  // Format distance helper
+  const formatDistance = (meters: number): string => {
+    const miles = meters * 0.000621371;
+    if (miles < 1) {
+      return `${Math.round(miles * 5280)} ft`;
+    }
+    return `${miles.toFixed(1)} mi`;
+  };
+
+  // Clear search and reset state
+  const clearSearch = () => {
+    setRestaurants([]);
+    setSearchQuery('');
+    setSearchLocation('');
+    setLastSearchLocation('');
+    setLocation(null);
+    setSelectedSpecialType('all');
+    setSelectedVendorType('all');
+    setSelectedRadius(25000);
+  };
+
+  // Format special type label
+  const getSpecialTypeLabel = (value: string): string => {
+    const specialType = specialTypes.find(st => st.value === value);
+    return specialType ? specialType.label : value.replace('_', ' ');
+  };
+
+  // Format radius label
+  const getRadiusLabel = (meters: number): string => {
+    const option = radiusOptions.find(opt => opt.value === meters);
+    return option ? option.label : formatDistance(meters);
   };
 
   // Refresh data
