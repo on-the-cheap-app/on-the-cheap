@@ -50,7 +50,24 @@ const HomeScreen = ({ navigation }: any) => {
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [selectedSpecialType, setSelectedSpecialType] = useState<string>('all');
   const [selectedVendorType, setSelectedVendorType] = useState<string>('all');
+  const [selectedRadius, setSelectedRadius] = useState<number>(25000); // 25km in meters
   const [specialTypes, setSpecialTypes] = useState<any[]>([]);
+  const [searchLocation, setSearchLocation] = useState<string>('');
+  const [lastSearchLocation, setLastSearchLocation] = useState<string>('');
+  
+  // Menu states for dropdowns
+  const [specialTypeMenuVisible, setSpecialTypeMenuVisible] = useState(false);
+  const [radiusMenuVisible, setRadiusMenuVisible] = useState(false);
+
+  // Radius options
+  const radiusOptions = [
+    { label: '1 mile', value: 1609 },
+    { label: '2 miles', value: 3219 },
+    { label: '5 miles', value: 8047 },
+    { label: '10 miles', value: 16094 },
+    { label: '15 miles', value: 24140 },
+    { label: '25 miles', value: 40234 },
+  ];
 
   useEffect(() => {
     getCurrentLocation();
