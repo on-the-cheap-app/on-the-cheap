@@ -86,18 +86,26 @@ const ProfileScreen = ({ navigation }: any) => {
 
   const handleLogin = () => {
     navigation.navigate('Login', {
-      onLoginSuccess: (userData: any) => {
+      onLoginSuccess: async (userData: any) => {
+        // Update local state immediately
         setUser(userData);
         setIsAuthenticated(true);
+        
+        // Also refresh from server to ensure consistency
+        await checkAuthAndLoadUser();
       }
     });
   };
 
   const handleRegister = () => {
     navigation.navigate('Register', {
-      onRegistrationSuccess: (userData: any) => {
+      onRegistrationSuccess: async (userData: any) => {
+        // Update local state immediately  
         setUser(userData);
         setIsAuthenticated(true);
+        
+        // Also refresh from server to ensure consistency
+        await checkAuthAndLoadUser();
       }
     });
   };
