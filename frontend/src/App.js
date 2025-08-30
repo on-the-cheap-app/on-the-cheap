@@ -94,6 +94,10 @@ function App() {
   const [showGeocodingDemo, setShowGeocodingDemo] = useState(false);
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
   const [selectedVendorType, setSelectedVendorType] = useState('all'); // 'all', 'permanent', 'mobile'
+  const [showNotificationPreferences, setShowNotificationPreferences] = useState(false);
+  
+  // OneSignal hook
+  const { isEnabled: notificationsEnabled, isInitialized: notificationsInitialized, tagUser } = useNotifications();
 
   useEffect(() => {
     // Initialize analytics
