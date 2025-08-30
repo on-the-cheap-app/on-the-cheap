@@ -453,6 +453,7 @@ function App() {
       {/* PWA Components */}
       <OfflineIndicator />
       <PWAInstallBanner />
+      <PWAManualInstall />
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-6xl mx-auto px-4 py-4 sm:py-6">
