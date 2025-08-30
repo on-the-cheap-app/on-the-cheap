@@ -13,28 +13,6 @@ import {
   Switch,
   List,
   Divider,
-} from 'react-native-paper';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-
-import APIService from '../services/APIService';
-import OneSignalService from '../services/OneSignalService';
-import { colors, spacing } from '../theme/colors';
-
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  ScrollView,
-  StyleSheet,
-  Alert,
-} from 'react-native';
-import {
-  Card,
-  Title,
-  Paragraph,
-  Button,
-  Switch,
-  List,
-  Divider,
   ActivityIndicator,
 } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
