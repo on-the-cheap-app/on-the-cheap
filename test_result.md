@@ -441,7 +441,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Mobile App Core Features Port - Phase 2"
+    - "Mobile App Restaurant Images Integration - Phase 3A"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
