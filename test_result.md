@@ -396,11 +396,11 @@ metadata:
 
   - task: "Push Notifications with OneSignal Integration"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/hooks/useNotifications.js, /app/frontend/src/components/NotificationPreferences.js, /app/frontend/src/App.js, /app/frontend/src/UserAuth.js, /app/backend/onesignal_service.py, /app/backend/server.py, /app/frontend/public/OneSignalSDKWorker.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
