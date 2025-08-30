@@ -522,9 +522,6 @@ async def get_current_regular_user(credentials: HTTPAuthorizationCredentials = D
     
     return prepare_from_mongo(user)
 
-from fastapi.security import HTTPBearer
-from fastapi import Request
-
 # Optional security for endpoints that can work with or without authentication
 optional_security = HTTPBearer(auto_error=False)
 
