@@ -337,6 +337,42 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     padding: spacing.md,
   },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: spacing.md,
+    color: colors.textLight,
+  },
+  authPrompt: {
+    alignItems: 'center',
+    padding: spacing.xl,
+    marginBottom: spacing.lg,
+  },
+  authTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.textDark,
+    marginTop: spacing.md,
+    textAlign: 'center',
+  },
+  authSubtitle: {
+    fontSize: 16,
+    color: colors.textLight,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+    lineHeight: 22,
+  },
+  authCard: {
+    marginBottom: spacing.md,
+  },
+  authButton: {
+    marginBottom: spacing.md,
+  },
+  buttonContent: {
+    paddingVertical: spacing.sm,
+  },
   userCard: {
     marginBottom: spacing.md,
   },
