@@ -64,6 +64,9 @@ export const useNotifications = () => {
           return;
         }
         
+        // Set our global flag before initializing
+        isOneSignalInitialized = true;
+        
         // Initialize OneSignal if not already done
         await OneSignal.init({
           appId: process.env.REACT_APP_ONESIGNAL_APP_ID,
