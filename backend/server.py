@@ -20,6 +20,11 @@ from typing import Union
 import googlemaps
 from googlemaps import exceptions as gmaps_exceptions
 from foursquare_service import get_foursquare_service, FoursquareAPIError
+from onesignal_service import (
+    get_onesignal_service, 
+    get_restaurant_notification_service, 
+    NotificationPayload
+)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
