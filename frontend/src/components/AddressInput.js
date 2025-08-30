@@ -76,8 +76,17 @@ const AddressInput = ({
   const handleSuggestionClick = (suggestion) => {
     setInputValue(suggestion.formatted_address);
     setShowSuggestions(false);
+    setSuggestions([]);
+    setSelectedIndex(-1);
+    
     if (onAddressSelect) {
       onAddressSelect(suggestion);
+    }
+    
+    // Clear any pending debounced geocoding to prevent re-triggering
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = null;
     }
   };
 
