@@ -191,14 +191,19 @@ export const useNotifications = () => {
         if (granted) {
           console.log('Push notifications enabled successfully via browser API');
           
-          // Tag user as having notifications enabled
-          try {
-            await OneSignal.User.addTags({
-              notifications_enabled: 'true',
-              enabled_date: new Date().toISOString()
-            });
-          } catch (tagError) {
-            console.error('Failed to tag user:', tagError);
+          // Try to tag user in OneSignal if available
+          if (window.OneSignal && window.OneSignal.User) {
+            try {
+              await OneSignal.User.addTags({
+                notifications_enabled: 'true',
+                enabled_date: new Date().toISOString()
+              });
+              console.log('🔔 User tagged in OneSignal successfully');
+            } catch (tagError) {
+              console.log('🔔 OneSignal tagging failed, but notifications still work:', tagError);
+            }
+          } else {
+            console.log('🔔 OneSignal not available, using browser notifications only');
           }
         } else if (permission === 'denied') {
           console.log('🔔 User denied permission');
