@@ -107,6 +107,9 @@ const AddressInput: React.FC<AddressInputProps> = ({
   };
 
   const handleSubmitEditing = () => {
+    setShowSuggestions(false);  // Force close suggestions
+    setSuggestions([]);         // Clear suggestions array
+    
     if (suggestions.length > 0) {
       handleSuggestionSelect(suggestions[0]);
     } else if (query.trim()) {
