@@ -3319,6 +3319,9 @@ class OnTheCheapAPITester:
         self.test_get_favorite_restaurants()
         self.test_user_auth_edge_cases()
         
+        # Mobile App Authentication Integration Tests
+        self.test_mobile_app_authentication_integration()
+        
         print("\n" + "🔧 FIXED GOOGLE PLACES FAVORITES TESTS")
         print("=" * 50)
         
