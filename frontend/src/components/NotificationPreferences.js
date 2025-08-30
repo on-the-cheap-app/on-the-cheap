@@ -35,8 +35,23 @@ const NotificationPreferences = ({ user, onClose }) => {
           user_id: user?.id
         });
         
-        // Show success message
+        // Show success message and send test notification
         alert('🎉 Notifications enabled successfully! You\'ll now receive updates about restaurant specials.');
+        
+        // Send a test notification to show it works
+        setTimeout(() => {
+          if (Notification.permission === 'granted') {
+            try {
+              new Notification('🍽️ On-the-Cheap Notifications Enabled!', {
+                body: 'You\'ll now receive updates about restaurant specials near you.',
+                icon: '/favicon.ico',
+                tag: 'welcome-notification'
+              });
+            } catch (e) {
+              console.log('Test notification failed:', e);
+            }
+          }
+        }, 1000);
       } else {
         Analytics.trackConversion('notification_permission_denied', {
           user_id: user?.id
