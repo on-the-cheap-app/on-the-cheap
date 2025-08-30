@@ -7,6 +7,8 @@ export const useNotifications = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    let timeoutId;
+    
     const initializeOneSignal = async () => {
       try {
         setIsLoading(true);
