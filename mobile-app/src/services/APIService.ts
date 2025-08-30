@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 class APIService {
   private api: AxiosInstance;
-  private baseURL = 'https://special-hunter.preview.emergentagent.com/api';
+  private baseURL = 'https://cheapdeals-app.preview.emergentagent.com/api';
 
   constructor() {
     this.api = axios.create({

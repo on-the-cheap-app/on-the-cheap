@@ -81,7 +81,7 @@ class OneSignalService {
       
       if (oneSignalId) {
         // Send to backend for user association
-        const response = await fetch('https://special-hunter.preview.emergentagent.com/api/users/sync-notifications', {
+        const response = await fetch('https://cheapdeals-app.preview.emergentagent.com/api/users/sync-notifications', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
