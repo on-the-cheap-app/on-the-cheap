@@ -448,6 +448,40 @@ const UserAuth = ({ onClose, onUserLogin, currentFavorites = [], onFavoritesUpda
                     </Card>
                   </div>
                 </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">Push Notifications</h3>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <Bell className={`w-6 h-6 ${notificationsEnabled ? 'text-green-600' : 'text-gray-400'}`} />
+                          <div>
+                            <p className="font-medium">
+                              {notificationsEnabled ? 'Notifications Enabled' : 'Notifications Disabled'}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {notificationsEnabled 
+                                ? 'Get notified about new specials and favorites updates'
+                                : 'Enable notifications to stay updated on restaurant specials'
+                              }
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            onClose();
+                            onShowNotificationPreferences();
+                          }}
+                          className="ml-4"
+                        >
+                          {notificationsEnabled ? 'Manage' : 'Setup'}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </TabsContent>
           </Tabs>
