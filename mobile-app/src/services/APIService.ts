@@ -66,13 +66,13 @@ class APIService {
   // User authentication
   async login(email: string, password: string) {
     try {
-      const response = await this.api.post('/auth/login', {
+      const response = await this.api.post('/users/login', {
         email,
         password,
       });
       
-      const { token, user } = response.data;
-      await AsyncStorage.setItem('auth_token', token);
+      const { access_token, user } = response.data;
+      await AsyncStorage.setItem('auth_token', access_token);
       await AsyncStorage.setItem('user_data', JSON.stringify(user));
       
       return response.data;
@@ -89,10 +89,10 @@ class APIService {
     password: string;
   }) {
     try {
-      const response = await this.api.post('/auth/register', userData);
+      const response = await this.api.post('/users/register', userData);
       
-      const { token, user } = response.data;
-      await AsyncStorage.setItem('auth_token', token);
+      const { access_token, user } = response.data;
+      await AsyncStorage.setItem('auth_token', access_token);
       await AsyncStorage.setItem('user_data', JSON.stringify(user));
       
       return response.data;
