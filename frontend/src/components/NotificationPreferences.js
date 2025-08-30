@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import useNotifications from '../hooks/useNotifications';
-import { trackEvent } from '../utils/analytics';
+import * as Analytics from '../utils/analytics';
 
 const NotificationPreferences = ({ user, onClose }) => {
   const { isEnabled, isInitialized, isLoading, requestPermission, setUserPreferences } = useNotifications();
