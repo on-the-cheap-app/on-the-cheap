@@ -63,6 +63,21 @@ class APIService {
     }
   }
 
+  async forwardGeocode(address: string, region?: string) {
+    try {
+      const payload: any = { address };
+      if (region) {
+        payload.region = region;
+      }
+      
+      const response = await this.api.post('/geocode/forward', payload);
+      return response.data;
+    } catch (error) {
+      console.error('API Error - Forward Geocoding:', error);
+      throw error;
+    }
+  }
+
   // User authentication
   async login(email: string, password: string) {
     try {
