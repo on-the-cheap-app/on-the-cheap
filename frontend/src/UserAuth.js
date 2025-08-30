@@ -116,6 +116,22 @@ const UserAuth = ({ onClose, onUserLogin, currentFavorites = [], onFavoritesUpda
         Analytics.trackUserRegistration(userData.user_type || 'user');
       }
       
+      // Tag user in OneSignal for targeted notifications
+      if (notificationsInitialized && notificationsEnabled && tagUser) {
+        try {
+          await tagUser({
+            user_id: userData.id,
+            user_type: userData.user_type || 'user',
+            email: userData.email,
+            first_name: userData.first_name,
+            registration_date: isLogin ? undefined : new Date().toISOString(),
+            last_login: new Date().toISOString()
+          });
+        } catch (error) {
+          console.error('Failed to tag user in OneSignal:', error);
+        }
+      }
+      
       // Reset form
       setAuthForm({
         email: '',
