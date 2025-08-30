@@ -417,7 +417,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Push Notifications with OneSignal Integration"
+    - "Mobile App Authentication System Implementation"
+    - "Mobile App Core Features Port"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
