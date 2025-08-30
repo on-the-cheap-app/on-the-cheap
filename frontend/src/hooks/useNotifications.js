@@ -1,6 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import OneSignal from 'react-onesignal';
 
+// Global flag to prevent multiple initializations
+let isOneSignalInitialized = false;
+
 export const useNotifications = () => {
   const [isEnabled, setIsEnabled] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
