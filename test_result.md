@@ -417,7 +417,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Mobile App Authentication System"
+    - "Mobile App Core Features Port - Phase 2"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
