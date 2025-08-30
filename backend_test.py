@@ -1484,6 +1484,592 @@ class OnTheCheapAPITester:
         except Exception as e:
             return False, str(e)
 
+    def test_mobile_app_authentication_integration(self):
+        """Test complete mobile app authentication integration workflow"""
+        print("\n🔥 TESTING MOBILE APP AUTHENTICATION INTEGRATION")
+        print("=" * 60)
+        
+        mobile_tests_passed = 0
+        mobile_tests_total = 0
+        
+        # Test 1: User Registration API for Mobile App
+        mobile_tests_total += 1
+        success, user_data = self.test_mobile_user_registration()
+        if success:
+            mobile_tests_passed += 1
+        
+        # Test 2: User Login API for Mobile App
+        mobile_tests_total += 1
+        success, login_data = self.test_mobile_user_login()
+        if success:
+            mobile_tests_passed += 1
+        
+        # Test 3: User Profile API with JWT Bearer token
+        mobile_tests_total += 1
+        success, profile_data = self.test_mobile_user_profile()
+        if success:
+            mobile_tests_passed += 1
+        
+        # Test 4: Favorites API - GET favorites
+        mobile_tests_total += 1
+        success, favorites_data = self.test_mobile_get_favorites()
+        if success:
+            mobile_tests_passed += 1
+        
+        # Test 5: Favorites API - POST add favorite
+        mobile_tests_total += 1
+        success, add_favorite_data = self.test_mobile_add_favorite()
+        if success:
+            mobile_tests_passed += 1
+        
+        # Test 6: Favorites API - DELETE remove favorite
+        mobile_tests_total += 1
+        success, remove_favorite_data = self.test_mobile_remove_favorite()
+        if success:
+            mobile_tests_passed += 1
+        
+        # Test 7: Restaurant Search API for Mobile App
+        mobile_tests_total += 1
+        success, search_data = self.test_mobile_restaurant_search()
+        if success:
+            mobile_tests_passed += 1
+        
+        # Test 8: Special Types API for Mobile App
+        mobile_tests_total += 1
+        success, types_data = self.test_mobile_special_types()
+        if success:
+            mobile_tests_passed += 1
+        
+        # Test 9: Mobile App Error Handling
+        mobile_tests_total += 1
+        success = self.test_mobile_error_handling()
+        if success:
+            mobile_tests_passed += 1
+        
+        # Test 10: Mobile App Token Management
+        mobile_tests_total += 1
+        success = self.test_mobile_token_management()
+        if success:
+            mobile_tests_passed += 1
+        
+        print(f"\n📱 MOBILE APP AUTHENTICATION INTEGRATION SUMMARY:")
+        print(f"   Tests Passed: {mobile_tests_passed}/{mobile_tests_total}")
+        print(f"   Success Rate: {(mobile_tests_passed/mobile_tests_total)*100:.1f}%")
+        
+        overall_success = mobile_tests_passed == mobile_tests_total
+        self.log_test("Mobile App Authentication Integration", overall_success, 
+                     f"{mobile_tests_passed}/{mobile_tests_total} tests passed")
+        
+        return overall_success
+
+    def test_mobile_user_registration(self):
+        """Test user registration API with mobile app data format"""
+        try:
+            # Generate unique email for mobile app testing
+            test_email = f"mobile_user_{uuid.uuid4().hex[:8]}@example.com"
+            
+            # Mobile app registration data format
+            registration_data = {
+                "first_name": "Sarah",
+                "last_name": "Johnson", 
+                "email": test_email,
+                "password": "MobileApp123!"
+            }
+            
+            response = self.session.post(f"{self.api_url}/users/register", json=registration_data)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                
+                # Verify mobile app expected response format
+                required_fields = ['access_token', 'user', 'user_type']
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details = f"Missing required fields: {missing_fields}"
+                else:
+                    # Store mobile user token for subsequent tests
+                    self.mobile_user_token = data.get('access_token')
+                    self.mobile_user_data = data.get('user')
+                    
+                    user = data.get('user', {})
+                    user_type = data.get('user_type')
+                    
+                    # Verify user data structure for mobile app
+                    user_required_fields = ['id', 'email', 'first_name', 'last_name']
+                    user_missing_fields = [field for field in user_required_fields if field not in user]
+                    
+                    if user_missing_fields:
+                        success = False
+                        details = f"Missing user fields: {user_missing_fields}"
+                    elif user_type != "user":
+                        success = False
+                        details = f"Expected user_type 'user', got '{user_type}'"
+                    else:
+                        details = f"✅ Mobile user registered: {user.get('first_name')} {user.get('last_name')} ({user.get('email')}), Token: {bool(self.mobile_user_token)}"
+            else:
+                details = f"❌ Registration failed: {response.status_code} - {response.text[:200]}"
+            
+            self.log_test("Mobile App - User Registration", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Mobile App - User Registration", False, str(e))
+            return False, {}
+
+    def test_mobile_user_login(self):
+        """Test user login API with mobile app format"""
+        try:
+            # First register a user for login testing
+            test_email = f"mobile_login_{uuid.uuid4().hex[:8]}@example.com"
+            registration_data = {
+                "first_name": "Mike",
+                "last_name": "Chen",
+                "email": test_email,
+                "password": "MobileLogin123!"
+            }
+            
+            reg_response = self.session.post(f"{self.api_url}/users/register", json=registration_data)
+            if reg_response.status_code != 200:
+                self.log_test("Mobile App - User Login", False, "Failed to create test user for login")
+                return False, {}
+            
+            # Test mobile app login
+            login_data = {
+                "email": test_email,
+                "password": "MobileLogin123!"
+            }
+            
+            response = self.session.post(f"{self.api_url}/users/login", json=login_data)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                
+                # Verify mobile app expected response format
+                required_fields = ['access_token', 'user', 'user_type']
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details = f"Missing required fields: {missing_fields}"
+                else:
+                    user = data.get('user', {})
+                    user_type = data.get('user_type')
+                    token = data.get('access_token')
+                    
+                    # Verify response structure matches mobile app expectations
+                    if user_type != "user":
+                        success = False
+                        details = f"Expected user_type 'user', got '{user_type}'"
+                    elif not token:
+                        success = False
+                        details = "No access_token in response"
+                    else:
+                        # Store for subsequent tests if we don't have one yet
+                        if not hasattr(self, 'mobile_user_token') or not self.mobile_user_token:
+                            self.mobile_user_token = token
+                            self.mobile_user_data = user
+                        
+                        details = f"✅ Mobile login successful: {user.get('first_name')} {user.get('last_name')} ({user.get('email')})"
+            else:
+                details = f"❌ Login failed: {response.status_code} - {response.text[:200]}"
+            
+            self.log_test("Mobile App - User Login", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Mobile App - User Login", False, str(e))
+            return False, {}
+
+    def test_mobile_user_profile(self):
+        """Test user profile API with JWT Bearer token for mobile app"""
+        if not hasattr(self, 'mobile_user_token') or not self.mobile_user_token:
+            self.log_test("Mobile App - User Profile", False, "No mobile user token available")
+            return False, {}
+        
+        try:
+            # Test authenticated access with JWT Bearer token
+            headers = {'Authorization': f'Bearer {self.mobile_user_token}'}
+            response = self.session.get(f"{self.api_url}/users/me", headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                
+                # Verify mobile app expected profile data
+                required_fields = ['id', 'email', 'first_name', 'last_name', 'favorite_restaurant_ids']
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details = f"Missing profile fields: {missing_fields}"
+                else:
+                    details = f"✅ Profile retrieved: {data.get('first_name')} {data.get('last_name')} ({data.get('email')}), Favorites: {len(data.get('favorite_restaurant_ids', []))}"
+            else:
+                details = f"❌ Profile access failed: {response.status_code} - {response.text[:200]}"
+            
+            self.log_test("Mobile App - User Profile Access", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Mobile App - User Profile Access", False, str(e))
+            return False, {}
+
+    def test_mobile_get_favorites(self):
+        """Test GET /api/users/favorites for mobile app"""
+        if not hasattr(self, 'mobile_user_token') or not self.mobile_user_token:
+            self.log_test("Mobile App - Get Favorites", False, "No mobile user token available")
+            return False, {}
+        
+        try:
+            headers = {'Authorization': f'Bearer {self.mobile_user_token}'}
+            response = self.session.get(f"{self.api_url}/users/favorites", headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                
+                # Verify mobile app expected response format
+                if 'favorites' not in data:
+                    success = False
+                    details = "Missing 'favorites' field in response"
+                else:
+                    favorites = data.get('favorites', [])
+                    details = f"✅ Retrieved {len(favorites)} favorite restaurants"
+                    
+                    # Verify favorite structure if any exist
+                    if favorites:
+                        first_favorite = favorites[0]
+                        expected_fields = ['id', 'name', 'address']
+                        missing_fields = [field for field in expected_fields if field not in first_favorite]
+                        if missing_fields:
+                            details += f" - Missing favorite fields: {missing_fields}"
+                        else:
+                            details += f" - First: {first_favorite.get('name', 'Unknown')}"
+            else:
+                details = f"❌ Get favorites failed: {response.status_code} - {response.text[:200]}"
+            
+            self.log_test("Mobile App - Get Favorites", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Mobile App - Get Favorites", False, str(e))
+            return False, {}
+
+    def test_mobile_add_favorite(self):
+        """Test POST /api/users/favorites/{restaurant_id} for mobile app"""
+        if not hasattr(self, 'mobile_user_token') or not self.mobile_user_token:
+            self.log_test("Mobile App - Add Favorite", False, "No mobile user token available")
+            return False, {}
+        
+        try:
+            headers = {'Authorization': f'Bearer {self.mobile_user_token}'}
+            
+            # First get a restaurant to add to favorites
+            search_params = {
+                'latitude': 37.7749,
+                'longitude': -122.4194,
+                'radius': 8047
+            }
+            
+            search_response = self.session.get(f"{self.api_url}/restaurants/search", params=search_params)
+            if search_response.status_code != 200:
+                self.log_test("Mobile App - Add Favorite", False, "Failed to get restaurants for testing")
+                return False, {}
+            
+            search_data = search_response.json()
+            restaurants = search_data.get('restaurants', [])
+            if not restaurants:
+                self.log_test("Mobile App - Add Favorite", False, "No restaurants found for testing")
+                return False, {}
+            
+            # Use the first restaurant
+            restaurant_id = restaurants[0]['id']
+            restaurant_name = restaurants[0]['name']
+            
+            # Add to favorites
+            response = self.session.post(f"{self.api_url}/users/favorites/{restaurant_id}", headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                # Store for removal test
+                self.mobile_test_restaurant_id = restaurant_id
+                self.mobile_test_restaurant_name = restaurant_name
+                
+                details = f"✅ Added '{restaurant_name}' to favorites - {data.get('message', 'Success')}"
+            else:
+                details = f"❌ Add favorite failed: {response.status_code} - {response.text[:200]}"
+            
+            self.log_test("Mobile App - Add Favorite", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Mobile App - Add Favorite", False, str(e))
+            return False, {}
+
+    def test_mobile_remove_favorite(self):
+        """Test DELETE /api/users/favorites/{restaurant_id} for mobile app"""
+        if not hasattr(self, 'mobile_user_token') or not self.mobile_user_token:
+            self.log_test("Mobile App - Remove Favorite", False, "No mobile user token available")
+            return False, {}
+        
+        if not hasattr(self, 'mobile_test_restaurant_id'):
+            self.log_test("Mobile App - Remove Favorite", False, "No restaurant ID available - add favorite test may have failed")
+            return False, {}
+        
+        try:
+            headers = {'Authorization': f'Bearer {self.mobile_user_token}'}
+            restaurant_id = self.mobile_test_restaurant_id
+            restaurant_name = getattr(self, 'mobile_test_restaurant_name', 'Unknown')
+            
+            # Remove from favorites
+            response = self.session.delete(f"{self.api_url}/users/favorites/{restaurant_id}", headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                details = f"✅ Removed '{restaurant_name}' from favorites - {data.get('message', 'Success')}"
+            else:
+                details = f"❌ Remove favorite failed: {response.status_code} - {response.text[:200]}"
+            
+            self.log_test("Mobile App - Remove Favorite", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Mobile App - Remove Favorite", False, str(e))
+            return False, {}
+
+    def test_mobile_restaurant_search(self):
+        """Test restaurant search API with location parameters for mobile app"""
+        try:
+            # Test with realistic mobile app search parameters
+            params = {
+                'latitude': 37.7749,  # San Francisco
+                'longitude': -122.4194,
+                'radius': 8047,  # 5 miles
+                'limit': 20
+            }
+            
+            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                
+                # Verify mobile app expected response format
+                required_fields = ['restaurants', 'total', 'search_location']
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details = f"Missing response fields: {missing_fields}"
+                else:
+                    restaurants = data.get('restaurants', [])
+                    total = data.get('total', 0)
+                    
+                    details = f"✅ Found {total} restaurants for mobile app"
+                    
+                    # Verify restaurant data structure for mobile app
+                    if restaurants:
+                        first_restaurant = restaurants[0]
+                        restaurant_required_fields = ['id', 'name', 'address', 'location']
+                        restaurant_missing_fields = [field for field in restaurant_required_fields if field not in first_restaurant]
+                        
+                        if restaurant_missing_fields:
+                            details += f" - Missing restaurant fields: {restaurant_missing_fields}"
+                        else:
+                            details += f" - First: {first_restaurant.get('name', 'Unknown')}"
+                            
+                            # Verify location structure
+                            location = first_restaurant.get('location', {})
+                            if 'latitude' not in location or 'longitude' not in location:
+                                details += " - Missing location coordinates"
+            else:
+                details = f"❌ Restaurant search failed: {response.status_code} - {response.text[:200]}"
+            
+            self.log_test("Mobile App - Restaurant Search", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Mobile App - Restaurant Search", False, str(e))
+            return False, {}
+
+    def test_mobile_special_types(self):
+        """Test special types API for mobile app filtering"""
+        try:
+            response = self.session.get(f"{self.api_url}/specials/types")
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                
+                # Verify mobile app expected response format
+                if 'special_types' not in data:
+                    success = False
+                    details = "Missing 'special_types' field in response"
+                else:
+                    special_types = data.get('special_types', [])
+                    details = f"✅ Retrieved {len(special_types)} special types for mobile filtering"
+                    
+                    # Verify special type structure for mobile app
+                    if special_types:
+                        first_type = special_types[0]
+                        expected_fields = ['value', 'label']
+                        missing_fields = [field for field in expected_fields if field not in first_type]
+                        
+                        if missing_fields:
+                            details += f" - Missing special type fields: {missing_fields}"
+                        else:
+                            type_labels = [st.get('label', 'Unknown') for st in special_types]
+                            details += f" - Types: {', '.join(type_labels)}"
+            else:
+                details = f"❌ Special types failed: {response.status_code} - {response.text[:200]}"
+            
+            self.log_test("Mobile App - Special Types", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Mobile App - Special Types", False, str(e))
+            return False, {}
+
+    def test_mobile_error_handling(self):
+        """Test mobile app error handling scenarios"""
+        test_cases = [
+            {
+                'name': 'Invalid Credentials',
+                'endpoint': '/users/login',
+                'method': 'POST',
+                'data': {'email': 'invalid@example.com', 'password': 'wrongpassword'},
+                'expected_status': 401
+            },
+            {
+                'name': 'Duplicate Registration',
+                'test_func': self._test_mobile_duplicate_registration
+            },
+            {
+                'name': 'Invalid Token Access',
+                'endpoint': '/users/me',
+                'method': 'GET',
+                'headers': {'Authorization': 'Bearer invalid_mobile_token'},
+                'expected_status': 401
+            },
+            {
+                'name': 'Missing Required Fields',
+                'endpoint': '/users/register',
+                'method': 'POST',
+                'data': {'email': 'test@example.com'},  # Missing required fields
+                'expected_status': 422
+            }
+        ]
+        
+        all_passed = True
+        details_list = []
+        
+        for case in test_cases:
+            try:
+                if 'test_func' in case:
+                    success, details = case['test_func']()
+                    details_list.append(f"{case['name']}: {details}")
+                else:
+                    if case['method'] == 'POST':
+                        response = self.session.post(f"{self.api_url}{case['endpoint']}", 
+                                                   json=case.get('data', {}),
+                                                   headers=case.get('headers', {}))
+                    else:
+                        response = self.session.get(f"{self.api_url}{case['endpoint']}", 
+                                                  headers=case.get('headers', {}))
+                    
+                    success = response.status_code == case['expected_status']
+                    details_list.append(f"{case['name']}: {response.status_code}")
+                
+                if not success:
+                    all_passed = False
+                    
+            except Exception as e:
+                details_list.append(f"{case['name']}: Exception - {str(e)}")
+                all_passed = False
+        
+        self.log_test("Mobile App - Error Handling", all_passed, "; ".join(details_list))
+        return all_passed
+
+    def _test_mobile_duplicate_registration(self):
+        """Test duplicate email registration for mobile app"""
+        try:
+            test_email = f"mobile_duplicate_{uuid.uuid4().hex[:8]}@example.com"
+            registration_data = {
+                "first_name": "Test",
+                "last_name": "User",
+                "email": test_email,
+                "password": "TestPassword123!"
+            }
+            
+            # Register once
+            response1 = self.session.post(f"{self.api_url}/users/register", json=registration_data)
+            # Register again with same email
+            response2 = self.session.post(f"{self.api_url}/users/register", json=registration_data)
+            
+            success = response1.status_code == 200 and response2.status_code == 400
+            details = f"First: {response1.status_code}, Second: {response2.status_code}"
+            return success, details
+            
+        except Exception as e:
+            return False, str(e)
+
+    def test_mobile_token_management(self):
+        """Test mobile app token management and AsyncStorage compatibility"""
+        if not hasattr(self, 'mobile_user_token') or not self.mobile_user_token:
+            self.log_test("Mobile App - Token Management", False, "No mobile user token available")
+            return False
+        
+        try:
+            # Test 1: Verify token format is suitable for AsyncStorage
+            token = self.mobile_user_token
+            token_parts = token.split('.')
+            
+            # JWT should have 3 parts separated by dots
+            if len(token_parts) != 3:
+                self.log_test("Mobile App - Token Management", False, f"Invalid JWT format: {len(token_parts)} parts")
+                return False
+            
+            # Test 2: Verify token works for multiple API calls (session persistence)
+            headers = {'Authorization': f'Bearer {token}'}
+            
+            # Make multiple API calls to test token persistence
+            endpoints_to_test = [
+                '/users/me',
+                '/users/favorites',
+                '/specials/types'
+            ]
+            
+            all_calls_successful = True
+            call_results = []
+            
+            for endpoint in endpoints_to_test:
+                response = self.session.get(f"{self.api_url}{endpoint}", headers=headers)
+                call_results.append(f"{endpoint}: {response.status_code}")
+                if endpoint == '/users/me' and response.status_code != 200:
+                    all_calls_successful = False
+                elif endpoint in ['/users/favorites', '/specials/types'] and response.status_code != 200:
+                    all_calls_successful = False
+            
+            if all_calls_successful:
+                details = f"✅ Token management working - JWT format valid, Multiple API calls successful: {'; '.join(call_results)}"
+                success = True
+            else:
+                details = f"❌ Token management issues - API calls: {'; '.join(call_results)}"
+                success = False
+            
+            self.log_test("Mobile App - Token Management", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Mobile App - Token Management", False, str(e))
+            return False
+
     def test_fixed_google_places_favorites_workflow(self):
         """Test the FIXED Google Places favorites functionality - comprehensive workflow"""
         print("\n🔍 TESTING FIXED GOOGLE PLACES FAVORITES FUNCTIONALITY")
