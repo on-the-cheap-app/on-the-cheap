@@ -821,6 +821,14 @@ async def search_restaurants(
                 restaurant['distance'] = round(distance)
                 restaurant['source'] = 'owner_managed'
                 
+                # Add photos (from database or fallback)
+                if 'photos' not in restaurant or not restaurant['photos']:
+                    restaurant['photos'] = get_fallback_photos(
+                        restaurant.get('name', ''),
+                        restaurant.get('cuisine_type', []),
+                        restaurant.get('is_mobile_vendor', False)
+                    )
+                
                 # Filter specials by type if specified
                 if special_type:
                     restaurant['specials'] = [
