@@ -167,7 +167,7 @@ const NotificationPreferences = ({ user, onClose }) => {
           <div className="text-gray-600 mb-4">
             <div className="text-4xl mb-2">🔕</div>
             <p className="text-sm">Push notifications are not enabled</p>
-            {!notificationsInitialized && (
+            {!isInitialized && (
               <p className="text-xs text-orange-600 mt-1">
                 OneSignal is loading in the background, but you can still enable notifications
               </p>
