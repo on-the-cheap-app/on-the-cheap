@@ -101,6 +101,9 @@ function App() {
   
   // OneSignal hook
   const { isEnabled: notificationsEnabled, isInitialized: notificationsInitialized, tagUser } = useNotifications();
+  
+  // PWA hook
+  const { cacheRestaurantData, getCachedRestaurantData, isOnline } = usePWA();
 
   useEffect(() => {
     // Initialize analytics
