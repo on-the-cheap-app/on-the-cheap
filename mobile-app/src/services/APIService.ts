@@ -136,8 +136,8 @@ class APIService {
   // Special types
   async getSpecialTypes() {
     try {
-      const response = await this.api.get('/special-types');
-      return response.data;
+      const response = await this.api.get('/specials/types');
+      return response.data.special_types;
     } catch (error) {
       console.error('API Error - Special Types:', error);
       throw error;
