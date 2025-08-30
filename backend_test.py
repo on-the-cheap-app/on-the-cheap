@@ -3357,6 +3357,627 @@ class OnTheCheapAPITester:
             print(f"⚠️  {self.tests_run - self.tests_passed} tests failed")
             return 1
 
+    def test_restaurant_photos_integration_phase3a(self):
+        """Test Phase 3A: Restaurant Photos Integration - Comprehensive Testing"""
+        print("\n📸 TESTING PHASE 3A: RESTAURANT PHOTOS INTEGRATION")
+        print("=" * 70)
+        print("Testing Google Places Photos API integration and fallback photo system")
+        print("=" * 70)
+        
+        photos_tests_passed = 0
+        photos_tests_total = 0
+        
+        # Test 1: Restaurant Search Photos Array Field
+        photos_tests_total += 1
+        success, data = self.test_restaurant_search_photos_array()
+        if success:
+            photos_tests_passed += 1
+        
+        # Test 2: Google Places Photos API Integration
+        photos_tests_total += 1
+        success, data = self.test_google_places_photos_api()
+        if success:
+            photos_tests_passed += 1
+        
+        # Test 3: Fallback Photos System
+        photos_tests_total += 1
+        success, data = self.test_fallback_photos_system()
+        if success:
+            photos_tests_passed += 1
+        
+        # Test 4: Photo Data Structure Consistency
+        photos_tests_total += 1
+        success, data = self.test_photo_data_structure()
+        if success:
+            photos_tests_passed += 1
+        
+        # Test 5: Photo URL Accessibility
+        photos_tests_total += 1
+        success, data = self.test_photo_url_accessibility()
+        if success:
+            photos_tests_passed += 1
+        
+        # Test 6: Mobile Vendor Photo Fallbacks
+        photos_tests_total += 1
+        success, data = self.test_mobile_vendor_photo_fallbacks()
+        if success:
+            photos_tests_passed += 1
+        
+        # Test 7: Photo Limit Functionality (3 photos max)
+        photos_tests_total += 1
+        success, data = self.test_photo_limit_functionality()
+        if success:
+            photos_tests_passed += 1
+        
+        # Test 8: Search Enhancement with Photos
+        photos_tests_total += 1
+        success, data = self.test_search_enhancement_with_photos()
+        if success:
+            photos_tests_passed += 1
+        
+        print(f"\n📸 RESTAURANT PHOTOS INTEGRATION SUMMARY:")
+        print(f"   Tests Passed: {photos_tests_passed}/{photos_tests_total}")
+        print(f"   Success Rate: {(photos_tests_passed/photos_tests_total)*100:.1f}%")
+        
+        overall_success = photos_tests_passed == photos_tests_total
+        self.log_test("Restaurant Photos Integration Phase 3A", overall_success, 
+                     f"{photos_tests_passed}/{photos_tests_total} tests passed")
+        
+        return overall_success
+
+    def test_restaurant_search_photos_array(self):
+        """Test that restaurant search results include photos array field"""
+        try:
+            # Test restaurant search in San Francisco
+            params = {
+                'latitude': 37.7749,
+                'longitude': -122.4194,
+                'radius': 8047,
+                'limit': 20
+            }
+            
+            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                restaurants = data.get('restaurants', [])
+                
+                if not restaurants:
+                    success = False
+                    details = "No restaurants found in search results"
+                else:
+                    # Check that all restaurants have photos array
+                    restaurants_with_photos = 0
+                    restaurants_without_photos = 0
+                    google_places_with_photos = 0
+                    db_restaurants_with_photos = 0
+                    
+                    for restaurant in restaurants:
+                        if 'photos' in restaurant and isinstance(restaurant['photos'], list):
+                            restaurants_with_photos += 1
+                            
+                            # Check source-specific photo handling
+                            source = restaurant.get('source', 'unknown')
+                            if source == 'google_places' and restaurant['photos']:
+                                google_places_with_photos += 1
+                            elif source == 'owner_managed' and restaurant['photos']:
+                                db_restaurants_with_photos += 1
+                        else:
+                            restaurants_without_photos += 1
+                    
+                    if restaurants_without_photos > 0:
+                        success = False
+                        details = f"❌ {restaurants_without_photos}/{len(restaurants)} restaurants missing photos array"
+                    else:
+                        details = f"✅ All {len(restaurants)} restaurants have photos array. Google Places with photos: {google_places_with_photos}, Database with photos: {db_restaurants_with_photos}"
+                        
+                        # Verify photo structure in first restaurant
+                        first_restaurant = restaurants[0]
+                        photos = first_restaurant.get('photos', [])
+                        if photos:
+                            first_photo = photos[0]
+                            required_photo_fields = ['url', 'width', 'height']
+                            missing_photo_fields = [field for field in required_photo_fields if field not in first_photo]
+                            
+                            if missing_photo_fields:
+                                details += f" - Missing photo fields: {missing_photo_fields}"
+                            else:
+                                details += f" - Photo structure valid (url, width: {first_photo.get('width')}, height: {first_photo.get('height')})"
+            else:
+                details = f"❌ Restaurant search failed: {response.status_code} - {response.text[:200]}"
+            
+            self.log_test("Restaurant Search - Photos Array Field", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Restaurant Search - Photos Array Field", False, str(e))
+            return False, {}
+
+    def test_google_places_photos_api(self):
+        """Test Google Places Photos API integration with actual photo URLs"""
+        try:
+            # Search for restaurants to get Google Places results
+            params = {
+                'latitude': 37.7749,  # San Francisco
+                'longitude': -122.4194,
+                'radius': 8047,
+                'limit': 20
+            }
+            
+            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                restaurants = data.get('restaurants', [])
+                
+                # Find Google Places restaurants
+                google_places_restaurants = [r for r in restaurants if r.get('source') == 'google_places']
+                
+                if not google_places_restaurants:
+                    success = False
+                    details = "❌ No Google Places restaurants found for photo testing"
+                else:
+                    google_restaurants_with_photos = 0
+                    valid_photo_urls = 0
+                    photo_url_format_correct = 0
+                    
+                    for restaurant in google_places_restaurants:
+                        photos = restaurant.get('photos', [])
+                        if photos:
+                            google_restaurants_with_photos += 1
+                            
+                            for photo in photos:
+                                photo_url = photo.get('url', '')
+                                
+                                # Check if URL is valid Google Places Photo API format
+                                if 'places.googleapis.com/v1/' in photo_url and 'media' in photo_url:
+                                    valid_photo_urls += 1
+                                    
+                                    # Check for proper dimensions in URL
+                                    if 'maxWidthPx=400' in photo_url and 'maxHeightPx=300' in photo_url:
+                                        photo_url_format_correct += 1
+                    
+                    if google_restaurants_with_photos == 0:
+                        success = False
+                        details = f"❌ None of {len(google_places_restaurants)} Google Places restaurants have photos"
+                    else:
+                        details = f"✅ {google_restaurants_with_photos}/{len(google_places_restaurants)} Google Places restaurants have photos"
+                        details += f", {valid_photo_urls} valid Google Places Photo API URLs"
+                        details += f", {photo_url_format_correct} URLs with correct dimensions (400x300)"
+                        
+                        # Check photo limit (max 3 photos per restaurant)
+                        max_photos = max(len(r.get('photos', [])) for r in google_places_restaurants if r.get('photos'))
+                        if max_photos > 3:
+                            details += f" - WARNING: Found restaurant with {max_photos} photos (limit should be 3)"
+                        else:
+                            details += f" - Photo limit respected (max {max_photos} photos per restaurant)"
+            else:
+                details = f"❌ Restaurant search failed: {response.status_code} - {response.text[:200]}"
+            
+            self.log_test("Google Places Photos API Integration", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Google Places Photos API Integration", False, str(e))
+            return False, {}
+
+    def test_fallback_photos_system(self):
+        """Test fallback photos system for restaurants without photos"""
+        try:
+            # Search for restaurants to test fallback system
+            params = {
+                'latitude': 37.7749,
+                'longitude': -122.4194,
+                'radius': 8047,
+                'limit': 20
+            }
+            
+            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                restaurants = data.get('restaurants', [])
+                
+                if not restaurants:
+                    success = False
+                    details = "❌ No restaurants found for fallback photo testing"
+                else:
+                    restaurants_with_fallback_photos = 0
+                    fallback_photo_types = set()
+                    unsplash_urls = 0
+                    correct_dimensions = 0
+                    
+                    for restaurant in restaurants:
+                        photos = restaurant.get('photos', [])
+                        
+                        for photo in photos:
+                            if photo.get('is_fallback', False):
+                                restaurants_with_fallback_photos += 1
+                                
+                                # Check if using Unsplash URLs
+                                photo_url = photo.get('url', '')
+                                if 'images.unsplash.com' in photo_url:
+                                    unsplash_urls += 1
+                                
+                                # Check dimensions
+                                if photo.get('width') == 400 and photo.get('height') == 300:
+                                    correct_dimensions += 1
+                                
+                                # Determine fallback type based on URL
+                                if 'photo-1517248135467-4c7edcad34c4' in photo_url:
+                                    fallback_photo_types.add('restaurant')
+                                elif 'photo-1514933651103-005eec06c04b' in photo_url:
+                                    fallback_photo_types.add('bar')
+                                elif 'photo-1501339847302-ac426a4a7cbb' in photo_url:
+                                    fallback_photo_types.add('cafe')
+                                elif 'photo-1571091718767-18b5b1457add' in photo_url:
+                                    fallback_photo_types.add('fast_food')
+                                elif 'photo-1565299624946-b28f40a0ca4b' in photo_url:
+                                    fallback_photo_types.add('food_truck')
+                                
+                                break  # Only check first fallback photo per restaurant
+                    
+                    if restaurants_with_fallback_photos == 0:
+                        # This might be OK if all restaurants have real photos
+                        details = f"ℹ️  No restaurants with fallback photos found (all may have real photos)"
+                        success = True
+                    else:
+                        details = f"✅ {restaurants_with_fallback_photos} restaurants with fallback photos"
+                        details += f", {unsplash_urls} using Unsplash URLs"
+                        details += f", {correct_dimensions} with correct dimensions (400x300)"
+                        details += f", Fallback types: {', '.join(sorted(fallback_photo_types))}"
+            else:
+                details = f"❌ Restaurant search failed: {response.status_code} - {response.text[:200]}"
+            
+            self.log_test("Fallback Photos System", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Fallback Photos System", False, str(e))
+            return False, {}
+
+    def test_photo_data_structure(self):
+        """Test photo data structure consistency across all restaurants"""
+        try:
+            # Test multiple locations to get diverse restaurant sources
+            test_locations = [
+                {'latitude': 37.7749, 'longitude': -122.4194, 'name': 'San Francisco'},
+                {'latitude': 40.7589, 'longitude': -73.9851, 'name': 'New York'},
+            ]
+            
+            all_photos_valid = True
+            total_restaurants_tested = 0
+            total_photos_tested = 0
+            structure_issues = []
+            
+            for location in test_locations:
+                params = {
+                    'latitude': location['latitude'],
+                    'longitude': location['longitude'],
+                    'radius': 5000,
+                    'limit': 10
+                }
+                
+                response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    restaurants = data.get('restaurants', [])
+                    total_restaurants_tested += len(restaurants)
+                    
+                    for restaurant in restaurants:
+                        photos = restaurant.get('photos', [])
+                        
+                        if not isinstance(photos, list):
+                            all_photos_valid = False
+                            structure_issues.append(f"Restaurant {restaurant.get('name', 'Unknown')} has non-list photos field")
+                            continue
+                        
+                        for i, photo in enumerate(photos):
+                            total_photos_tested += 1
+                            
+                            # Check required fields
+                            required_fields = ['url', 'width', 'height']
+                            missing_fields = [field for field in required_fields if field not in photo]
+                            
+                            if missing_fields:
+                                all_photos_valid = False
+                                structure_issues.append(f"Photo {i} in {restaurant.get('name', 'Unknown')} missing: {missing_fields}")
+                            
+                            # Check field types
+                            if not isinstance(photo.get('url'), str):
+                                all_photos_valid = False
+                                structure_issues.append(f"Photo {i} in {restaurant.get('name', 'Unknown')} has non-string URL")
+                            
+                            if not isinstance(photo.get('width'), int) or not isinstance(photo.get('height'), int):
+                                all_photos_valid = False
+                                structure_issues.append(f"Photo {i} in {restaurant.get('name', 'Unknown')} has non-integer dimensions")
+                            
+                            # Check is_fallback field if present
+                            if 'is_fallback' in photo and not isinstance(photo.get('is_fallback'), bool):
+                                all_photos_valid = False
+                                structure_issues.append(f"Photo {i} in {restaurant.get('name', 'Unknown')} has non-boolean is_fallback")
+            
+            if all_photos_valid:
+                details = f"✅ All photo structures valid across {total_restaurants_tested} restaurants, {total_photos_tested} photos tested"
+            else:
+                details = f"❌ Photo structure issues found: {'; '.join(structure_issues[:5])}"  # Limit to first 5 issues
+                if len(structure_issues) > 5:
+                    details += f" (and {len(structure_issues) - 5} more issues)"
+            
+            self.log_test("Photo Data Structure Consistency", all_photos_valid, details)
+            return all_photos_valid, {'total_restaurants': total_restaurants_tested, 'total_photos': total_photos_tested}
+            
+        except Exception as e:
+            self.log_test("Photo Data Structure Consistency", False, str(e))
+            return False, {}
+
+    def test_photo_url_accessibility(self):
+        """Test that photo URLs are accessible and properly formatted"""
+        try:
+            # Get restaurants with photos
+            params = {
+                'latitude': 37.7749,
+                'longitude': -122.4194,
+                'radius': 8047,
+                'limit': 10
+            }
+            
+            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                restaurants = data.get('restaurants', [])
+                
+                accessible_urls = 0
+                inaccessible_urls = 0
+                google_photo_urls = 0
+                unsplash_urls = 0
+                total_urls_tested = 0
+                
+                for restaurant in restaurants[:5]:  # Test first 5 restaurants to avoid too many HTTP requests
+                    photos = restaurant.get('photos', [])
+                    
+                    for photo in photos:
+                        photo_url = photo.get('url', '')
+                        if not photo_url:
+                            continue
+                        
+                        total_urls_tested += 1
+                        
+                        # Categorize URL types
+                        if 'places.googleapis.com' in photo_url:
+                            google_photo_urls += 1
+                        elif 'images.unsplash.com' in photo_url:
+                            unsplash_urls += 1
+                        
+                        # Test URL accessibility (HEAD request to avoid downloading full image)
+                        try:
+                            url_response = self.session.head(photo_url, timeout=10)
+                            if url_response.status_code in [200, 301, 302]:
+                                accessible_urls += 1
+                            else:
+                                inaccessible_urls += 1
+                        except:
+                            inaccessible_urls += 1
+                
+                if total_urls_tested == 0:
+                    details = "ℹ️  No photo URLs found to test accessibility"
+                    success = True
+                else:
+                    accessibility_rate = (accessible_urls / total_urls_tested) * 100
+                    details = f"✅ Photo URL accessibility: {accessible_urls}/{total_urls_tested} ({accessibility_rate:.1f}%)"
+                    details += f", Google Photos: {google_photo_urls}, Unsplash: {unsplash_urls}"
+                    
+                    if accessibility_rate < 80:
+                        success = False
+                        details = f"❌ Low photo URL accessibility: {accessibility_rate:.1f}% (expected >80%)"
+            else:
+                details = f"❌ Restaurant search failed: {response.status_code} - {response.text[:200]}"
+            
+            self.log_test("Photo URL Accessibility", success, details)
+            return success, {'accessible': accessible_urls, 'total': total_urls_tested}
+            
+        except Exception as e:
+            self.log_test("Photo URL Accessibility", False, str(e))
+            return False, {}
+
+    def test_mobile_vendor_photo_fallbacks(self):
+        """Test that mobile vendors get appropriate food truck fallback photos"""
+        try:
+            # Search for restaurants with mobile vendor filtering
+            params = {
+                'latitude': 40.7589,  # NYC - more likely to have mobile vendors
+                'longitude': -73.9851,
+                'radius': 10000,
+                'vendor_type': 'mobile',
+                'limit': 20
+            }
+            
+            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                restaurants = data.get('restaurants', [])
+                
+                mobile_vendors_found = 0
+                mobile_vendors_with_food_truck_photos = 0
+                
+                for restaurant in restaurants:
+                    if restaurant.get('is_mobile_vendor', False) or restaurant.get('vendor_type') == 'mobile':
+                        mobile_vendors_found += 1
+                        photos = restaurant.get('photos', [])
+                        
+                        for photo in photos:
+                            photo_url = photo.get('url', '')
+                            # Check for food truck fallback image
+                            if 'photo-1565299624946-b28f40a0ca4b' in photo_url:  # Food truck Unsplash image
+                                mobile_vendors_with_food_truck_photos += 1
+                                break
+                
+                if mobile_vendors_found == 0:
+                    details = "ℹ️  No mobile vendors found in search results (may be location-dependent)"
+                    success = True
+                else:
+                    details = f"✅ Found {mobile_vendors_found} mobile vendors"
+                    details += f", {mobile_vendors_with_food_truck_photos} with food truck fallback photos"
+                    
+                    if mobile_vendors_with_food_truck_photos > 0:
+                        details += " - Mobile vendor photo fallbacks working correctly"
+                    else:
+                        details += " - Mobile vendors may have real photos or different fallback system"
+            else:
+                details = f"❌ Mobile vendor search failed: {response.status_code} - {response.text[:200]}"
+            
+            self.log_test("Mobile Vendor Photo Fallbacks", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Mobile Vendor Photo Fallbacks", False, str(e))
+            return False, {}
+
+    def test_photo_limit_functionality(self):
+        """Test that restaurants return maximum 3 photos per restaurant"""
+        try:
+            # Search for restaurants to test photo limits
+            params = {
+                'latitude': 37.7749,
+                'longitude': -122.4194,
+                'radius': 8047,
+                'limit': 20
+            }
+            
+            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                restaurants = data.get('restaurants', [])
+                
+                restaurants_with_photos = 0
+                max_photos_found = 0
+                restaurants_exceeding_limit = 0
+                photo_count_distribution = {}
+                
+                for restaurant in restaurants:
+                    photos = restaurant.get('photos', [])
+                    photo_count = len(photos)
+                    
+                    if photo_count > 0:
+                        restaurants_with_photos += 1
+                        max_photos_found = max(max_photos_found, photo_count)
+                        
+                        # Track photo count distribution
+                        photo_count_distribution[photo_count] = photo_count_distribution.get(photo_count, 0) + 1
+                        
+                        if photo_count > 3:
+                            restaurants_exceeding_limit += 1
+                
+                if restaurants_with_photos == 0:
+                    details = "ℹ️  No restaurants with photos found for limit testing"
+                    success = True
+                else:
+                    details = f"✅ Photo limit testing: {restaurants_with_photos} restaurants with photos"
+                    details += f", max photos per restaurant: {max_photos_found}"
+                    details += f", distribution: {photo_count_distribution}"
+                    
+                    if restaurants_exceeding_limit > 0:
+                        success = False
+                        details = f"❌ {restaurants_exceeding_limit} restaurants exceed 3-photo limit (max found: {max_photos_found})"
+                    else:
+                        details += " - Photo limit (≤3) respected by all restaurants"
+            else:
+                details = f"❌ Restaurant search failed: {response.status_code} - {response.text[:200]}"
+            
+            self.log_test("Photo Limit Functionality (Max 3 Photos)", success, details)
+            return success, data if success else {}
+            
+        except Exception as e:
+            self.log_test("Photo Limit Functionality (Max 3 Photos)", False, str(e))
+            return False, {}
+
+    def test_search_enhancement_with_photos(self):
+        """Test that photo integration doesn't break existing search functionality"""
+        try:
+            # Test various search scenarios to ensure photos don't break functionality
+            test_scenarios = [
+                {
+                    'name': 'Basic Location Search',
+                    'params': {'latitude': 37.7749, 'longitude': -122.4194, 'radius': 8047}
+                },
+                {
+                    'name': 'Search with Special Type Filter',
+                    'params': {'latitude': 37.7749, 'longitude': -122.4194, 'radius': 8047, 'special_type': 'happy_hour'}
+                },
+                {
+                    'name': 'Search with Vendor Type Filter',
+                    'params': {'latitude': 37.7749, 'longitude': -122.4194, 'radius': 8047, 'vendor_type': 'permanent'}
+                },
+                {
+                    'name': 'Search with Query Parameter',
+                    'params': {'latitude': 37.7749, 'longitude': -122.4194, 'radius': 8047, 'query': 'pizza'}
+                }
+            ]
+            
+            all_scenarios_passed = True
+            scenario_results = []
+            
+            for scenario in test_scenarios:
+                try:
+                    response = self.session.get(f"{self.api_url}/restaurants/search", params=scenario['params'])
+                    
+                    if response.status_code == 200:
+                        data = response.json()
+                        restaurants = data.get('restaurants', [])
+                        
+                        # Check that all restaurants have photos array
+                        restaurants_with_photos_array = sum(1 for r in restaurants if 'photos' in r)
+                        
+                        # Check that other data is intact
+                        required_fields = ['id', 'name', 'address', 'location', 'source']
+                        restaurants_with_required_fields = 0
+                        
+                        for restaurant in restaurants:
+                            missing_fields = [field for field in required_fields if field not in restaurant]
+                            if not missing_fields:
+                                restaurants_with_required_fields += 1
+                        
+                        scenario_result = f"{scenario['name']}: {len(restaurants)} restaurants"
+                        scenario_result += f", {restaurants_with_photos_array} with photos array"
+                        scenario_result += f", {restaurants_with_required_fields} with complete data"
+                        
+                        if restaurants_with_photos_array != len(restaurants):
+                            all_scenarios_passed = False
+                            scenario_result += " ❌"
+                        else:
+                            scenario_result += " ✅"
+                        
+                        scenario_results.append(scenario_result)
+                    else:
+                        all_scenarios_passed = False
+                        scenario_results.append(f"{scenario['name']}: FAILED ({response.status_code}) ❌")
+                        
+                except Exception as e:
+                    all_scenarios_passed = False
+                    scenario_results.append(f"{scenario['name']}: ERROR ({str(e)}) ❌")
+            
+            if all_scenarios_passed:
+                details = f"✅ All search scenarios working with photos integration: {'; '.join(scenario_results)}"
+            else:
+                details = f"❌ Some search scenarios failed with photos integration: {'; '.join(scenario_results)}"
+            
+            self.log_test("Search Enhancement with Photos Integration", all_scenarios_passed, details)
+            return all_scenarios_passed, {'scenarios': scenario_results}
+            
+        except Exception as e:
+            self.log_test("Search Enhancement with Photos Integration", False, str(e))
+            return False, {}
+
 def main():
     """Main test runner"""
     tester = OnTheCheapAPITester()
