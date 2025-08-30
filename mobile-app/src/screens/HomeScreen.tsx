@@ -477,27 +477,77 @@ const styles = StyleSheet.create({
   },
   searchSection: {
     padding: spacing.md,
-    backgroundColor: colors.surface,
   },
-  searchbar: {
-    marginBottom: spacing.sm,
+  searchCard: {
+    marginBottom: spacing.md,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  searchTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.textDark,
+    marginBottom: spacing.xs,
+  },
+  searchSubtitle: {
+    fontSize: 14,
+    color: colors.textLight,
+    marginBottom: spacing.md,
+  },
+  addressInput: {
+    marginBottom: spacing.md,
   },
   buttonRow: {
     flexDirection: 'row',
-    marginBottom: spacing.sm,
     gap: spacing.sm,
-  },
-  searchButton: {
-    flex: 1,
   },
   locationButton: {
     flex: 1,
+    borderColor: colors.primary,
+  },
+  clearButton: {
+    flex: 1,
+    borderColor: colors.textLight,
+  },
+  filtersCard: {
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  filtersTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.textDark,
+    marginBottom: spacing.md,
   },
   filterSection: {
+    marginBottom: spacing.md,
+  },
+  filterLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textDark,
     marginBottom: spacing.sm,
+  },
+  chipRow: {
+    flexDirection: 'row',
   },
   filterChip: {
     marginRight: spacing.sm,
+  },
+  dropdownButton: {
+    justifyContent: 'space-between',
+    borderColor: colors.border,
+  },
+  dropdownContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   loadingContainer: {
     padding: spacing.xl,
@@ -507,18 +557,48 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     color: colors.textLight,
   },
-  resultsSection: {
-    padding: spacing.md,
+  resultsHeader: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.sm,
+  },
+  resultsCard: {
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 1,
+  },
+  resultsInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  resultsText: {
+    marginLeft: spacing.sm,
+    flex: 1,
   },
   resultsTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: colors.textDark,
-    marginBottom: spacing.md,
+  },
+  resultsSubtitle: {
+    fontSize: 14,
+    color: colors.textLight,
+    marginTop: spacing.xs,
+  },
+  resultsSection: {
+    padding: spacing.md,
+    paddingTop: 0,
   },
   noResultsContainer: {
-    padding: spacing.xl,
+    padding: spacing.md,
+  },
+  noResultsCard: {
+    elevation: 1,
+  },
+  noResultsContent: {
     alignItems: 'center',
+    paddingVertical: spacing.xl,
   },
   noResultsTitle: {
     fontSize: 20,
@@ -531,9 +611,39 @@ const styles = StyleSheet.create({
     color: colors.textLight,
     textAlign: 'center',
     marginBottom: spacing.lg,
+    lineHeight: 20,
   },
   retryButton: {
     marginTop: spacing.sm,
+  },
+  welcomeContainer: {
+    padding: spacing.md,
+  },
+  welcomeCard: {
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  welcomeContent: {
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
+  },
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.textDark,
+    marginTop: spacing.lg,
+    marginBottom: spacing.md,
+    textAlign: 'center',
+  },
+  welcomeText: {
+    fontSize: 16,
+    color: colors.textLight,
+    textAlign: 'center',
+    lineHeight: 22,
+    paddingHorizontal: spacing.md,
   },
 });
 
