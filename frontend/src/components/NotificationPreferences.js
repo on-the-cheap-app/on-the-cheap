@@ -82,7 +82,7 @@ const NotificationPreferences = ({ user, onClose }) => {
 
   if (!isInitialized) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto">
+      <div className="bg-white p-6 rounded-lg shadow-lg max-w-2xl mx-auto min-h-96 w-full">
         <div className="animate-pulse">
           <div className="h-6 bg-gray-200 rounded mb-4"></div>
           <div className="space-y-3">
@@ -96,7 +96,7 @@ const NotificationPreferences = ({ user, onClose }) => {
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto">
+    <div className="bg-white p-6 rounded-lg shadow-lg max-w-2xl mx-auto min-h-96 w-full">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-lg font-semibold text-gray-900">
           🔔 Notification Preferences
