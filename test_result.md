@@ -396,11 +396,11 @@ metadata:
 
   - task: "Push Notifications with OneSignal Integration"
     implemented: true
-    working: true
+    working: "NA"
     file: "/app/frontend/src/hooks/useNotifications.js, /app/frontend/src/components/NotificationPreferences.js, /app/frontend/src/App.js, /app/frontend/src/UserAuth.js, /app/backend/onesignal_service.py, /app/backend/server.py, /app/frontend/public/OneSignalSDKWorker.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
@@ -408,6 +408,9 @@ metadata:
       - working: true
         agent: "testing"
         comment: "🎉 PUSH NOTIFICATIONS BACKEND TESTING COMPLETED SUCCESSFULLY: Comprehensive testing of all 5 OneSignal notification API endpoints confirms the system is working correctly. TESTING RESULTS: ✅ OneSignal Service Initialization: Service initializes correctly with provided credentials (App ID: 4ca64e1c-b430-436d-8037-ffc9d4176b62, API Key configured), ✅ All 5 Notification Endpoints Working: POST /api/notifications/send (general notifications), POST /api/notifications/restaurant (restaurant-specific notifications with 5 types: daily_special, limited_offer, favorite_update, daily_digest, location_special), POST /api/notifications/test (test notifications), GET /api/notifications/{id}/status (notification status checking), ✅ Restaurant Notification Types: All notification types properly implemented - daily specials, limited offers, favorite updates, daily digest, location-based specials, ✅ Authentication Integration: Optional authentication working correctly with get_current_user_optional - endpoints accessible with or without JWT tokens, ✅ Payload Validation: Comprehensive notification payload validation working (title, message, url, image_url, segments, user_ids, tags), ✅ Response Structure: All endpoints return proper response format with success, notification_id, recipients, and message fields, ✅ Error Handling: Endpoints handle missing fields and invalid data appropriately (422 validation errors). MINOR: Notification sending returns success: false in test environment (expected without production OneSignal configuration), but all endpoints are accessible and properly structured. The Push Notifications system is fully implemented and ready for production use with OneSignal credentials."
+      - working: "NA"
+        agent: "testing"
+        comment: "🔄 STARTING COMPREHENSIVE FRONTEND PUSH NOTIFICATIONS TESTING: Testing agent now conducting thorough testing of the newly implemented OneSignal push notifications frontend features. TESTING FOCUS: 1) OneSignal Integration & Initialization - testing OneSignal service initialization, service worker loading, useNotifications hook functionality, notification permission status detection, 2) Notification Permission Flow - testing permission request process, permission prompt handling, different permission states (granted/denied/default), graceful fallbacks for unsupported browsers, 3) Notification Preferences UI - testing NotificationPreferences component rendering, notification settings form functionality, notification type toggles, cuisine preferences dropdown, dietary restrictions checkboxes, notification timing preferences, 4) User Authentication Integration - testing notification preferences access from user dashboard, notification button in header status, notification bell icon states, user tagging functionality, 5) User Dashboard Integration - testing notification section in user profile, Enable/Manage button logic, modal functionality, notification status indicators, 6) Error Handling & Edge Cases - testing OneSignal initialization failures, permission denied scenarios, offline behavior, error messages and user feedback. Will conduct comprehensive UI testing using Playwright to verify all notification features work correctly."
 
 test_plan:
   current_focus: []
