@@ -608,6 +608,19 @@ async def search_google_places_real(latitude: float, longitude: float, radius: i
                         location = place.get('location', {})
                         display_name = place.get('displayName', {})
                         
+                        # Process photos if available
+                        photos = []
+                        if 'photos' in place and place['photos']:
+                            for photo in place['photos'][:3]:  # Limit to first 3 photos
+                                if 'name' in photo:
+                                    # Construct photo URL using Google Places Photo API
+                                    photo_url = f"https://places.googleapis.com/v1/{photo['name']}/media?maxWidthPx=400&maxHeightPx=300&key={google_api_key}"
+                                    photos.append({
+                                        'url': photo_url,
+                                        'width': photo.get('widthPx', 400),
+                                        'height': photo.get('heightPx', 300)
+                                    })
+                        
                         restaurant = {
                             'id': f"google_{place.get('id', str(uuid.uuid4()))}",
                             'name': display_name.get('text', 'Unknown Restaurant'),
@@ -621,6 +634,7 @@ async def search_google_places_real(latitude: float, longitude: float, radius: i
                             'cuisine_type': [t.replace('_', ' ').title() for t in place.get('types', []) if t in ['restaurant', 'bar', 'cafe', 'meal_takeaway']],
                             'rating': place.get('rating'),
                             'price_level': place.get('priceLevel'),
+                            'photos': photos,  # Add photos array
                             'specials': [],  # External restaurants don't have specials in our system yet
                             'is_verified': True,
                             'source': 'google_places',
