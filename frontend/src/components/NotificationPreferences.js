@@ -25,16 +25,28 @@ const NotificationPreferences = ({ user, onClose }) => {
   }, [user?.id, isEnabled]);
 
   const handleEnableNotifications = async () => {
-    const granted = await requestPermission();
+    console.log('🔔 Enable notifications button clicked');
     
-    if (granted) {
-      Analytics.trackConversion('notification_permission_granted', {
-        user_id: user?.id
-      });
-    } else {
-      Analytics.trackConversion('notification_permission_denied', {
-        user_id: user?.id
-      });
+    try {
+      const granted = await requestPermission();
+      
+      if (granted) {
+        Analytics.trackConversion('notification_permission_granted', {
+          user_id: user?.id
+        });
+        
+        // Show success message
+        alert('🎉 Notifications enabled successfully! You\'ll now receive updates about restaurant specials.');
+      } else {
+        Analytics.trackConversion('notification_permission_denied', {
+          user_id: user?.id
+        });
+        
+        // The requestPermission function will show appropriate error messages
+      }
+    } catch (error) {
+      console.error('Error in handleEnableNotifications:', error);
+      alert('Something went wrong while enabling notifications. Please try again.');
     }
   };
 
