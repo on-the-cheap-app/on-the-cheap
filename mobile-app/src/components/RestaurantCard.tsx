@@ -52,9 +52,58 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
 }) => {
   const hasSpecials = restaurant.specials && restaurant.specials.length > 0;
   const specialsCount = restaurant.specials?.length || 0;
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
+
+  // Get primary photo for display
+  const primaryPhoto = restaurant.photos && restaurant.photos.length > 0 ? restaurant.photos[0] : null;
+
+  const handleImageLoad = () => {
+    setImageLoading(false);
+  };
+
+  const handleImageError = () => {
+    setImageLoading(false);
+    setImageError(true);
+  };
 
   return (
     <Card style={styles.card} onPress={onPress}>
+      {/* Restaurant Photo */}
+      {primaryPhoto && (
+        <View style={styles.photoContainer}>
+          <Image
+            source={{ uri: primaryPhoto.url }}
+            style={styles.photo}
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+            resizeMode="cover"
+          />
+          
+          {/* Loading indicator */}
+          {imageLoading && (
+            <View style={styles.photoLoading}>
+              <ActivityIndicator size="small" color={colors.primary} />
+            </View>
+          )}
+          
+          {/* Fallback indicator */}
+          {primaryPhoto.is_fallback && !imageError && (
+            <View style={styles.fallbackBadge}>
+              <Text style={styles.fallbackText}>Stock Photo</Text>
+            </View>
+          )}
+          
+          {/* Photo count badge */}
+          {restaurant.photos && restaurant.photos.length > 1 && (
+            <View style={styles.photoCountBadge}>
+              <Icon name="image-multiple" size={12} color="white" />
+              <Text style={styles.photoCountText}>{restaurant.photos.length}</Text>
+            </View>
+          )}
+        </View>
+      )}
+
       <Card.Content>
         <View style={styles.header}>
           <View style={styles.titleContainer}>
