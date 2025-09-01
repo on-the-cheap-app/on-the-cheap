@@ -2174,6 +2174,185 @@ async def get_status_checks():
     status_checks = await db.status_checks.find().to_list(1000)
     return [StatusCheck(**status_check) for status_check in status_checks]
 
+# =================== PRODUCTION MONITORING & ADMIN ENDPOINTS ===================
+
+@api_router.get("/admin/performance")
+async def get_performance_stats():
+    """Get comprehensive performance statistics (admin only)"""
+    global cache_service, db_service
+    
+    try:
+        stats = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "services": {
+                "cache": "available" if cache_service else "unavailable",
+                "database": "available" if db_service else "unavailable"
+            }
+        }
+        
+        # Cache statistics
+        if cache_service:
+            stats["cache"] = cache_service.get_cache_stats()
+            stats["api_quotas"] = cache_service.get_all_quota_status()
+        
+        # Database statistics
+        if db_service:
+            stats["database"] = await db_service.get_db_stats()
+        
+        return stats
+        
+    except Exception as e:
+        logger.error(f"Error getting performance stats: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get performance statistics")
+
+@api_router.get("/admin/health")
+async def comprehensive_health_check():
+    """Comprehensive system health check"""
+    global cache_service, db_service
+    
+    health_status = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "overall_status": "healthy",
+        "services": {}
+    }
+    
+    # Database health
+    if db_service:
+        db_health = await db_service.health_check()
+        health_status["services"]["database"] = db_health
+        if db_health["status"] != "healthy":
+            health_status["overall_status"] = "degraded"
+    else:
+        health_status["services"]["database"] = {"status": "unavailable"}
+        health_status["overall_status"] = "degraded"
+    
+    # Cache service health
+    if cache_service:
+        cache_stats = cache_service.get_cache_stats()
+        health_status["services"]["cache"] = {
+            "status": "healthy",
+            "entries": cache_stats["cache_entries"],
+            "hit_rate": cache_stats["hit_rate"],
+            "memory_usage": cache_stats["memory_usage_estimate"]
+        }
+    else:
+        health_status["services"]["cache"] = {"status": "unavailable"}
+    
+    # API quota health
+    if cache_service:
+        quotas = cache_service.get_all_quota_status()
+        health_status["services"]["api_quotas"] = {}
+        
+        for service, quota in quotas.items():
+            if quota and quota["usage_percent"] > 90:
+                health_status["services"]["api_quotas"][service] = {
+                    "status": "critical",
+                    "usage_percent": quota["usage_percent"]
+                }
+                health_status["overall_status"] = "critical"
+            elif quota and quota["usage_percent"] > 75:
+                health_status["services"]["api_quotas"][service] = {
+                    "status": "warning", 
+                    "usage_percent": quota["usage_percent"]
+                }
+                if health_status["overall_status"] == "healthy":
+                    health_status["overall_status"] = "warning"
+            else:
+                health_status["services"]["api_quotas"][service] = {
+                    "status": "healthy",
+                    "usage_percent": quota["usage_percent"] if quota else 0
+                }
+    
+    return health_status
+
+@api_router.post("/admin/cache/clear")
+async def clear_cache(cache_type: Optional[str] = None):
+    """Clear cache entries (admin only)"""
+    global cache_service
+    
+    if not cache_service:
+        raise HTTPException(status_code=503, detail="Cache service not available")
+    
+    try:
+        if cache_type:
+            # Clear specific cache type
+            cache_type_enum = CacheType(cache_type)
+            cleared_count = await cache_service.clear_type(cache_type_enum)
+            return {
+                "message": f"Cleared {cleared_count} entries of type {cache_type}",
+                "cache_type": cache_type,
+                "cleared_entries": cleared_count
+            }
+        else:
+            # Clear all cache
+            total_entries = len(cache_service.cache)
+            cache_service.cache.clear()
+            return {
+                "message": f"Cleared all cache entries",
+                "cleared_entries": total_entries
+            }
+            
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid cache type: {cache_type}")
+    except Exception as e:
+        logger.error(f"Error clearing cache: {e}")
+        raise HTTPException(status_code=500, detail="Failed to clear cache")
+
+@api_router.post("/admin/database/optimize")
+async def optimize_database():
+    """Optimize database collections (admin only)"""
+    global db_service
+    
+    if not db_service:
+        raise HTTPException(status_code=503, detail="Database service not available")
+    
+    try:
+        results = {}
+        collections = ["restaurants", "users", "restaurant_owners"]
+        
+        for collection in collections:
+            result = await db_service.optimize_collection(collection)
+            results[collection] = result
+        
+        return {
+            "message": "Database optimization completed",
+            "results": results,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error optimizing database: {e}")
+        raise HTTPException(status_code=500, detail="Failed to optimize database")
+
+@api_router.get("/admin/quota-status")
+async def get_quota_status():
+    """Get current API quota status for all services"""
+    global cache_service
+    
+    if not cache_service:
+        return {"message": "Cache service not available", "quotas": {}}
+    
+    quotas = cache_service.get_all_quota_status()
+    
+    # Add recommendations based on usage
+    for service, quota in quotas.items():
+        if quota:
+            usage_percent = quota["usage_percent"]
+            if usage_percent > 90:
+                quota["recommendation"] = "CRITICAL - Consider upgrading quota or implementing stronger throttling"
+            elif usage_percent > 75:
+                quota["recommendation"] = "WARNING - Monitor usage closely"
+            elif usage_percent > 50:
+                quota["recommendation"] = "MODERATE - Usage within normal range"
+            else:
+                quota["recommendation"] = "LOW - Usage well within limits"
+    
+    return {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "quotas": quotas,
+        "cache_performance": cache_service.get_cache_stats() if cache_service else None
+    }
+
 # Include the router in the main app
 app.include_router(api_router)
 
