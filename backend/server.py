@@ -143,18 +143,6 @@ class RestaurantSearch(BaseModel):
     special_type: Optional[SpecialType] = None
     limit: int = Field(default=20, ge=1, le=50)
 
-class RestaurantOwner(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    email: str
-    password_hash: str
-    business_name: str
-    phone: str
-    first_name: str
-    last_name: str
-    restaurant_ids: List[str] = []
-    is_verified: bool = False
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
 class RestaurantOwnerCreate(BaseModel):
     first_name: str = Field(..., min_length=1, max_length=50)
     last_name: str = Field(..., min_length=1, max_length=50)
