@@ -458,7 +458,22 @@ class OwnerAdminService:
             # Remove MongoDB _id and prepare data
             if '_id' in claim:
                 del claim['_id']
-            cleaned_claims.append(RestaurantClaimRequest(**claim))
+            
+            # Handle different field names that might exist in database
+            # Ensure required fields exist with default values if missing
+            if 'restaurant_id' not in claim:
+                claim['restaurant_id'] = claim.get('google_place_id', 'unknown')
+            if 'submitted_at' not in claim:
+                claim['submitted_at'] = claim.get('created_at', datetime.now(timezone.utc).isoformat())
+            if 'owner_id' not in claim:
+                claim['owner_id'] = claim.get('user_id', 'unknown')
+            
+            try:
+                cleaned_claims.append(RestaurantClaimRequest(**claim))
+            except Exception as e:
+                # Skip invalid claims and log the error
+                logger.warning(f"Skipping invalid claim: {e}")
+                continue
         
         return cleaned_claims
     
