@@ -2364,6 +2364,167 @@ async def get_quota_status():
         "cache_performance": cache_service.get_cache_stats() if cache_service else None
     }
 
+# =================== RESTAURANT OWNER ENDPOINTS ===================
+
+@api_router.post("/owners/register", response_model=RestaurantOwner)
+async def register_owner(owner_data: RestaurantOwnerCreate):
+    """Register a new restaurant owner"""
+    try:
+        owner_service = get_owner_service(db)
+        owner = await owner_service.create_owner(owner_data)
+        return owner
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error registering owner: {e}")
+        raise HTTPException(status_code=500, detail="Registration failed")
+
+@api_router.post("/owners/login")
+async def login_owner(login_data: OwnerLoginRequest):
+    """Authenticate restaurant owner"""
+    try:
+        owner_service = get_owner_service(db)
+        auth_result = await owner_service.authenticate_owner(login_data)
+        return auth_result
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error authenticating owner: {e}")
+        raise HTTPException(status_code=500, detail="Authentication failed")
+
+@api_router.post("/owners/claims", response_model=RestaurantClaimRequest)
+async def submit_restaurant_claim(claim_data: RestaurantClaimRequest, current_user: dict = Depends(get_current_user)):
+    """Submit a restaurant claim request"""
+    try:
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Only owners can submit claims")
+        
+        # Set owner_id from authenticated user
+        claim_data.owner_id = current_user["user_id"]
+        
+        owner_service = get_owner_service(db)
+        claim = await owner_service.claim_restaurant(claim_data)
+        return claim
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error submitting claim: {e}")
+        raise HTTPException(status_code=500, detail="Claim submission failed")
+
+@api_router.post("/owners/specials", response_model=OwnerSpecial)
+async def create_owner_special(special_data: OwnerSpecialCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new special (pending approval)"""
+    try:
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Only owners can create specials")
+        
+        owner_service = get_owner_service(db)
+        special = await owner_service.create_special(special_data, current_user["user_id"])
+        return special
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating special: {e}")
+        raise HTTPException(status_code=500, detail="Special creation failed")
+
+@api_router.get("/owners/dashboard", response_model=OwnerDashboardStats)
+async def get_owner_dashboard(current_user: dict = Depends(get_current_user)):
+    """Get owner dashboard statistics"""
+    try:
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Owner access required")
+        
+        owner_service = get_owner_service(db)
+        stats = await owner_service.get_owner_dashboard(current_user["user_id"])
+        return stats
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting dashboard: {e}")
+        raise HTTPException(status_code=500, detail="Dashboard retrieval failed")
+
+@api_router.get("/owners/specials")
+async def get_owner_specials(restaurant_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Get all specials for the authenticated owner"""
+    try:
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Owner access required")
+        
+        owner_service = get_owner_service(db)
+        specials = await owner_service.get_owner_specials(current_user["user_id"], restaurant_id)
+        return {"specials": specials}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting specials: {e}")
+        raise HTTPException(status_code=500, detail="Specials retrieval failed")
+
+@api_router.get("/owners/restaurants")
+async def get_owner_restaurants(current_user: dict = Depends(get_current_user)):
+    """Get all restaurants owned by the authenticated owner"""
+    try:
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Owner access required")
+        
+        owner_service = get_owner_service(db)
+        restaurants = await owner_service.get_owner_restaurants(current_user["user_id"])
+        return {"restaurants": restaurants}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting restaurants: {e}")
+        raise HTTPException(status_code=500, detail="Restaurants retrieval failed")
+
+# =================== ADMIN OWNER ENDPOINTS ===================
+
+@api_router.get("/admin/owners/claims")
+async def get_pending_claims():
+    """Get all pending restaurant claims (admin only)"""
+    try:
+        admin_service = get_owner_admin_service(db)
+        claims = await admin_service.get_pending_claims()
+        return {"claims": claims}
+    except Exception as e:
+        logger.error(f"Error getting pending claims: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get pending claims")
+
+@api_router.post("/admin/owners/claims/{claim_id}/approve")
+async def approve_claim(claim_id: str, admin_notes: Optional[str] = None):
+    """Approve a restaurant claim (admin only)"""
+    try:
+        admin_service = get_owner_admin_service(db)
+        success = await admin_service.approve_claim(claim_id, admin_notes)
+        return {"message": "Claim approved successfully", "success": success}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error approving claim: {e}")
+        raise HTTPException(status_code=500, detail="Claim approval failed")
+
+@api_router.get("/admin/owners/specials")
+async def get_pending_specials():
+    """Get all pending specials (admin only)"""
+    try:
+        admin_service = get_owner_admin_service(db)
+        specials = await admin_service.get_pending_specials()
+        return {"specials": specials}
+    except Exception as e:
+        logger.error(f"Error getting pending specials: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get pending specials")
+
+@api_router.post("/admin/owners/specials/{special_id}/approve")
+async def approve_special(special_id: str, admin_notes: Optional[str] = None):
+    """Approve a special (admin only)"""
+    try:
+        admin_service = get_owner_admin_service(db)
+        success = await admin_service.approve_special(special_id, admin_notes)
+        return {"message": "Special approved successfully", "success": success}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error approving special: {e}")
+        raise HTTPException(status_code=500, detail="Special approval failed")
+
 # Include the router in the main app
 app.include_router(api_router)
 
