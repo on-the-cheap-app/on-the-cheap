@@ -12,12 +12,13 @@ import { Provider as PaperProvider } from 'react-native-paper';
 
 import AppNavigator from './src/navigation/AppNavigator';
 import { theme } from './src/theme/colors';
-import OneSignalService from './src/services/OneSignalService';
+// Remove OneSignal for now to avoid compilation issues
+// import OneSignalService from './src/services/OneSignalService';
 
 // Initialize OneSignal
-OneSignalService.initialize();
+// OneSignalService.initialize();
 
-const App = (): JSX.Element => {
+const App = (): React.JSX.Element => {
   return (
     <SafeAreaProvider>
       <PaperProvider theme={theme}>
