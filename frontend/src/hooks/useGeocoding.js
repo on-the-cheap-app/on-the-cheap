@@ -8,7 +8,7 @@ const useGeocoding = () => {
 
   // Get backend URL from environment
   const getBackendUrl = () => {
-    return "https://cheapdeals-app.preview.emergentagent.com"; // HTTPS for mixed content security
+    return process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
   };
 
   const forwardGeocode = useCallback(async (address, options = {}) => {
