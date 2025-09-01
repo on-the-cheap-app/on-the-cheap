@@ -2389,7 +2389,7 @@ async def submit_restaurant_claim(claim_data: RestaurantClaimRequest, current_us
             raise HTTPException(status_code=403, detail="Only owners can submit claims")
         
         # Set owner_id from authenticated user
-        claim_data.owner_id = current_user["user_id"]
+        claim_data.owner_id = current_user["id"]
         
         owner_service = get_owner_service(db)
         claim = await owner_service.claim_restaurant(claim_data)
