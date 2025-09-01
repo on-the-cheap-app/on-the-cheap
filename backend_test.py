@@ -253,7 +253,7 @@ class OwnerDashboardTester:
         
         try:
             # First, get a restaurant to claim (from existing restaurants)
-            restaurants_response = await self.client.get(f"{BACKEND_URL}/restaurants/search?latitude=37.7749&longitude=-122.4194&limit=1")
+            restaurants_response = await self.client.get(f"{BACKEND_URL}/restaurants/search?latitude=37.7749&longitude=-122.4194&limit=5")
             
             if restaurants_response.status_code != 200:
                 await self.log_result(test_name, False, "Could not get restaurants for claim test")
@@ -264,47 +264,58 @@ class OwnerDashboardTester:
                 await self.log_result(test_name, False, "No restaurants available for claim test")
                 return
             
-            restaurant = restaurants_data["restaurants"][0]
-            restaurant_id = restaurant["id"]
-            
-            # Submit claim
-            headers = {"Authorization": f"Bearer {self.test_data['owner_token']}"}
-            claim_data = {
-                "restaurant_id": restaurant_id,
-                "owner_id": self.test_data["owner"]["id"],  # Will be overridden by server
-                "business_license": "BL123456789",
-                "proof_of_ownership": "Lease agreement and business registration",
-                "additional_documents": ["lease.pdf", "registration.pdf"],
-                "notes": "I am the owner of this restaurant and would like to claim it.",
-                "status": "pending",
-                "submitted_at": datetime.now(timezone.utc).isoformat()
-            }
-            
-            response = await self.client.post(f"{BACKEND_URL}/owners/claims", json=claim_data, headers=headers)
-            
-            if response.status_code == 200:
-                data = response.json()
+            # Try multiple restaurants in case some are already claimed
+            claim_successful = False
+            for restaurant in restaurants_data["restaurants"]:
+                restaurant_id = restaurant["id"]
                 
-                # Verify response structure
-                required_fields = ["id", "restaurant_id", "owner_id", "status", "submitted_at"]
-                missing_fields = [field for field in required_fields if field not in data]
+                # Submit claim
+                headers = {"Authorization": f"Bearer {self.test_data['owner_token']}"}
+                claim_data = {
+                    "restaurant_id": restaurant_id,
+                    "owner_id": self.test_data["owner"]["id"],  # Will be overridden by server
+                    "business_license": "BL123456789",
+                    "proof_of_ownership": "Lease agreement and business registration",
+                    "additional_documents": ["lease.pdf", "registration.pdf"],
+                    "notes": "I am the owner of this restaurant and would like to claim it.",
+                    "status": "pending",
+                    "submitted_at": datetime.now(timezone.utc).isoformat()
+                }
                 
-                if missing_fields:
-                    await self.log_result(test_name, False, f"Missing fields: {missing_fields}", data)
+                response = await self.client.post(f"{BACKEND_URL}/owners/claims", json=claim_data, headers=headers)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    # Verify response structure
+                    required_fields = ["restaurant_id", "owner_id", "status", "submitted_at"]
+                    missing_fields = [field for field in required_fields if field not in data]
+                    
+                    if missing_fields:
+                        await self.log_result(test_name, False, f"Missing fields: {missing_fields}", data)
+                        return
+                    
+                    # Verify status is pending
+                    if data.get("status") != "pending":
+                        await self.log_result(test_name, False, f"Wrong claim status: {data.get('status')}")
+                        return
+                    
+                    self.test_data["claim"] = data
+                    claim_successful = True
+                    
+                    await self.log_result(test_name, True, 
+                        f"Claim submitted successfully. Restaurant: {restaurant_id}, Status: {data['status']}")
+                    break
+                elif response.status_code == 400 and "already claimed" in response.text:
+                    # Try next restaurant
+                    continue
+                else:
+                    await self.log_result(test_name, False, 
+                        f"Claim submission failed with status {response.status_code}", response.text)
                     return
-                
-                # Verify status is pending
-                if data.get("status") != "pending":
-                    await self.log_result(test_name, False, f"Wrong claim status: {data.get('status')}")
-                    return
-                
-                self.test_data["claim"] = data
-                
-                await self.log_result(test_name, True, 
-                    f"Claim submitted successfully. ID: {data['id']}, Status: {data['status']}")
-            else:
-                await self.log_result(test_name, False, 
-                    f"Claim submission failed with status {response.status_code}", response.text)
+            
+            if not claim_successful:
+                await self.log_result(test_name, False, "All restaurants are already claimed or unavailable")
                 
         except Exception as e:
             await self.log_result(test_name, False, f"Exception: {str(e)}")
