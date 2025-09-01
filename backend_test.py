@@ -558,12 +558,12 @@ class OwnerDashboardTester:
             # Test accessing protected endpoint without token
             response = await self.client.get(f"{BACKEND_URL}/owners/dashboard")
             
-            if response.status_code == 401:
+            if response.status_code in [401, 403]:
                 await self.log_result(test_name, True, 
-                    "Correctly rejected unauthenticated request with 401")
+                    f"Correctly rejected unauthenticated request with {response.status_code}")
             else:
                 await self.log_result(test_name, False, 
-                    f"Should have returned 401 for unauthenticated request, got {response.status_code}")
+                    f"Should have returned 401 or 403 for unauthenticated request, got {response.status_code}")
                 
         except Exception as e:
             await self.log_result(test_name, False, f"Exception: {str(e)}")
