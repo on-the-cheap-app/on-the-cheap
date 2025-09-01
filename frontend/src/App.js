@@ -98,6 +98,11 @@ function App() {
   const [showUserAuth, setShowUserAuth] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [userFavorites, setUserFavorites] = useState([]);
+  const [userType, setUserType] = useState(null); // 'user' or 'owner'
+  
+  // Owner dashboard state
+  const [showOwnerAuth, setShowOwnerAuth] = useState(false);
+  const [showOwnerDashboard, setShowOwnerDashboard] = useState(false);
 
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
   const [selectedVendorType, setSelectedVendorType] = useState('all'); // 'all', 'permanent', 'mobile'
