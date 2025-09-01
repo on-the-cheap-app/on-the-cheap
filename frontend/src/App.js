@@ -732,15 +732,12 @@ function App() {
                     </CardHeader>
                     
                     {/* Restaurant Photo */}
-                    {/* Debug: Log photo data */}
-                    {console.log('🔍 DEBUG - Restaurant:', restaurant.name, 'Photos:', restaurant.photos, 'Has photos:', restaurant.photos && restaurant.photos.length > 0)}
                     {restaurant.photos && restaurant.photos.length > 0 && (
-                      <div className="relative h-48 overflow-hidden" style={{border: '5px solid red', backgroundColor: 'yellow'}}>
+                      <div className="relative h-48 overflow-hidden">
                         <img
                           src={restaurant.photos[0].url}
                           alt={restaurant.name}
                           className="w-full h-full object-cover"
-                          style={{border: '3px solid blue', minHeight: '192px', minWidth: '100%'}}
                           onError={(e) => {
                             console.log('❌ Image load error for:', restaurant.name, restaurant.photos[0].url);
                             e.target.style.display = 'none';
