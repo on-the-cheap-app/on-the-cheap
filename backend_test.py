@@ -454,8 +454,14 @@ class OwnerDashboardTester:
             restaurants = restaurants_data.get("restaurants", [])
             
             if not restaurants:
-                # Use a mock restaurant ID for testing
-                restaurant_id = "test-restaurant-id"
+                # If no restaurants, check if claim was approved and restaurant should be available
+                if "claim" in self.test_data:
+                    restaurant_id = self.test_data["claim"]["restaurant_id"]
+                    await self.log_result(test_name, False, 
+                        f"Owner has no restaurants despite approved claim. Expected restaurant: {restaurant_id}")
+                else:
+                    await self.log_result(test_name, False, "Owner has no restaurants and no approved claim available")
+                return
             else:
                 restaurant_id = restaurants[0]["id"]
             
