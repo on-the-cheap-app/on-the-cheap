@@ -6,6 +6,7 @@ class APIService {
   private baseURL = 'https://cheapdeals-app.preview.emergentagent.com/api';
 
   constructor() {
+    console.log('🔧 APIService initializing with baseURL:', this.baseURL);
     this.api = axios.create({
       baseURL: this.baseURL,
       timeout: 10000,
@@ -17,6 +18,7 @@ class APIService {
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+      console.log('📡 API Request:', config.method?.toUpperCase(), config.url);
       return config;
     });
 
