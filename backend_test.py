@@ -443,6 +443,10 @@ class OwnerDashboardTester:
         try:
             headers = {"Authorization": f"Bearer {self.test_data['owner_token']}"}
             
+            # Add a small delay to ensure claim approval has been processed
+            import asyncio
+            await asyncio.sleep(1)
+            
             # Check if owner now has restaurants after claim approval
             restaurants_response = await self.client.get(f"{BACKEND_URL}/owners/restaurants", headers=headers)
             
@@ -453,12 +457,16 @@ class OwnerDashboardTester:
             restaurants_data = restaurants_response.json()
             restaurants = restaurants_data.get("restaurants", [])
             
+            # Also check the dashboard to see if it shows any restaurants
+            dashboard_response = await self.client.get(f"{BACKEND_URL}/owners/dashboard", headers=headers)
+            dashboard_data = dashboard_response.json() if dashboard_response.status_code == 200 else {}
+            
             if not restaurants:
                 # If no restaurants, check if claim was approved and restaurant should be available
                 if "claim" in self.test_data:
                     restaurant_id = self.test_data["claim"]["restaurant_id"]
                     await self.log_result(test_name, False, 
-                        f"Owner has no restaurants despite approved claim. Expected restaurant: {restaurant_id}")
+                        f"Owner has no restaurants despite approved claim. Expected restaurant: {restaurant_id}. Dashboard shows {dashboard_data.get('total_restaurants', 0)} restaurants.")
                 else:
                     await self.log_result(test_name, False, "Owner has no restaurants and no approved claim available")
                 return
