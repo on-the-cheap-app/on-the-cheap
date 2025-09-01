@@ -8,7 +8,8 @@ const useGeocoding = () => {
 
   // Get backend URL from environment
   const getBackendUrl = () => {
-    return process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+    const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
+    return backendUrl || '';
   };
 
   const forwardGeocode = useCallback(async (address, options = {}) => {
