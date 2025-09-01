@@ -207,7 +207,10 @@ class RestaurantOwnerService:
             "exp": datetime.now(timezone.utc).timestamp() + 86400  # 24 hours
         }
         
-        token = jwt.encode(payload, "your-secret-key", algorithm="HS256")
+        # Use the same JWT secret as the main server
+        import os
+        JWT_SECRET = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production')
+        token = jwt.encode(payload, JWT_SECRET, algorithm="HS256")
         
         # Remove password_hash from response
         del owner_doc["password_hash"]
