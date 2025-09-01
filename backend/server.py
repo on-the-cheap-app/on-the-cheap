@@ -2408,7 +2408,7 @@ async def create_owner_special(special_data: OwnerSpecialCreate, current_user: d
             raise HTTPException(status_code=403, detail="Only owners can create specials")
         
         owner_service = get_owner_service(db)
-        special = await owner_service.create_special(special_data, current_user["user_id"])
+        special = await owner_service.create_special(special_data, current_user["id"])
         return special
     except HTTPException:
         raise
