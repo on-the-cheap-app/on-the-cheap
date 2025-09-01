@@ -20,7 +20,8 @@ import useNotifications from "./hooks/useNotifications";
 import { usePWA } from "./hooks/usePWA";
 import * as Analytics from './utils/analytics';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+// Get backend URL from environment variables
+const BACKEND_URL = "http://10.64.132.142:8001"; // Temporarily hardcoded for debugging
 const API = `${BACKEND_URL}/api`;
 
 // App link for sharing (update this when you have a production domain)
