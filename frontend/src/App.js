@@ -271,13 +271,14 @@ function App() {
         params.vendor_type = selectedVendorType;
       }
 
-      let searchResults, searchLocation;
+      let searchResults, searchLocation, sourceSummary;
       
       if (isOnline) {
         // Online: fetch fresh data
         const response = await axios.get(`${API}/restaurants/search`, { params });
         searchResults = response.data.restaurants;
         searchLocation = response.data.search_location;
+        sourceSummary = response.data.source_summary;
         
         // Cache results for offline use
         await cacheRestaurantData(searchResults, { 
@@ -291,6 +292,7 @@ function App() {
         if (cachedData && cachedData.restaurants) {
           searchResults = cachedData.restaurants;
           searchLocation = cachedData.location.location || 'Cached Location';
+          sourceSummary = null; // No source summary for cached data
           console.log('📦 Using cached restaurant data for offline viewing');
         } else {
           throw new Error('No cached data available offline');
@@ -311,7 +313,7 @@ function App() {
         special_type: selectedSpecialType,
         vendor_type: selectedVendorType,
         query: null
-      }, searchResults.length, response.data.source_summary);
+      }, searchResults.length, sourceSummary);
       
       // Track search performance
       Analytics.trackPerformance('restaurant_search', searchTime, {
