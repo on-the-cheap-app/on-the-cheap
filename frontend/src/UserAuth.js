@@ -22,7 +22,7 @@ import { Badge } from "./components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
 import { Alert, AlertDescription } from "./components/ui/alert";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = "http://10.64.132.142:8001"; // Temporarily hardcoded for debugging
 const API = `${BACKEND_URL}/api`;
 
 const UserAuth = ({ onClose, onUserLogin, currentFavorites = [], onFavoritesUpdate, onShowNotificationPreferences }) => {
