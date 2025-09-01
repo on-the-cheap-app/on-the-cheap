@@ -595,13 +595,41 @@ async def get_current_user_optional(credentials: Optional[HTTPAuthorizationCrede
 
 # Google Places API Integration
 async def search_google_places_real(latitude: float, longitude: float, radius: int, query: Optional[str] = None, limit: int = 20) -> List[dict]:
-    """Search for real restaurants using Google Places API"""
+    """Search for real restaurants using Google Places API with caching"""
+    global cache_service
+    
+    # Try cache first
+    cache_params = {
+        "latitude": round(latitude, 4),  # Round for cache key consistency
+        "longitude": round(longitude, 4),
+        "radius": radius,
+        "query": query or "",
+        "limit": limit
+    }
+    
+    if cache_service:
+        cached_data = await cache_service.get(CacheType.GOOGLE_PLACES, **cache_params)
+        if cached_data:
+            logger.info("Cache hit for Google Places search")
+            cache_service.stats["api_calls_saved"] += 1
+            cache_service.stats["cost_saved"] += 0.017  # Estimated cost per Places API call
+            return cached_data
+    
     google_api_key = os.environ.get('GOOGLE_PLACES_API_KEY')
     if not google_api_key:
         logger.warning("Google Places API key not found, skipping real API call")
         return []
     
     try:
+        # Track API usage
+        if cache_service:
+            cache_service.track_api_usage("google_places", requests=1, cost=0.017)
+        
+        # Check if we should throttle API calls
+        if cache_service and cache_service.should_throttle("google_places", threshold=0.85):
+            logger.warning("Google Places API throttled due to high usage")
+            return []
+        
         headers = {
             "Content-Type": "application/json",
             "X-Goog-Api-Key": google_api_key,
@@ -688,6 +716,10 @@ async def search_google_places_real(latitude: float, longitude: float, radius: i
                     except Exception as e:
                         logger.warning(f"Error processing Google Places result: {e}")
                         continue
+                
+                # Cache the results
+                if cache_service:
+                    await cache_service.set(CacheType.GOOGLE_PLACES, restaurants, **cache_params)
                 
                 logger.info(f"Found {len(restaurants)} restaurants from Google Places API")
                 return restaurants
