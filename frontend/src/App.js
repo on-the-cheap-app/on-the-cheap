@@ -9,6 +9,8 @@ import { Badge } from "./components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
 import OwnerPortal from "./OwnerPortal";
 import UserAuth from "./UserAuth";
+import OwnerAuth from './components/OwnerAuth';
+import OwnerDashboard from './components/OwnerDashboard';
 import AddressInput from "./components/AddressInput";
 
 import RestaurantMap from "./components/RestaurantMap";
