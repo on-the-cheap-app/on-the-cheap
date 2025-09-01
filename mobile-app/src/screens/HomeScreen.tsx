@@ -134,13 +134,15 @@ const HomeScreen = ({ navigation }: any) => {
       };
 
       const result = await APIService.searchRestaurants(searchParams);
+      console.log('🍽️ Restaurant search result:', result.restaurants?.length || 0, 'restaurants found');
       setRestaurants(result.restaurants || []);
       
       // Debug: Log photos for first restaurant
       if (result.restaurants && result.restaurants.length > 0) {
         const firstRestaurant = result.restaurants[0];
-        console.log('First restaurant photos:', firstRestaurant.photos);
-        console.log('First restaurant data:', JSON.stringify(firstRestaurant, null, 2));
+        console.log('📸 First restaurant photos:', firstRestaurant.photos?.length || 0, 'photos');
+        console.log('📸 First photo URL:', firstRestaurant.photos?.[0]?.url);
+        console.log('🏪 First restaurant data keys:', Object.keys(firstRestaurant));
       }
       
       console.log(`Found ${result.restaurants?.length || 0} restaurants within ${formatDistance(selectedRadius)}`);
