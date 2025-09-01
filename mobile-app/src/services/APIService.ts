@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Restaurant, SearchParams, AuthResponse, User } from '../types/restaurant';
 
 class APIService {
   private api: AxiosInstance;
@@ -48,13 +49,7 @@ class APIService {
   }
 
   // Restaurant search
-  async searchRestaurants(params: {
-    latitude: number;
-    longitude: number;
-    radius?: number;
-    special_type?: string;
-    vendor_type?: string;
-  }) {
+  async searchRestaurants(params: SearchParams) {
     try {
       const response = await this.api.get('/restaurants/search', { params });
       return response.data;
@@ -93,7 +88,7 @@ class APIService {
   }
 
   // User authentication
-  async login(email: string, password: string) {
+  async login(email: string, password: string): Promise<AuthResponse> {
     try {
       const response = await this.api.post('/users/login', {
         email,
@@ -116,7 +111,7 @@ class APIService {
     last_name: string;
     email: string;
     password: string;
-  }) {
+  }): Promise<AuthResponse> {
     try {
       const response = await this.api.post('/users/register', userData);
       
@@ -162,6 +157,20 @@ class APIService {
     }
   }
 
+  // Toggle favorite (combined add/remove logic)
+  async toggleFavorite(restaurantId: string, isFavorite: boolean) {
+    try {
+      if (isFavorite) {
+        return await this.removeFavorite(restaurantId);
+      } else {
+        return await this.addFavorite(restaurantId);
+      }
+    } catch (error) {
+      console.error('API Error - Toggle Favorite:', error);
+      throw error;
+    }
+  }
+
   // Special types
   async getSpecialTypes() {
     try {
@@ -185,7 +194,7 @@ class APIService {
   }
 
   // User session management
-  async getCurrentUser() {
+  async getCurrentUser(): Promise<User | null> {
     try {
       const userData = await AsyncStorage.getItem('user_data');
       return userData ? JSON.parse(userData) : null;
@@ -195,7 +204,7 @@ class APIService {
     }
   }
 
-  async getCurrentUserFromServer() {
+  async getCurrentUserFromServer(): Promise<User> {
     try {
       const response = await this.api.get('/users/me');
       return response.data;
