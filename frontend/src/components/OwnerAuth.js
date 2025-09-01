@@ -32,6 +32,10 @@ const OwnerAuth = ({ onClose, onAuthSuccess }) => {
         ? { email: formData.email, password: formData.password }
         : formData;
 
+      console.log('🔍 Debug - Submitting to:', `${backendUrl}${endpoint}`);
+      console.log('🔍 Debug - Payload:', payload);
+      console.log('🔍 Debug - Is Login:', isLogin);
+
       const response = await fetch(`${backendUrl}${endpoint}`, {
         method: 'POST',
         headers: {
@@ -40,11 +44,16 @@ const OwnerAuth = ({ onClose, onAuthSuccess }) => {
         body: JSON.stringify(payload),
       });
 
+      console.log('🔍 Debug - Response status:', response.status);
+      console.log('🔍 Debug - Response ok:', response.ok);
+
       const data = await response.json();
+      console.log('🔍 Debug - Response data:', data);
 
       if (response.ok) {
         if (isLogin) {
           // Login successful
+          console.log('🔍 Debug - Calling onAuthSuccess with:', data.owner || data.user, data.access_token);
           onAuthSuccess(data.owner || data.user, data.access_token, 'owner');
         } else {
           // Registration successful - automatically login
@@ -61,10 +70,11 @@ const OwnerAuth = ({ onClose, onAuthSuccess }) => {
           alert('Registration successful! Please log in with your credentials.');
         }
       } else {
+        console.log('🔍 Debug - Error response:', data);
         setError(data.detail || 'Authentication failed');
       }
     } catch (error) {
-      console.error('Auth error:', error);
+      console.error('🔍 Debug - Auth error:', error);
       setError('Network error. Please try again.');
     } finally {
       setLoading(false);
