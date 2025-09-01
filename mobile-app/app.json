@@ -1,4 +1,44 @@
 {
+  "expo": {
+    "name": "On-the-Cheap",
+    "slug": "on-the-cheap-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#f97316"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.onthecheap.mobile"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#f97316"
+      },
+      "package": "com.onthecheap.mobile"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-font",
+        {
+          "fonts": ["./assets/fonts/MaterialCommunityIcons.ttf"]
+        }
+      ],
+      "expo-asset"
+    ],
+    "sdkVersion": "53.0.0"
+  },
   "name": "OnTheCheapMobile",
   "displayName": "On-the-Cheap"
 }
