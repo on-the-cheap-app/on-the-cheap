@@ -26,6 +26,10 @@ from onesignal_service import (
     NotificationPayload
 )
 
+# Import production services
+from cache_service import get_cache_service, CacheType, initialize_cache_service
+from database_service import get_database_service, initialize_database_service
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
