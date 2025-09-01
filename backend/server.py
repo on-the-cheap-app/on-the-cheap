@@ -69,7 +69,7 @@ app = FastAPI(title="On-the-Cheap API", description="Find local restaurant and b
 @app.on_event("startup")
 async def startup_event():
     """Initialize production services on startup"""
-    global cache_service, db_service
+    global cache_service, db_service, redis_service, monitoring_service
     
     logger.info("Initializing production services...")
     
@@ -79,6 +79,17 @@ async def startup_event():
     # Initialize database service with indexes
     db_service = await initialize_database_service()
     
+    # Initialize Redis distributed caching (fallback to in-memory if Redis unavailable)
+    try:
+        redis_service = await initialize_redis_service()
+        logger.info("Redis distributed caching enabled")
+    except Exception as e:
+        logger.warning(f"Redis not available, using in-memory cache: {e}")
+        redis_service = None
+    
+    # Initialize monitoring service
+    monitoring_service = initialize_monitoring_service()
+    
     # Initialize mock data if needed
     await init_mock_data()
     
@@ -87,12 +98,18 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on shutdown"""
-    global db_service
+    global db_service, redis_service, monitoring_service
     
     logger.info("Shutting down production services...")
     
     if db_service:
         await db_service.close()
+    
+    if redis_service:
+        await redis_service.close()
+    
+    if monitoring_service:
+        monitoring_service.stop_monitoring()
     
     logger.info("Production services shutdown complete")
 
