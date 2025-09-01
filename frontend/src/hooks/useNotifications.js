@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const useNotifications = () => {
+export const useNotifications = () => {
   const [isEnabled, setIsEnabled] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
