@@ -82,7 +82,7 @@ const useGeocoding = () => {
         max_results: options.maxResults || 10
       };
       
-      const response = await axios.post(`${getBackendUrl()}/api/geocode/batch`, requestData);
+      const response = await axios.post(getApiUrl('/api/geocode/batch'), requestData);
       return response.data;
     } catch (err) {
       const errorMessage = err.response?.data?.detail || 'Batch geocoding failed';
