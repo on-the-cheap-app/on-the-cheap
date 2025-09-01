@@ -723,6 +723,40 @@ function App() {
                         </div>
                       </div>
                     </CardHeader>
+                    
+                    {/* Restaurant Photo */}
+                    {restaurant.photos && restaurant.photos.length > 0 && (
+                      <div className="relative h-48 overflow-hidden">
+                        <img
+                          src={restaurant.photos[0].url}
+                          alt={restaurant.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                        <div className="hidden w-full h-full bg-gray-100 items-center justify-center flex-col">
+                          <div className="text-gray-400 text-4xl mb-2">🍽️</div>
+                          <div className="text-gray-500 text-sm">Photo not available</div>
+                        </div>
+                        
+                        {/* Photo badges */}
+                        {restaurant.photos[0].is_fallback && (
+                          <div className="absolute top-2 left-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
+                            Stock Photo
+                          </div>
+                        )}
+                        
+                        {restaurant.photos.length > 1 && (
+                          <div className="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                            <span>📷</span>
+                            <span>{restaurant.photos.length}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
                     <CardContent>
                       <div className="space-y-3">
                         <p className="text-sm text-gray-600 flex items-center">
