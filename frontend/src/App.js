@@ -732,6 +732,8 @@ function App() {
                     </CardHeader>
                     
                     {/* Restaurant Photo */}
+                    {/* Debug: Log photo data */}
+                    {console.log('🔍 DEBUG - Restaurant:', restaurant.name, 'Photos:', restaurant.photos, 'Has photos:', restaurant.photos && restaurant.photos.length > 0)}
                     {restaurant.photos && restaurant.photos.length > 0 && (
                       <div className="relative h-48 overflow-hidden">
                         <img
@@ -739,8 +741,12 @@ function App() {
                           alt={restaurant.name}
                           className="w-full h-full object-cover"
                           onError={(e) => {
+                            console.log('❌ Image load error for:', restaurant.name, restaurant.photos[0].url);
                             e.target.style.display = 'none';
                             e.target.nextSibling.style.display = 'flex';
+                          }}
+                          onLoad={() => {
+                            console.log('✅ Image loaded successfully for:', restaurant.name);
                           }}
                         />
                         <div className="hidden w-full h-full bg-gray-100 items-center justify-center flex-col">
