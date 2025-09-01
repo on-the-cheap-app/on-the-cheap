@@ -319,7 +319,10 @@ const OwnerDashboard = ({ user, token, onClose }) => {
                             </div>
                           )}
                           <button
-                            onClick={() => handleCreateSpecial(restaurant.id)}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleCreateSpecial(restaurant.id);
+                            }}
                             className="w-full px-3 py-2 bg-orange-100 text-orange-700 text-sm rounded hover:bg-orange-200 transition-colors"
                           >
                             Manage Specials
