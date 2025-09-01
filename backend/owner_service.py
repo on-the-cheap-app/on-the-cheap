@@ -67,6 +67,7 @@ class RestaurantOwner(BaseModel):
     updated_at: str
 
 class RestaurantClaimRequest(BaseModel):
+    id: Optional[str] = None
     restaurant_id: str
     owner_id: str
     business_license: Optional[str] = None
