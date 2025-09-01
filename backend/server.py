@@ -54,6 +54,8 @@ db = client[os.environ['DB_NAME']]
 # Production services - will be initialized on startup
 cache_service = None
 db_service = None
+redis_service = None
+monitoring_service = None
 
 # JWT Configuration
 JWT_SECRET = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production')
