@@ -1024,7 +1024,22 @@ function App() {
         />
       )}
 
+      {/* Owner Authentication Modal */}
+      {showOwnerAuth && (
+        <OwnerAuth 
+          onClose={() => setShowOwnerAuth(false)}
+          onAuthSuccess={handleAuthSuccess}
+        />
+      )}
 
+      {/* Owner Dashboard Modal */}
+      {showOwnerDashboard && (
+        <OwnerDashboard 
+          onClose={() => setShowOwnerDashboard(false)}
+          user={currentUser}
+          token={authToken}
+        />
+      )}
 
       {/* Notification Preferences Modal */}
       {showNotificationPreferences && (
