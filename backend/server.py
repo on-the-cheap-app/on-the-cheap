@@ -29,6 +29,17 @@ from onesignal_service import (
 # Import production services
 from cache_service import get_cache_service, CacheType, initialize_cache_service
 from database_service import get_database_service, initialize_database_service
+from owner_service import (
+    get_owner_service, 
+    get_owner_admin_service,
+    RestaurantOwnerCreate,
+    RestaurantOwner,
+    OwnerLoginRequest,
+    RestaurantClaimRequest,
+    OwnerSpecialCreate,
+    OwnerSpecial,
+    OwnerDashboardStats
+)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
