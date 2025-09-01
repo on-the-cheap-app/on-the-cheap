@@ -35,10 +35,33 @@ class OneSignalService {
     return true;
   }
 
+  async requestPermission() {
+    console.log('Requesting notification permission (singular)');
+    // TODO: Implement permission request
+    return true;
+  }
+
+  async hasPermission() {
+    console.log('Checking notification permission');
+    // TODO: Implement permission check
+    return true;
+  }
+
   async getPlayerId(): Promise<string | null> {
     console.log('Getting player ID');
     // TODO: Implement player ID retrieval
     return null;
+  }
+
+  tagUser(tags: Record<string, any>) {
+    console.log('Tagging user:', tags);
+    // TODO: Implement user tagging
+  }
+
+  toggleFavorite(restaurantId: string, isFavorite: boolean) {
+    console.log('Toggle favorite:', restaurantId, isFavorite);
+    // TODO: Implement favorite toggling
+    return Promise.resolve();
   }
 }
 
