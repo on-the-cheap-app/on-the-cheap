@@ -35,6 +35,7 @@ const OwnerPortal = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [activeTab, setActiveTab] = useState('restaurants');
 
   // Auth states
   const [isLogin, setIsLogin] = useState(true);
