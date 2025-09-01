@@ -459,6 +459,36 @@ function App() {
     localStorage.removeItem('user_token');
   };
 
+  const handleAuthSuccess = (userData, token, type = 'user') => {
+    setCurrentUser(userData);
+    setAuthToken(token);
+    setUserType(type);
+    setShowUserAuth(false);
+    setShowOwnerAuth(false);
+    
+    if (type === 'owner') {
+      setShowOwnerDashboard(true);
+    }
+    
+    // Store in localStorage for persistence
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('userData', JSON.stringify(userData));
+    localStorage.setItem('userType', type);
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setAuthToken(null);
+    setUserType(null);
+    setUserFavorites([]);
+    setShowOwnerDashboard(false);
+    
+    // Clear localStorage
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userData');
+    localStorage.removeItem('userType');
+  };
+
   // If showing owner portal, render it
   if (showOwnerPortal) {
     return <OwnerPortal />;
