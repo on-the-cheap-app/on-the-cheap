@@ -493,7 +493,7 @@ const OwnerPortal = () => {
                                 onClick={() => {
                                   setSelectedRestaurant(restaurant);
                                   fetchRestaurantSpecials(restaurant.id);
-                                  document.querySelector('[value="specials"]').click();
+                                  setActiveTab('specials');
                                 }}
                                 className="bg-orange-600 hover:bg-orange-700"
                               >
