@@ -27,20 +27,7 @@ import APIService from '../services/APIService';
 import RestaurantCard from '../components/RestaurantCard';
 import AddressInput from '../components/AddressInput';
 import { colors, spacing } from '../theme/colors';
-
-interface Restaurant {
-  id: string;
-  name: string;
-  address: string;
-  phone?: string;
-  website?: string;
-  rating?: number;
-  specials?: any[];
-  is_mobile_vendor?: boolean;
-  vendor_type?: string;
-  latitude?: number;
-  longitude?: number;
-}
+import { Restaurant, SearchParams } from '../types/restaurant';
 
 const HomeScreen = ({ navigation }: any) => {
   const [searchQuery, setSearchQuery] = useState('');
