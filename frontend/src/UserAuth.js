@@ -109,6 +109,11 @@ const UserAuth = ({ onClose, onUserLogin, currentFavorites = [], onFavoritesUpda
       setSuccess(response.data.message);
       onUserLogin(userData);
       
+      // Close modal after successful authentication
+      setTimeout(() => {
+        onClose();
+      }, 1500); // Give user time to see success message
+      
       // Track analytics
       if (isLogin) {
         Analytics.trackUserLogin(userData.user_type || 'user');
