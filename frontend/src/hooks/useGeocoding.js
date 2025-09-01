@@ -12,6 +12,12 @@ const useGeocoding = () => {
     return backendUrl || '';
   };
 
+  // Helper function to construct API URLs
+  const getApiUrl = (endpoint) => {
+    const backendUrl = process.env.REACT_APP_BACKEND_URL;
+    return backendUrl ? `${backendUrl}${endpoint}` : endpoint;
+  };
+
   const forwardGeocode = useCallback(async (address, options = {}) => {
     setLoading(true);
     setError(null);
