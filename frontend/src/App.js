@@ -97,6 +97,7 @@ function App() {
   const [showOwnerPortal, setShowOwnerPortal] = useState(false);
   const [showUserAuth, setShowUserAuth] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [authToken, setAuthToken] = useState(null);
   const [userFavorites, setUserFavorites] = useState([]);
   const [userType, setUserType] = useState(null); // 'user' or 'owner'
   
