@@ -83,10 +83,9 @@ class DatabaseService:
                 ("location.longitude", 1)
             ], name="location_2d")
             
-            # Alternative geospatial index for advanced location queries
-            await restaurants.create_index([
-                ("location", "2dsphere")
-            ], name="location_geospatial")
+            # Skip 2dsphere index for now due to existing data format incompatibility
+            # The existing location format {latitude: X, longitude: Y} is not compatible with 2dsphere
+            # We'll use the 2d index above which works with the current format
             
             # Restaurant lookup by ID (primary key)
             await restaurants.create_index("id", unique=True, name="restaurant_id_unique")
