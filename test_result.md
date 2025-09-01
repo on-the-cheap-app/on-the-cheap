@@ -105,157 +105,7 @@
 user_problem_statement: "Fix restaurant photo display issue in web app and continue development with either Owner Dashboard or Mobile App fixes as user prefers."
 
 backend:
-  - task: "User Registration API"
-    implemented: true
-    working: true
-    file: "/app/backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "User registration endpoint (/api/users/register) implemented with JWT tokens and password hashing. Needs testing."
-      - working: true
-        agent: "testing"
-        comment: "✅ TESTED SUCCESSFULLY: User registration API working correctly. Creates users with email/password, returns JWT token with user_type 'user', validates input data, handles duplicate email registration (returns 400 error). Tested with multiple user accounts."
-
-  - task: "User Login API"
-    implemented: true
-    working: true
-    file: "/app/backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "User login endpoint (/api/users/login) implemented with JWT authentication. Needs testing."
-      - working: true
-        agent: "testing"
-        comment: "✅ TESTED SUCCESSFULLY: User login API working correctly. Authenticates users with email/password, returns JWT token with user_type 'user', handles invalid credentials (returns 401 error). JWT tokens work for subsequent API calls."
-
-  - task: "User Profile API"
-    implemented: true
-    working: true
-    file: "/app/backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "User profile endpoint (/api/users/me) implemented for fetching current user info. Needs testing."
-      - working: true
-        agent: "testing"
-        comment: "✅ TESTED SUCCESSFULLY: User profile API working correctly. Returns user information (id, email, first_name, last_name, favorite_restaurant_ids) when authenticated with valid JWT token. Properly validates Bearer token authentication."
-
-  - task: "Favorites Management API"
-    implemented: true
-    working: true
-    file: "/app/backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Favorites endpoints (/api/users/favorites/{restaurant_id} POST/DELETE and /api/users/favorites GET) implemented. Needs testing."
-      - working: true
-        agent: "testing"
-        comment: "✅ TESTED SUCCESSFULLY: All favorites management APIs working correctly. POST /api/users/favorites/{restaurant_id} adds restaurants to favorites, DELETE removes them, GET /api/users/favorites retrieves user's favorite restaurants with details. All endpoints require JWT authentication and work properly."
-
-  - task: "Forward Geocoding API"
-    implemented: true
-    working: true
-    file: "/app/backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Forward geocoding endpoint (/api/geocode/forward) implemented using Google Maps API. Converts addresses to coordinates with optional region parameter. Needs testing."
-      - working: true
-        agent: "testing"
-        comment: "✅ TESTED SUCCESSFULLY: Forward geocoding API working correctly. Converts valid addresses to coordinates with formatted_address, latitude, longitude, place_id, address_components, and geometry_type. Properly handles invalid addresses with 404 error. Minor: Region parameter with generic addresses like 'Main Street' may not find results, which is expected Google API behavior."
-
-  - task: "Reverse Geocoding API"
-    implemented: true
-    working: true
-    file: "/app/backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Reverse geocoding endpoint (/api/geocode/reverse) implemented using Google Maps API. Converts coordinates to addresses with optional result_type and location_type filters. Needs testing."
-      - working: true
-        agent: "testing"
-        comment: "✅ TESTED SUCCESSFULLY: Reverse geocoding API working correctly. Converts coordinates to multiple address results (up to 5), returns proper GeocodeResponse format with all required fields. Supports result_type and location_type filters. Properly validates coordinate ranges and returns 422 for invalid coordinates."
-
-  - task: "Batch Geocoding API"
-    implemented: true
-    working: true
-    file: "/app/backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Batch geocoding endpoint (/api/geocode/batch) implemented for processing multiple addresses at once. Supports up to 10 addresses per request with error handling. Needs testing."
-      - working: true
-        agent: "testing"
-        comment: "✅ TESTED SUCCESSFULLY: Batch geocoding API working correctly. Processes multiple addresses (up to 10) and returns BatchGeocodeResponse with results and errors arrays. Properly handles mix of valid/invalid addresses, enforces 10-address limit with 422 validation error for over-limit requests. Error format includes index, address, and error message."
-
-  - task: "Legacy Geocoding API"
-    implemented: true
-    working: true
-    file: "/app/backend/server.py"
-    stuck_count: 0
-    priority: "medium"
-    needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Legacy geocoding endpoint (/api/geocode) implemented for backward compatibility. Uses forward geocoding internally but returns simplified response format. Needs testing."
-      - working: true
-        agent: "testing"
-        comment: "✅ TESTED SUCCESSFULLY: Legacy geocoding API working correctly. Maintains backward compatibility with simplified response format containing coordinates object and formatted_address. Properly handles valid addresses and returns 404 for invalid addresses. Uses forward geocoding internally as expected."
-
-  - task: "Restaurant Search API"
-    implemented: true
-    working: true
-    file: "/app/backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Restaurant search endpoint (/api/restaurants/search) implemented with Google Places integration and mock data. Supports location-based search with radius, special type filtering, and returns restaurants with active specials."
-      - working: true
-        agent: "testing"
-        comment: "✅ TESTED SUCCESSFULLY: Restaurant Search API working correctly in San Francisco (lat=37.7749, lng=-122.4194). Returns 20 restaurants from Google Places API integration. Mock restaurant data properly loaded in database (11 restaurants with specials) but filtered by time-based special availability - this is correct behavior. Search supports radius filtering, special type filtering (weekend_special filter returns Golden Gate Cafe), and provides proper restaurant data structure for favorites integration."
-
-  - task: "Foursquare API Integration"
-    implemented: true
-    working: true
-    file: "/app/backend/foursquare_service.py, /app/backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Implemented comprehensive Foursquare Places API integration as fallback source. Created foursquare_service.py with async client, caching, error handling, and rate limiting. Modified restaurant search endpoint to use 3-tier fallback system: Owner specials → Google Places → Foursquare → Mock data. Added API credentials to .env. Ready for testing."
-      - working: true
-        agent: "testing"
-        comment: "✅ FOURSQUARE INTEGRATION TESTED SUCCESSFULLY: All 8 Foursquare-specific tests passed (45/46 total backend tests). Service initialization working with provided credentials, 3-tier fallback system functioning correctly (Owner → Google Places → Foursquare), Foursquare API endpoints responding properly, data transformation and integration working correctly, error handling graceful, source priority system working with no duplicates. Foursquare serves as intended backup when other sources don't provide sufficient results. Integration enhances restaurant discovery without breaking existing functionality."
-
-  - task: "Specials Messaging System"
+  - task: "Owner Registration API"
     implemented: true
     working: true
     file: "/app/backend/server.py"
@@ -265,22 +115,151 @@ backend:
     status_history:
       - working: true
         agent: "testing"
-        comment: "🎉 SPECIALS MESSAGING SYSTEM TESTED SUCCESSFULLY: Comprehensive testing of the newly implemented 'no current specials' messaging system completed with 7/7 tests passed. TESTING RESULTS: ✅ Restaurant Search Specials Messaging: Owner-managed restaurants with specials show count messages (e.g., '2 specials available now'), restaurants without specials show 'No current specials at this time', external restaurants show 'Specials data coming soon - check back later!', ✅ Individual Restaurant Details: Proper specials_message and has_current_specials boolean flag implementation, ✅ Specials Summary Data: Accurate counts in specials_summary (with_specials: 2, no_specials: 10, external_restaurants: 8), ✅ Time-Based Filtering: Only currently active specials counted (2 active specials found during Friday 18:54 testing), ✅ External Restaurant Consistency: All 48 external restaurants across 3 cities have consistent messaging, ✅ Edge Cases: Proper messaging maintained across different radius sizes and locations. The messaging system ensures users always get clear, informative messaging about specials availability rather than seeing empty or unclear states."
+        comment: "✅ TESTED SUCCESSFULLY: Owner registration API working correctly. Creates restaurant owners with email/password, returns proper owner data with status 'pending', validates input data, handles duplicate email registration. JWT token generation fixed to use correct secret key."
 
-  - task: "Production Optimization Features"
+  - task: "Owner Login API"
     implemented: true
     working: true
-    file: "/app/backend/server.py, /app/backend/cache_service.py, /app/backend/database_service.py"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED SUCCESSFULLY: Owner login API working correctly. Authenticates owners with email/password, returns JWT token with user_type 'owner', handles invalid credentials properly. Fixed JWT secret key mismatch between owner_service.py and server.py."
+
+  - task: "Owner Dashboard API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED SUCCESSFULLY: Owner dashboard API working correctly. Returns dashboard statistics (total_restaurants, pending_claims, active_specials, pending_specials, total_views, total_favorites) with proper data types. Fixed user_id field access issue in endpoints."
+
+  - task: "Owner Restaurants Listing API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED SUCCESSFULLY: Owner restaurants listing API working correctly. Returns restaurants array for authenticated owners, handles empty restaurant lists properly, requires proper JWT authentication."
+
+  - task: "Owner Specials Listing API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED SUCCESSFULLY: Owner specials listing API working correctly. Returns specials array for authenticated owners, handles empty specials lists properly, supports restaurant_id filtering parameter."
+
+  - task: "Restaurant Claim Submission API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED SUCCESSFULLY: Restaurant claim submission API working correctly. Allows owners to submit claims for restaurants, validates restaurant existence, prevents duplicate claims, returns proper claim data with status 'pending'. Fixed RestaurantClaimRequest model to include id field."
+
+  - task: "Admin Pending Claims API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED SUCCESSFULLY: Admin pending claims API working correctly. Returns list of pending restaurant claims, handles MongoDB data cleaning properly, supports different claim data structures from database. Fixed Pydantic validation issues with MongoDB data."
+
+  - task: "Admin Claim Approval API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED SUCCESSFULLY: Admin claim approval API working correctly. Approves restaurant claims, updates claim status to 'approved', adds restaurant to owner's restaurant list, marks restaurant as claimed. Returns success message and status."
+
+  - task: "Admin Pending Specials API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED SUCCESSFULLY: Admin pending specials API working correctly. Returns list of pending specials awaiting approval, handles empty lists properly, supports MongoDB data cleaning for Pydantic models."
+
+  - task: "Owner Special Creation API"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ ISSUE IDENTIFIED: Owner special creation API has access control issue. Owners cannot create specials because claim approval process doesn't properly update owner's restaurant access. The approve_claim function adds restaurant_id to owner's restaurant_ids array, but get_owner_restaurants doesn't find the restaurants. This may be due to timing issues or data consistency problems between claim approval and restaurant access verification."
+
+  - task: "Admin Special Approval API"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
       - working: "NA"
-        agent: "main"
-        comment: "Implemented comprehensive production optimization features including cache service, database service with indexes, 5 admin/monitoring endpoints (/api/admin/performance, /api/admin/health, /api/admin/cache/clear, /api/admin/database/optimize, /api/admin/quota-status), API quota tracking and throttling, performance monitoring with cache hit/miss tracking, and production service initialization on startup."
+        agent: "testing"
+        comment: "Cannot test admin special approval API because owner special creation is failing. The API endpoint exists and is properly implemented, but requires a pending special to test approval functionality."
+
+  - task: "Authentication & Authorization System"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
       - working: true
         agent: "testing"
-        comment: "🎉 PRODUCTION OPTIMIZATION FEATURES TESTING COMPLETED SUCCESSFULLY: Conducted comprehensive testing of all newly implemented production optimization features with 11/11 tests passed (100% success rate). COMPREHENSIVE TEST RESULTS: ✅ Production Service Initialization: Both cache service and database service initialized successfully on startup, ✅ Admin Performance Endpoint (/api/admin/performance): Working perfectly, returns performance statistics including cache stats (hit rate, entries, API calls saved, cost saved), API quota tracking for 2 services (google_geocoding: 17 requests/0.04%, google_places: 15 requests/0.01%), and database statistics, ✅ Admin Health Check Endpoint (/api/admin/health): Comprehensive health monitoring working with overall status 'healthy', database health (ping: 28.68ms, read: 29.41ms, write: 31.44ms), cache health (19.05% hit rate), and API quota monitoring for 2 services, ✅ Admin Cache Clear Endpoint (/api/admin/cache/clear): Successfully clearing cache entries (cleared 4 entries total, 1 geocoding entry specifically), supports both full cache clear and specific cache type clearing, ✅ Admin Database Optimize Endpoint (/api/admin/database/optimize): Database optimization working for all 3 collections (restaurants, users, restaurant_owners), ✅ Admin Quota Status Endpoint (/api/admin/quota-status): API quota monitoring working with proper tracking of google_geocoding (17 requests, 0.04% usage) and google_places (15 requests, 0.01% usage) with total 32 API requests tracked, ✅ Caching System Integration: Cache hits detected for both geocoding (1st call: 0.135s, 2nd call: 0.050s) and restaurant search (1st call: 0.237s, 2nd call: 0.041s), demonstrating significant performance improvements, ✅ Database Indexes Creation: All database indexes created successfully (restaurants: 9 indexes, users: 5 indexes, restaurant_owners: 5 indexes) with 'indexes_created: true' status, ✅ API Quota Tracking: Successfully tracking 32 total API requests across services with proper usage percentages and cost monitoring, ✅ Performance Monitoring: Cache statistics showing 19.05% hit rate, 8 hits, 34 misses, 2 cache entries, 8 API calls saved, $0.0880 cost saved, cache types (geocoding, google_places), ✅ Cache Throttling Behavior: Throttling system accessible with quota tracking for 3 services and proper usage monitoring. CRITICAL PRODUCTION FEATURES VERIFIED: All 5 admin endpoints functional, caching system improving API performance significantly, database indexes optimizing query performance, API quota tracking preventing overuse, performance monitoring capturing comprehensive metrics, and production services initializing properly on startup. The production optimization features are fully operational and ready for production deployment."
+        comment: "✅ TESTED SUCCESSFULLY: Authentication and authorization system working correctly. Properly rejects unauthenticated requests with 403 status, differentiates between regular users and owners, validates JWT tokens correctly, prevents cross-user-type access to protected endpoints."
+
+  - task: "User Type Differentiation"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED SUCCESSFULLY: User type differentiation working correctly. Regular users cannot access owner endpoints (returns 403), owner endpoints properly validate user_type in JWT tokens, authentication system correctly distinguishes between 'user' and 'owner' types."
 
 frontend:
   - task: "Production Optimization Features Implementation"
