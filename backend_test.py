@@ -1,5261 +1,655 @@
 #!/usr/bin/env python3
 """
-Backend API Testing for On-the-Cheap Restaurant Specials Finder
-Tests all API endpoints and functionality
+Comprehensive Backend Testing for Restaurant Owner Dashboard Integration
+Tests the complete owner workflow including registration, login, dashboard, claims, and specials management.
 """
 
-import requests
-import sys
+import asyncio
+import httpx
 import json
-from datetime import datetime
 import uuid
+from datetime import datetime, timezone
+from typing import Dict, Any, Optional
 
-class OnTheCheapAPITester:
-    def __init__(self, base_url="https://bargaineats.preview.emergentagent.com"):
-        self.base_url = base_url
-        self.api_url = f"{base_url}/api"
-        self.tests_run = 0
-        self.tests_passed = 0
-        self.session = requests.Session()
-        self.session.headers.update({'Content-Type': 'application/json'})
+# Backend URL from frontend environment
+BACKEND_URL = "https://bargaineats.preview.emergentagent.com/api"
 
-    def log_test(self, name, success, details=""):
-        """Log test results"""
-        self.tests_run += 1
-        if success:
-            self.tests_passed += 1
-            print(f"✅ {name} - PASSED")
-        else:
-            print(f"❌ {name} - FAILED: {details}")
+class OwnerDashboardTester:
+    def __init__(self):
+        self.client = httpx.AsyncClient(timeout=30.0)
+        self.test_data = {}
+        self.results = []
         
-        if details and success:
+    async def log_result(self, test_name: str, success: bool, details: str = "", response_data: Any = None):
+        """Log test result"""
+        status = "✅ PASS" if success else "❌ FAIL"
+        result = {
+            "test": test_name,
+            "status": status,
+            "details": details,
+            "response_data": response_data
+        }
+        self.results.append(result)
+        print(f"{status}: {test_name}")
+        if details:
             print(f"   Details: {details}")
+        if not success and response_data:
+            print(f"   Response: {response_data}")
+        print()
 
-    def test_api_health(self):
-        """Test API health check endpoint"""
-        try:
-            response = self.session.get(f"{self.api_url}/")
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                details = f"Message: {data.get('message', 'N/A')}, Version: {data.get('version', 'N/A')}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:100]}"
-            
-            self.log_test("API Health Check", success, details)
-            return success, response.json() if success else {}
-            
-        except Exception as e:
-            self.log_test("API Health Check", False, str(e))
-            return False, {}
-
-    def test_special_types(self):
-        """Test getting special types"""
-        try:
-            response = self.session.get(f"{self.api_url}/specials/types")
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                special_types = data.get('special_types', [])
-                details = f"Found {len(special_types)} special types: {[st['label'] for st in special_types]}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:100]}"
-            
-            self.log_test("Get Special Types", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Get Special Types", False, str(e))
-            return False, {}
-
-    def test_restaurant_search_basic(self):
-        """Test basic restaurant search (San Francisco coordinates)"""
-        try:
-            params = {
-                'latitude': 37.7749,
-                'longitude': -122.4194,
-                'radius': 8047  # 5 miles
-            }
-            
-            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                restaurants = data.get('restaurants', [])
-                total = data.get('total', 0)
-                details = f"Found {total} restaurants with active specials"
-                
-                # Log some restaurant details
-                if restaurants:
-                    first_restaurant = restaurants[0]
-                    details += f". First: {first_restaurant.get('name', 'Unknown')} with {len(first_restaurant.get('specials', []))} specials"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Basic Restaurant Search (SF)", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Basic Restaurant Search (SF)", False, str(e))
-            return False, {}
-
-    def test_restaurant_search_with_filters(self):
-        """Test restaurant search with special type filter"""
-        try:
-            params = {
-                'latitude': 37.7749,
-                'longitude': -122.4194,
-                'radius': 8047,
-                'special_type': 'weekend_special'  # Should find weekend specials since it's Saturday
-            }
-            
-            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                restaurants = data.get('restaurants', [])
-                details = f"Found {len(restaurants)} restaurants with weekend specials"
-                
-                # Verify all returned specials are weekend_special type
-                for restaurant in restaurants:
-                    for special in restaurant.get('specials', []):
-                        if special.get('special_type') != 'weekend_special':
-                            success = False
-                            details += f" - ERROR: Found non-weekend special: {special.get('special_type')}"
-                            break
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Restaurant Search with Weekend Filter", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Restaurant Search with Weekend Filter", False, str(e))
-            return False, {}
-
-    def test_restaurant_search_different_radius(self):
-        """Test restaurant search with different radius"""
-        try:
-            # Test with smaller radius (1 mile)
-            params = {
-                'latitude': 37.7749,
-                'longitude': -122.4194,
-                'radius': 1609  # 1 mile
-            }
-            
-            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                restaurants_1mile = len(data.get('restaurants', []))
-                
-                # Test with larger radius (10 miles)
-                params['radius'] = 16094  # 10 miles
-                response2 = self.session.get(f"{self.api_url}/restaurants/search", params=params)
-                
-                if response2.status_code == 200:
-                    data2 = response2.json()
-                    restaurants_10mile = len(data2.get('restaurants', []))
-                    
-                    details = f"1 mile: {restaurants_1mile} restaurants, 10 miles: {restaurants_10mile} restaurants"
-                    
-                    # 10 mile radius should have >= restaurants than 1 mile
-                    if restaurants_10mile >= restaurants_1mile:
-                        details += " - Radius filtering working correctly"
-                    else:
-                        success = False
-                        details += " - ERROR: Larger radius returned fewer results"
-                else:
-                    success = False
-                    details = f"Second request failed: {response2.status_code}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Restaurant Search with Different Radius", success, details)
-            return success
-            
-        except Exception as e:
-            self.log_test("Restaurant Search with Different Radius", False, str(e))
-            return False
-
-    def test_restaurant_search_edge_cases(self):
-        """Test edge cases for restaurant search"""
-        test_cases = [
-            {
-                'name': 'Invalid Coordinates (Out of Range)',
-                'params': {'latitude': 91, 'longitude': -122.4194, 'radius': 8047},
-                'expected_status': 422  # Validation error
-            },
-            {
-                'name': 'Remote Location (No Results Expected)',
-                'params': {'latitude': 0, 'longitude': 0, 'radius': 8047},
-                'expected_status': 200  # Should return empty results
-            },
-            {
-                'name': 'Very Large Radius',
-                'params': {'latitude': 37.7749, 'longitude': -122.4194, 'radius': 80467},  # 50 miles
-                'expected_status': 200
-            }
-        ]
-        
-        all_passed = True
-        details_list = []
-        
-        for case in test_cases:
-            try:
-                response = self.session.get(f"{self.api_url}/restaurants/search", params=case['params'])
-                success = response.status_code == case['expected_status']
-                
-                if success:
-                    if case['expected_status'] == 200:
-                        data = response.json()
-                        count = len(data.get('restaurants', []))
-                        details_list.append(f"{case['name']}: {count} results")
-                    else:
-                        details_list.append(f"{case['name']}: Correctly rejected")
-                else:
-                    details_list.append(f"{case['name']}: Expected {case['expected_status']}, got {response.status_code}")
-                    all_passed = False
-                    
-            except Exception as e:
-                details_list.append(f"{case['name']}: Exception - {str(e)}")
-                all_passed = False
-        
-        self.log_test("Restaurant Search Edge Cases", all_passed, "; ".join(details_list))
-        return all_passed
-
-    def test_create_restaurant(self):
-        """Test creating a new restaurant"""
-        try:
-            test_restaurant = {
-                "name": f"Test Restaurant {uuid.uuid4().hex[:8]}",
-                "address": "123 Test St, San Francisco, CA 94102",
-                "location": {
-                    "latitude": 37.7749,
-                    "longitude": -122.4194
-                },
-                "phone": "+1-415-555-TEST",
-                "website": "https://test-restaurant.com",
-                "cuisine_type": ["Test", "American"],
-                "rating": 4.5,
-                "price_level": 2,
-                "specials": [
-                    {
-                        "title": "Test Special",
-                        "description": "A test special for API testing",
-                        "special_type": "happy_hour",
-                        "price": 9.99,
-                        "original_price": 15.99,
-                        "days_available": ["monday", "tuesday", "wednesday", "thursday", "friday"],
-                        "time_start": "15:00",
-                        "time_end": "18:00",
-                        "is_active": True
-                    }
-                ],
-                "is_verified": False
-            }
-            
-            response = self.session.post(f"{self.api_url}/restaurants", json=test_restaurant)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                restaurant_id = data.get('id')
-                details = f"Created restaurant with ID: {restaurant_id}"
-                
-                # Try to retrieve the created restaurant
-                if restaurant_id:
-                    get_response = self.session.get(f"{self.api_url}/restaurants/{restaurant_id}")
-                    if get_response.status_code == 200:
-                        details += " - Successfully retrieved created restaurant"
-                    else:
-                        details += f" - Failed to retrieve: {get_response.status_code}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Create Restaurant", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Create Restaurant", False, str(e))
-            return False, {}
-
-    def test_performance(self):
-        """Test API response times"""
-        import time
+    async def test_owner_registration(self):
+        """Test owner registration endpoint"""
+        test_name = "Owner Registration API"
         
         try:
-            # Test search endpoint performance
-            start_time = time.time()
-            
-            params = {
-                'latitude': 37.7749,
-                'longitude': -122.4194,
-                'radius': 8047
+            # Generate unique test data
+            unique_id = str(uuid.uuid4())[:8]
+            owner_data = {
+                "first_name": "John",
+                "last_name": "Smith",
+                "email": f"owner_{unique_id}@example.com",
+                "password": "securepassword123",
+                "phone": "+1-555-0123",
+                "business_name": f"Test Restaurant {unique_id}",
+                "business_type": "restaurant"
             }
             
-            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
-            end_time = time.time()
+            response = await self.client.post(f"{BACKEND_URL}/owners/register", json=owner_data)
             
-            response_time = end_time - start_time
-            success = response.status_code == 200 and response_time < 3.0  # Should be under 3 seconds
-            
-            details = f"Response time: {response_time:.2f}s"
-            if response_time >= 3.0:
-                details += " - WARNING: Slow response time"
-            
-            self.log_test("API Performance (Search)", success, details)
-            return success
-            
-        except Exception as e:
-            self.log_test("API Performance (Search)", False, str(e))
-            return False
-
-    def test_owner_registration(self):
-        """Test restaurant owner registration"""
-        try:
-            test_email = f"test_owner_{uuid.uuid4().hex[:8]}@example.com"
-            registration_data = {
-                "email": test_email,
-                "password": "TestPassword123!",
-                "first_name": "Test",
-                "last_name": "Owner",
-                "business_name": "Test Restaurant Business",
-                "phone": "+1-555-TEST-001"
-            }
-            
-            response = self.session.post(f"{self.api_url}/auth/register", json=registration_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                self.owner_token = data.get('access_token')
-                self.owner_user = data.get('user')
-                details = f"Registered user: {data.get('user', {}).get('email', 'N/A')}, Token received: {bool(self.owner_token)}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Owner Registration", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Owner Registration", False, str(e))
-            return False, {}
-
-    def test_owner_login(self):
-        """Test restaurant owner login with existing credentials"""
-        try:
-            # First register a user
-            test_email = f"login_test_{uuid.uuid4().hex[:8]}@example.com"
-            registration_data = {
-                "email": test_email,
-                "password": "TestPassword123!",
-                "first_name": "Login",
-                "last_name": "Test",
-                "business_name": "Login Test Business",
-                "phone": "+1-555-LOGIN-01"
-            }
-            
-            reg_response = self.session.post(f"{self.api_url}/auth/register", json=registration_data)
-            if reg_response.status_code != 200:
-                self.log_test("Owner Login", False, "Failed to create test user for login")
-                return False, {}
-            
-            # Now test login
-            login_data = {
-                "email": test_email,
-                "password": "TestPassword123!"
-            }
-            
-            response = self.session.post(f"{self.api_url}/auth/login", json=login_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                token = data.get('access_token')
-                user = data.get('user')
-                details = f"Login successful for: {user.get('email', 'N/A')}, Token received: {bool(token)}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Owner Login", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Owner Login", False, str(e))
-            return False, {}
-
-    def test_owner_auth_me(self):
-        """Test getting current user info with JWT token"""
-        if not hasattr(self, 'owner_token') or not self.owner_token:
-            self.log_test("Owner Auth Me", False, "No token available - registration may have failed")
-            return False, {}
-        
-        try:
-            headers = {'Authorization': f'Bearer {self.owner_token}'}
-            response = self.session.get(f"{self.api_url}/auth/me", headers=headers)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                details = f"User info retrieved: {data.get('email', 'N/A')}, Business: {data.get('business_name', 'N/A')}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Owner Auth Me", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Owner Auth Me", False, str(e))
-            return False, {}
-
-    def test_search_restaurants_to_claim(self):
-        """Test searching for restaurants to claim"""
-        if not hasattr(self, 'owner_token') or not self.owner_token:
-            self.log_test("Search Restaurants to Claim", False, "No token available")
-            return False, {}
-        
-        try:
-            headers = {'Authorization': f'Bearer {self.owner_token}'}
-            params = {'query': 'Bad Martha Brewery'}
-            
-            response = self.session.get(f"{self.api_url}/owner/search-restaurants", 
-                                      params=params, headers=headers)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                restaurants = data.get('restaurants', [])
-                details = f"Found {len(restaurants)} restaurants for query 'Bad Martha Brewery'"
-                if restaurants:
-                    first_restaurant = restaurants[0]
-                    details += f". First result: {first_restaurant.get('name', 'Unknown')}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Search Restaurants to Claim", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Search Restaurants to Claim", False, str(e))
-            return False, {}
-
-    def test_claim_restaurant(self):
-        """Test claiming a restaurant"""
-        if not hasattr(self, 'owner_token') or not self.owner_token:
-            self.log_test("Claim Restaurant", False, "No token available")
-            return False, {}
-        
-        try:
-            headers = {'Authorization': f'Bearer {self.owner_token}'}
-            
-            # Create a test claim
-            claim_data = {
-                "google_place_id": f"test_place_{uuid.uuid4().hex[:8]}",
-                "business_name": "Test Restaurant for Claiming",
-                "verification_notes": "This is a test claim for API testing"
-            }
-            
-            response = self.session.post(f"{self.api_url}/owner/claim-restaurant", 
-                                       json=claim_data, headers=headers)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                self.test_claim_id = data.get('claim_id')
-                details = f"Claim submitted successfully. Claim ID: {self.test_claim_id}, Status: {data.get('status', 'N/A')}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Claim Restaurant", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Claim Restaurant", False, str(e))
-            return False, {}
-
-    def test_get_my_restaurants(self):
-        """Test getting user's restaurants"""
-        if not hasattr(self, 'owner_token') or not self.owner_token:
-            self.log_test("Get My Restaurants", False, "No token available")
-            return False, {}
-        
-        try:
-            headers = {'Authorization': f'Bearer {self.owner_token}'}
-            
-            response = self.session.get(f"{self.api_url}/owner/my-restaurants", headers=headers)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                restaurants = data.get('restaurants', [])
-                pending_claims = data.get('pending_claims', [])
-                details = f"Found {len(restaurants)} owned restaurants, {len(pending_claims)} pending claims"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Get My Restaurants", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Get My Restaurants", False, str(e))
-            return False, {}
-
-    def test_create_special(self):
-        """Test creating a special for a restaurant"""
-        if not hasattr(self, 'owner_token') or not self.owner_token:
-            self.log_test("Create Special", False, "No token available")
-            return False, {}
-        
-        try:
-            headers = {'Authorization': f'Bearer {self.owner_token}'}
-            
-            # First, we need a restaurant ID. Let's create one or use an existing one
-            # For testing, we'll use one of the mock restaurants
-            restaurant_id = "test_restaurant_id"  # This would need to be a real restaurant ID
-            
-            special_data = {
-                "title": "Test Happy Hour Special",
-                "description": "50% off all appetizers during happy hour - API test special",
-                "special_type": "happy_hour",
-                "price": 7.99,
-                "original_price": 15.99,
-                "days_available": ["monday", "tuesday", "wednesday", "thursday", "friday"],
-                "time_start": "15:00",
-                "time_end": "18:00"
-            }
-            
-            response = self.session.post(f"{self.api_url}/owner/restaurants/{restaurant_id}/specials", 
-                                       json=special_data, headers=headers)
-            
-            # This might fail because we don't own the restaurant, but we're testing the endpoint
             if response.status_code == 200:
                 data = response.json()
-                details = f"Special created successfully. Special ID: {data.get('special_id', 'N/A')}"
-                success = True
-            elif response.status_code == 403:
-                details = "Expected 403 - Don't own restaurant (endpoint working correctly)"
-                success = True  # This is expected behavior
-            elif response.status_code == 404:
-                details = "Expected 404 - Restaurant not found (endpoint working correctly)"
-                success = True  # This is expected behavior
-            else:
-                details = f"Unexpected status: {response.status_code}, Response: {response.text[:200]}"
-                success = False
-            
-            self.log_test("Create Special", success, details)
-            return success
-            
-        except Exception as e:
-            self.log_test("Create Special", False, str(e))
-            return False
-
-    def test_auth_edge_cases(self):
-        """Test authentication edge cases"""
-        test_cases = [
-            {
-                'name': 'Duplicate Email Registration',
-                'endpoint': '/auth/register',
-                'data': {
-                    "email": "duplicate@example.com",
-                    "password": "TestPassword123!",
-                    "first_name": "Duplicate",
-                    "last_name": "User",
-                    "business_name": "Duplicate Business",
-                    "phone": "+1-555-DUPLICATE"
-                },
-                'expected_status': [200, 400]  # First should succeed, second should fail
-            },
-            {
-                'name': 'Invalid Login Credentials',
-                'endpoint': '/auth/login',
-                'data': {
-                    "email": "nonexistent@example.com",
-                    "password": "WrongPassword123!"
-                },
-                'expected_status': [401]
-            },
-            {
-                'name': 'Invalid Token Access',
-                'endpoint': '/auth/me',
-                'headers': {'Authorization': 'Bearer invalid_token_here'},
-                'expected_status': [401]
-            }
-        ]
-        
-        all_passed = True
-        details_list = []
-        
-        for case in test_cases:
-            try:
-                if case['name'] == 'Duplicate Email Registration':
-                    # Register once
-                    response1 = self.session.post(f"{self.api_url}{case['endpoint']}", json=case['data'])
-                    # Register again with same email
-                    response2 = self.session.post(f"{self.api_url}{case['endpoint']}", json=case['data'])
-                    
-                    success = (response1.status_code in case['expected_status'] and 
-                             response2.status_code == 400)
-                    details_list.append(f"{case['name']}: First: {response1.status_code}, Second: {response2.status_code}")
-                    
-                elif case['name'] == 'Invalid Token Access':
-                    response = self.session.get(f"{self.api_url}{case['endpoint']}", 
-                                              headers=case['headers'])
-                    success = response.status_code in case['expected_status']
-                    details_list.append(f"{case['name']}: {response.status_code}")
-                    
-                else:
-                    response = self.session.post(f"{self.api_url}{case['endpoint']}", json=case['data'])
-                    success = response.status_code in case['expected_status']
-                    details_list.append(f"{case['name']}: {response.status_code}")
                 
-                if not success:
-                    all_passed = False
-                    
-            except Exception as e:
-                details_list.append(f"{case['name']}: Exception - {str(e)}")
-                all_passed = False
-        
-        self.log_test("Authentication Edge Cases", all_passed, "; ".join(details_list))
-        return all_passed
+                # Verify response structure
+                required_fields = ["id", "first_name", "last_name", "email", "status", "business_name"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    await self.log_result(test_name, False, f"Missing fields: {missing_fields}", data)
+                    return
+                
+                # Store owner data for subsequent tests
+                self.test_data["owner"] = data
+                self.test_data["owner_credentials"] = {
+                    "email": owner_data["email"],
+                    "password": owner_data["password"]
+                }
+                
+                await self.log_result(test_name, True, 
+                    f"Owner registered successfully. ID: {data['id']}, Status: {data['status']}")
+            else:
+                await self.log_result(test_name, False, 
+                    f"Registration failed with status {response.status_code}", response.text)
+                
+        except Exception as e:
+            await self.log_result(test_name, False, f"Exception: {str(e)}")
 
-    def test_user_registration(self):
-        """Test regular user registration"""
+    async def test_owner_login(self):
+        """Test owner login endpoint"""
+        test_name = "Owner Login API"
+        
+        if "owner_credentials" not in self.test_data:
+            await self.log_result(test_name, False, "No owner credentials available from registration")
+            return
+        
         try:
-            test_email = f"user_{uuid.uuid4().hex[:8]}@example.com"
-            registration_data = {
-                "email": test_email,
-                "password": "UserPassword123!",
-                "first_name": "John",
+            login_data = self.test_data["owner_credentials"]
+            
+            response = await self.client.post(f"{BACKEND_URL}/owners/login", json=login_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify response structure
+                required_fields = ["access_token", "token_type", "user_type", "owner"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    await self.log_result(test_name, False, f"Missing fields: {missing_fields}", data)
+                    return
+                
+                # Verify user type
+                if data.get("user_type") != "owner":
+                    await self.log_result(test_name, False, f"Wrong user type: {data.get('user_type')}")
+                    return
+                
+                # Store token for authenticated requests
+                self.test_data["owner_token"] = data["access_token"]
+                
+                await self.log_result(test_name, True, 
+                    f"Owner login successful. Token type: {data['token_type']}, User type: {data['user_type']}")
+            else:
+                await self.log_result(test_name, False, 
+                    f"Login failed with status {response.status_code}", response.text)
+                
+        except Exception as e:
+            await self.log_result(test_name, False, f"Exception: {str(e)}")
+
+    async def test_owner_dashboard(self):
+        """Test owner dashboard endpoint"""
+        test_name = "Owner Dashboard API"
+        
+        if "owner_token" not in self.test_data:
+            await self.log_result(test_name, False, "No owner token available from login")
+            return
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.test_data['owner_token']}"}
+            
+            response = await self.client.get(f"{BACKEND_URL}/owners/dashboard", headers=headers)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify response structure
+                required_fields = ["total_restaurants", "pending_claims", "active_specials", "pending_specials", "total_views", "total_favorites"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    await self.log_result(test_name, False, f"Missing fields: {missing_fields}", data)
+                    return
+                
+                # Verify data types
+                for field in required_fields:
+                    if not isinstance(data[field], int):
+                        await self.log_result(test_name, False, f"Field {field} is not an integer: {type(data[field])}")
+                        return
+                
+                self.test_data["dashboard_stats"] = data
+                
+                await self.log_result(test_name, True, 
+                    f"Dashboard retrieved successfully. Restaurants: {data['total_restaurants']}, Claims: {data['pending_claims']}, Specials: {data['active_specials']}")
+            else:
+                await self.log_result(test_name, False, 
+                    f"Dashboard request failed with status {response.status_code}", response.text)
+                
+        except Exception as e:
+            await self.log_result(test_name, False, f"Exception: {str(e)}")
+
+    async def test_owner_restaurants(self):
+        """Test owner restaurants listing endpoint"""
+        test_name = "Owner Restaurants Listing API"
+        
+        if "owner_token" not in self.test_data:
+            await self.log_result(test_name, False, "No owner token available from login")
+            return
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.test_data['owner_token']}"}
+            
+            response = await self.client.get(f"{BACKEND_URL}/owners/restaurants", headers=headers)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify response structure
+                if "restaurants" not in data:
+                    await self.log_result(test_name, False, "Missing 'restaurants' field in response", data)
+                    return
+                
+                restaurants = data["restaurants"]
+                
+                # Should be empty for new owner
+                if not isinstance(restaurants, list):
+                    await self.log_result(test_name, False, f"Restaurants field is not a list: {type(restaurants)}")
+                    return
+                
+                self.test_data["owner_restaurants"] = restaurants
+                
+                await self.log_result(test_name, True, 
+                    f"Restaurants listing retrieved successfully. Count: {len(restaurants)}")
+            else:
+                await self.log_result(test_name, False, 
+                    f"Restaurants request failed with status {response.status_code}", response.text)
+                
+        except Exception as e:
+            await self.log_result(test_name, False, f"Exception: {str(e)}")
+
+    async def test_owner_specials(self):
+        """Test owner specials listing endpoint"""
+        test_name = "Owner Specials Listing API"
+        
+        if "owner_token" not in self.test_data:
+            await self.log_result(test_name, False, "No owner token available from login")
+            return
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.test_data['owner_token']}"}
+            
+            response = await self.client.get(f"{BACKEND_URL}/owners/specials", headers=headers)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify response structure
+                if "specials" not in data:
+                    await self.log_result(test_name, False, "Missing 'specials' field in response", data)
+                    return
+                
+                specials = data["specials"]
+                
+                # Should be empty for new owner
+                if not isinstance(specials, list):
+                    await self.log_result(test_name, False, f"Specials field is not a list: {type(specials)}")
+                    return
+                
+                self.test_data["owner_specials"] = specials
+                
+                await self.log_result(test_name, True, 
+                    f"Specials listing retrieved successfully. Count: {len(specials)}")
+            else:
+                await self.log_result(test_name, False, 
+                    f"Specials request failed with status {response.status_code}", response.text)
+                
+        except Exception as e:
+            await self.log_result(test_name, False, f"Exception: {str(e)}")
+
+    async def test_restaurant_claim_submission(self):
+        """Test restaurant claim submission"""
+        test_name = "Restaurant Claim Submission API"
+        
+        if "owner_token" not in self.test_data:
+            await self.log_result(test_name, False, "No owner token available from login")
+            return
+        
+        try:
+            # First, get a restaurant to claim (from existing restaurants)
+            restaurants_response = await self.client.get(f"{BACKEND_URL}/restaurants/search?latitude=37.7749&longitude=-122.4194&limit=1")
+            
+            if restaurants_response.status_code != 200:
+                await self.log_result(test_name, False, "Could not get restaurants for claim test")
+                return
+            
+            restaurants_data = restaurants_response.json()
+            if not restaurants_data.get("restaurants"):
+                await self.log_result(test_name, False, "No restaurants available for claim test")
+                return
+            
+            restaurant = restaurants_data["restaurants"][0]
+            restaurant_id = restaurant["id"]
+            
+            # Submit claim
+            headers = {"Authorization": f"Bearer {self.test_data['owner_token']}"}
+            claim_data = {
+                "restaurant_id": restaurant_id,
+                "owner_id": self.test_data["owner"]["id"],  # Will be overridden by server
+                "business_license": "BL123456789",
+                "proof_of_ownership": "Lease agreement and business registration",
+                "additional_documents": ["lease.pdf", "registration.pdf"],
+                "notes": "I am the owner of this restaurant and would like to claim it.",
+                "status": "pending",
+                "submitted_at": datetime.now(timezone.utc).isoformat()
+            }
+            
+            response = await self.client.post(f"{BACKEND_URL}/owners/claims", json=claim_data, headers=headers)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify response structure
+                required_fields = ["id", "restaurant_id", "owner_id", "status", "submitted_at"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    await self.log_result(test_name, False, f"Missing fields: {missing_fields}", data)
+                    return
+                
+                # Verify status is pending
+                if data.get("status") != "pending":
+                    await self.log_result(test_name, False, f"Wrong claim status: {data.get('status')}")
+                    return
+                
+                self.test_data["claim"] = data
+                
+                await self.log_result(test_name, True, 
+                    f"Claim submitted successfully. ID: {data['id']}, Status: {data['status']}")
+            else:
+                await self.log_result(test_name, False, 
+                    f"Claim submission failed with status {response.status_code}", response.text)
+                
+        except Exception as e:
+            await self.log_result(test_name, False, f"Exception: {str(e)}")
+
+    async def test_admin_pending_claims(self):
+        """Test admin endpoint for pending claims"""
+        test_name = "Admin Pending Claims API"
+        
+        try:
+            response = await self.client.get(f"{BACKEND_URL}/admin/owners/claims")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify response structure
+                if "claims" not in data:
+                    await self.log_result(test_name, False, "Missing 'claims' field in response", data)
+                    return
+                
+                claims = data["claims"]
+                
+                if not isinstance(claims, list):
+                    await self.log_result(test_name, False, f"Claims field is not a list: {type(claims)}")
+                    return
+                
+                # Should have at least our submitted claim
+                if len(claims) == 0:
+                    await self.log_result(test_name, True, "No pending claims found (expected for new system)")
+                else:
+                    # Verify claim structure
+                    claim = claims[0]
+                    required_fields = ["id", "restaurant_id", "owner_id", "status"]
+                    missing_fields = [field for field in required_fields if field not in claim]
+                    
+                    if missing_fields:
+                        await self.log_result(test_name, False, f"Missing fields in claim: {missing_fields}", claim)
+                        return
+                    
+                    await self.log_result(test_name, True, 
+                        f"Pending claims retrieved successfully. Count: {len(claims)}")
+            else:
+                await self.log_result(test_name, False, 
+                    f"Admin claims request failed with status {response.status_code}", response.text)
+                
+        except Exception as e:
+            await self.log_result(test_name, False, f"Exception: {str(e)}")
+
+    async def test_admin_pending_specials(self):
+        """Test admin endpoint for pending specials"""
+        test_name = "Admin Pending Specials API"
+        
+        try:
+            response = await self.client.get(f"{BACKEND_URL}/admin/owners/specials")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify response structure
+                if "specials" not in data:
+                    await self.log_result(test_name, False, "Missing 'specials' field in response", data)
+                    return
+                
+                specials = data["specials"]
+                
+                if not isinstance(specials, list):
+                    await self.log_result(test_name, False, f"Specials field is not a list: {type(specials)}")
+                    return
+                
+                await self.log_result(test_name, True, 
+                    f"Pending specials retrieved successfully. Count: {len(specials)}")
+            else:
+                await self.log_result(test_name, False, 
+                    f"Admin specials request failed with status {response.status_code}", response.text)
+                
+        except Exception as e:
+            await self.log_result(test_name, False, f"Exception: {str(e)}")
+
+    async def test_claim_approval(self):
+        """Test admin claim approval"""
+        test_name = "Admin Claim Approval API"
+        
+        if "claim" not in self.test_data:
+            await self.log_result(test_name, False, "No claim available for approval test")
+            return
+        
+        try:
+            claim_id = self.test_data["claim"]["id"]
+            approval_data = {
+                "admin_notes": "Claim approved after document verification"
+            }
+            
+            response = await self.client.post(f"{BACKEND_URL}/admin/owners/claims/{claim_id}/approve", 
+                                            json=approval_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify response structure
+                if "message" not in data or "success" not in data:
+                    await self.log_result(test_name, False, "Missing message or success field", data)
+                    return
+                
+                if not data.get("success"):
+                    await self.log_result(test_name, False, f"Approval failed: {data.get('message')}")
+                    return
+                
+                await self.log_result(test_name, True, 
+                    f"Claim approved successfully: {data['message']}")
+            else:
+                await self.log_result(test_name, False, 
+                    f"Claim approval failed with status {response.status_code}", response.text)
+                
+        except Exception as e:
+            await self.log_result(test_name, False, f"Exception: {str(e)}")
+
+    async def test_special_creation(self):
+        """Test special creation by owner"""
+        test_name = "Owner Special Creation API"
+        
+        if "owner_token" not in self.test_data:
+            await self.log_result(test_name, False, "No owner token available from login")
+            return
+        
+        # Need a restaurant ID - try to get from owner's restaurants after claim approval
+        try:
+            headers = {"Authorization": f"Bearer {self.test_data['owner_token']}"}
+            
+            # Check if owner now has restaurants after claim approval
+            restaurants_response = await self.client.get(f"{BACKEND_URL}/owners/restaurants", headers=headers)
+            
+            if restaurants_response.status_code != 200:
+                await self.log_result(test_name, False, "Could not get owner restaurants for special creation")
+                return
+            
+            restaurants_data = restaurants_response.json()
+            restaurants = restaurants_data.get("restaurants", [])
+            
+            if not restaurants:
+                # Use a mock restaurant ID for testing
+                restaurant_id = "test-restaurant-id"
+            else:
+                restaurant_id = restaurants[0]["id"]
+            
+            # Create special
+            special_data = {
+                "restaurant_id": restaurant_id,
+                "title": "Happy Hour Special",
+                "description": "50% off all appetizers during happy hour",
+                "special_type": "happy_hour",
+                "price": 5.99,
+                "original_price": 11.99,
+                "discount_percentage": 50,
+                "days_available": ["monday", "tuesday", "wednesday", "thursday", "friday"],
+                "time_start": "15:00",
+                "time_end": "18:00",
+                "valid_from": datetime.now(timezone.utc).isoformat(),
+                "valid_until": datetime(2024, 12, 31, tzinfo=timezone.utc).isoformat(),
+                "max_redemptions": 100,
+                "terms_conditions": "Valid for dine-in only. Cannot be combined with other offers."
+            }
+            
+            response = await self.client.post(f"{BACKEND_URL}/owners/specials", json=special_data, headers=headers)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify response structure
+                required_fields = ["id", "restaurant_id", "owner_id", "title", "approval_status", "is_active"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    await self.log_result(test_name, False, f"Missing fields: {missing_fields}", data)
+                    return
+                
+                # Verify approval status is pending
+                if data.get("approval_status") != "pending":
+                    await self.log_result(test_name, False, f"Wrong approval status: {data.get('approval_status')}")
+                    return
+                
+                self.test_data["special"] = data
+                
+                await self.log_result(test_name, True, 
+                    f"Special created successfully. ID: {data['id']}, Status: {data['approval_status']}")
+            else:
+                await self.log_result(test_name, False, 
+                    f"Special creation failed with status {response.status_code}", response.text)
+                
+        except Exception as e:
+            await self.log_result(test_name, False, f"Exception: {str(e)}")
+
+    async def test_special_approval(self):
+        """Test admin special approval"""
+        test_name = "Admin Special Approval API"
+        
+        if "special" not in self.test_data:
+            await self.log_result(test_name, False, "No special available for approval test")
+            return
+        
+        try:
+            special_id = self.test_data["special"]["id"]
+            approval_data = {
+                "admin_notes": "Special approved - meets all guidelines"
+            }
+            
+            response = await self.client.post(f"{BACKEND_URL}/admin/owners/specials/{special_id}/approve", 
+                                            json=approval_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify response structure
+                if "message" not in data or "success" not in data:
+                    await self.log_result(test_name, False, "Missing message or success field", data)
+                    return
+                
+                if not data.get("success"):
+                    await self.log_result(test_name, False, f"Approval failed: {data.get('message')}")
+                    return
+                
+                await self.log_result(test_name, True, 
+                    f"Special approved successfully: {data['message']}")
+            else:
+                await self.log_result(test_name, False, 
+                    f"Special approval failed with status {response.status_code}", response.text)
+                
+        except Exception as e:
+            await self.log_result(test_name, False, f"Exception: {str(e)}")
+
+    async def test_authentication_validation(self):
+        """Test authentication and authorization validation"""
+        test_name = "Authentication & Authorization Validation"
+        
+        try:
+            # Test accessing protected endpoint without token
+            response = await self.client.get(f"{BACKEND_URL}/owners/dashboard")
+            
+            if response.status_code == 401:
+                await self.log_result(test_name, True, 
+                    "Correctly rejected unauthenticated request with 401")
+            else:
+                await self.log_result(test_name, False, 
+                    f"Should have returned 401 for unauthenticated request, got {response.status_code}")
+                
+        except Exception as e:
+            await self.log_result(test_name, False, f"Exception: {str(e)}")
+
+    async def test_user_type_differentiation(self):
+        """Test user type differentiation between regular users and owners"""
+        test_name = "User Type Differentiation"
+        
+        try:
+            # Create a regular user
+            unique_id = str(uuid.uuid4())[:8]
+            user_data = {
+                "email": f"user_{unique_id}@example.com",
+                "password": "userpassword123",
+                "first_name": "Jane",
                 "last_name": "Doe"
             }
             
-            response = self.session.post(f"{self.api_url}/users/register", json=registration_data)
-            success = response.status_code == 200
+            # Register regular user
+            user_response = await self.client.post(f"{BACKEND_URL}/users/register", json=user_data)
             
-            if success:
-                data = response.json()
-                self.user_token = data.get('access_token')
-                self.user_data = data.get('user')
-                user_type = data.get('user_type')
-                details = f"Registered user: {data.get('user', {}).get('email', 'N/A')}, User type: {user_type}, Token received: {bool(self.user_token)}"
-                
-                # Verify user_type is "user"
-                if user_type != "user":
-                    success = False
-                    details += f" - ERROR: Expected user_type 'user', got '{user_type}'"
+            if user_response.status_code != 200:
+                await self.log_result(test_name, False, "Could not create regular user for test")
+                return
+            
+            user_auth = user_response.json()
+            user_token = user_auth["access_token"]
+            
+            # Try to access owner endpoint with regular user token
+            headers = {"Authorization": f"Bearer {user_token}"}
+            response = await self.client.get(f"{BACKEND_URL}/owners/dashboard", headers=headers)
+            
+            if response.status_code == 403:
+                await self.log_result(test_name, True, 
+                    "Correctly rejected regular user access to owner endpoint with 403")
             else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("User Registration", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("User Registration", False, str(e))
-            return False, {}
-
-    def test_user_login(self):
-        """Test regular user login with existing credentials"""
-        try:
-            # First register a user
-            test_email = f"user_login_{uuid.uuid4().hex[:8]}@example.com"
-            registration_data = {
-                "email": test_email,
-                "password": "UserPassword123!",
-                "first_name": "Jane",
-                "last_name": "Smith"
-            }
-            
-            reg_response = self.session.post(f"{self.api_url}/users/register", json=registration_data)
-            if reg_response.status_code != 200:
-                self.log_test("User Login", False, "Failed to create test user for login")
-                return False, {}
-            
-            # Now test login
-            login_data = {
-                "email": test_email,
-                "password": "UserPassword123!"
-            }
-            
-            response = self.session.post(f"{self.api_url}/users/login", json=login_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                token = data.get('access_token')
-                user = data.get('user')
-                user_type = data.get('user_type')
-                details = f"Login successful for: {user.get('email', 'N/A')}, User type: {user_type}, Token received: {bool(token)}"
+                await self.log_result(test_name, False, 
+                    f"Should have returned 403 for regular user accessing owner endpoint, got {response.status_code}")
                 
-                # Store token for subsequent tests
-                if not hasattr(self, 'user_token') or not self.user_token:
-                    self.user_token = token
-                    self.user_data = user
-                
-                # Verify user_type is "user"
-                if user_type != "user":
-                    success = False
-                    details += f" - ERROR: Expected user_type 'user', got '{user_type}'"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("User Login", success, details)
-            return success, data if success else {}
-            
         except Exception as e:
-            self.log_test("User Login", False, str(e))
-            return False, {}
+            await self.log_result(test_name, False, f"Exception: {str(e)}")
 
-    def test_user_auth_me(self):
-        """Test getting current user info with JWT token"""
-        if not hasattr(self, 'user_token') or not self.user_token:
-            self.log_test("User Auth Me", False, "No user token available - registration may have failed")
-            return False, {}
-        
-        try:
-            headers = {'Authorization': f'Bearer {self.user_token}'}
-            response = self.session.get(f"{self.api_url}/users/me", headers=headers)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                details = f"User info retrieved: {data.get('email', 'N/A')}, Name: {data.get('first_name', '')} {data.get('last_name', '')}"
-                
-                # Verify expected fields are present
-                expected_fields = ['id', 'email', 'first_name', 'last_name', 'favorite_restaurant_ids']
-                missing_fields = [field for field in expected_fields if field not in data]
-                if missing_fields:
-                    details += f" - Missing fields: {missing_fields}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("User Auth Me", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("User Auth Me", False, str(e))
-            return False, {}
-
-    def test_add_favorite_restaurant(self):
-        """Test adding restaurant to user's favorites"""
-        if not hasattr(self, 'user_token') or not self.user_token:
-            self.log_test("Add Favorite Restaurant", False, "No user token available")
-            return False, {}
-        
-        try:
-            headers = {'Authorization': f'Bearer {self.user_token}'}
-            
-            # First, get a restaurant ID from the search results
-            search_params = {
-                'latitude': 37.7749,
-                'longitude': -122.4194,
-                'radius': 8047
-            }
-            
-            search_response = self.session.get(f"{self.api_url}/restaurants/search", params=search_params)
-            if search_response.status_code != 200:
-                self.log_test("Add Favorite Restaurant", False, "Failed to get restaurants for testing")
-                return False, {}
-            
-            search_data = search_response.json()
-            restaurants = search_data.get('restaurants', [])
-            if not restaurants:
-                self.log_test("Add Favorite Restaurant", False, "No restaurants found for testing")
-                return False, {}
-            
-            # Use the first restaurant
-            restaurant_id = restaurants[0]['id']
-            restaurant_name = restaurants[0]['name']
-            
-            # Add to favorites
-            response = self.session.post(f"{self.api_url}/users/favorites/{restaurant_id}", headers=headers)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                details = f"Added '{restaurant_name}' (ID: {restaurant_id}) to favorites. Message: {data.get('message', 'N/A')}"
-                self.test_restaurant_id = restaurant_id  # Store for removal test
-                self.test_restaurant_name = restaurant_name
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Add Favorite Restaurant", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Add Favorite Restaurant", False, str(e))
-            return False, {}
-
-    def test_remove_favorite_restaurant(self):
-        """Test removing restaurant from user's favorites"""
-        if not hasattr(self, 'user_token') or not self.user_token:
-            self.log_test("Remove Favorite Restaurant", False, "No user token available")
-            return False, {}
-        
-        if not hasattr(self, 'test_restaurant_id'):
-            self.log_test("Remove Favorite Restaurant", False, "No restaurant ID available - add favorite test may have failed")
-            return False, {}
-        
-        try:
-            headers = {'Authorization': f'Bearer {self.user_token}'}
-            restaurant_id = self.test_restaurant_id
-            restaurant_name = getattr(self, 'test_restaurant_name', 'Unknown')
-            
-            # Remove from favorites
-            response = self.session.delete(f"{self.api_url}/users/favorites/{restaurant_id}", headers=headers)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                details = f"Removed '{restaurant_name}' (ID: {restaurant_id}) from favorites. Message: {data.get('message', 'N/A')}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Remove Favorite Restaurant", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Remove Favorite Restaurant", False, str(e))
-            return False, {}
-
-    def test_get_favorite_restaurants(self):
-        """Test getting user's favorite restaurants"""
-        if not hasattr(self, 'user_token') or not self.user_token:
-            self.log_test("Get Favorite Restaurants", False, "No user token available")
-            return False, {}
-        
-        try:
-            headers = {'Authorization': f'Bearer {self.user_token}'}
-            
-            # First add a restaurant to favorites for testing
-            search_params = {
-                'latitude': 37.7749,
-                'longitude': -122.4194,
-                'radius': 8047
-            }
-            
-            search_response = self.session.get(f"{self.api_url}/restaurants/search", params=search_params)
-            if search_response.status_code == 200:
-                search_data = search_response.json()
-                restaurants = search_data.get('restaurants', [])
-                if restaurants:
-                    # Add first restaurant to favorites
-                    restaurant_id = restaurants[0]['id']
-                    add_response = self.session.post(f"{self.api_url}/users/favorites/{restaurant_id}", headers=headers)
-            
-            # Now get favorites
-            response = self.session.get(f"{self.api_url}/users/favorites", headers=headers)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                favorites = data.get('favorites', [])
-                details = f"Retrieved {len(favorites)} favorite restaurants"
-                
-                if favorites:
-                    first_favorite = favorites[0]
-                    expected_fields = ['id', 'name', 'address']
-                    missing_fields = [field for field in expected_fields if field not in first_favorite]
-                    if missing_fields:
-                        details += f" - Missing fields in favorite: {missing_fields}"
-                    else:
-                        details += f". First favorite: {first_favorite.get('name', 'Unknown')}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Get Favorite Restaurants", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Get Favorite Restaurants", False, str(e))
-            return False, {}
-
-    def test_user_auth_edge_cases(self):
-        """Test user authentication edge cases"""
-        test_cases = [
-            {
-                'name': 'Duplicate User Email Registration',
-                'test_func': self._test_duplicate_user_registration
-            },
-            {
-                'name': 'Invalid User Login Credentials',
-                'test_func': self._test_invalid_user_login
-            },
-            {
-                'name': 'Invalid Token Access to User Endpoints',
-                'test_func': self._test_invalid_token_user_access
-            },
-            {
-                'name': 'Add Non-existent Restaurant to Favorites',
-                'test_func': self._test_add_nonexistent_favorite
-            },
-            {
-                'name': 'Access User Endpoints with Owner Token',
-                'test_func': self._test_owner_token_user_access
-            }
-        ]
-        
-        all_passed = True
-        details_list = []
-        
-        for case in test_cases:
-            try:
-                success, details = case['test_func']()
-                details_list.append(f"{case['name']}: {details}")
-                if not success:
-                    all_passed = False
-            except Exception as e:
-                details_list.append(f"{case['name']}: Exception - {str(e)}")
-                all_passed = False
-        
-        self.log_test("User Authentication Edge Cases", all_passed, "; ".join(details_list))
-        return all_passed
-
-    def _test_duplicate_user_registration(self):
-        """Test duplicate user email registration"""
-        try:
-            test_email = f"duplicate_user_{uuid.uuid4().hex[:8]}@example.com"
-            registration_data = {
-                "email": test_email,
-                "password": "TestPassword123!",
-                "first_name": "Duplicate",
-                "last_name": "User"
-            }
-            
-            # Register once
-            response1 = self.session.post(f"{self.api_url}/users/register", json=registration_data)
-            # Register again with same email
-            response2 = self.session.post(f"{self.api_url}/users/register", json=registration_data)
-            
-            success = response1.status_code == 200 and response2.status_code == 400
-            details = f"First: {response1.status_code}, Second: {response2.status_code}"
-            return success, details
-            
-        except Exception as e:
-            return False, str(e)
-
-    def _test_invalid_user_login(self):
-        """Test invalid user login credentials"""
-        try:
-            login_data = {
-                "email": "nonexistent_user@example.com",
-                "password": "WrongPassword123!"
-            }
-            
-            response = self.session.post(f"{self.api_url}/users/login", json=login_data)
-            success = response.status_code == 401
-            details = f"Status: {response.status_code}"
-            return success, details
-            
-        except Exception as e:
-            return False, str(e)
-
-    def _test_invalid_token_user_access(self):
-        """Test invalid token access to user endpoints"""
-        try:
-            headers = {'Authorization': 'Bearer invalid_user_token_here'}
-            response = self.session.get(f"{self.api_url}/users/me", headers=headers)
-            success = response.status_code == 401
-            details = f"Status: {response.status_code}"
-            return success, details
-            
-        except Exception as e:
-            return False, str(e)
-
-    def _test_add_nonexistent_favorite(self):
-        """Test adding non-existent restaurant to favorites"""
-        if not hasattr(self, 'user_token') or not self.user_token:
-            return False, "No user token available"
-        
-        try:
-            headers = {'Authorization': f'Bearer {self.user_token}'}
-            fake_restaurant_id = f"nonexistent_{uuid.uuid4().hex[:8]}"
-            
-            response = self.session.post(f"{self.api_url}/users/favorites/{fake_restaurant_id}", headers=headers)
-            # This should succeed (the API doesn't validate restaurant existence)
-            success = response.status_code == 200
-            details = f"Status: {response.status_code}"
-            return success, details
-            
-        except Exception as e:
-            return False, str(e)
-
-    def test_forward_geocoding_basic(self):
-        """Test basic forward geocoding with valid address"""
-        try:
-            test_data = {
-                "address": "1600 Amphitheatre Parkway, Mountain View, CA"
-            }
-            
-            response = self.session.post(f"{self.api_url}/geocode/forward", json=test_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                required_fields = ['formatted_address', 'latitude', 'longitude', 'place_id', 'address_components', 'geometry_type']
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    success = False
-                    details = f"Missing required fields: {missing_fields}"
-                else:
-                    details = f"Address: {data.get('formatted_address', 'N/A')}, Coordinates: ({data.get('latitude', 'N/A')}, {data.get('longitude', 'N/A')}), Place ID: {data.get('place_id', 'N/A')}"
-                    
-                    # Validate coordinate ranges
-                    lat = data.get('latitude')
-                    lng = data.get('longitude')
-                    if lat is None or lng is None or not (-90 <= lat <= 90) or not (-180 <= lng <= 180):
-                        success = False
-                        details += " - Invalid coordinate values"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Forward Geocoding - Basic Address", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Forward Geocoding - Basic Address", False, str(e))
-            return False, {}
-
-    def test_forward_geocoding_with_region(self):
-        """Test forward geocoding with region parameter"""
-        try:
-            test_data = {
-                "address": "Main Street",
-                "region": "US"
-            }
-            
-            response = self.session.post(f"{self.api_url}/geocode/forward", json=test_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                details = f"Address with region: {data.get('formatted_address', 'N/A')}, Coordinates: ({data.get('latitude', 'N/A')}, {data.get('longitude', 'N/A')})"
-                
-                # Verify address components contain US-related information
-                address_components = data.get('address_components', [])
-                has_us_component = any('United States' in str(component) or 'US' in str(component) for component in address_components)
-                if not has_us_component:
-                    details += " - Warning: No US component found in address"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Forward Geocoding - With Region Parameter", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Forward Geocoding - With Region Parameter", False, str(e))
-            return False, {}
-
-    def test_forward_geocoding_invalid_address(self):
-        """Test forward geocoding with invalid address"""
-        try:
-            test_data = {
-                "address": "ThisIsNotARealAddressAnywhere12345XYZ"
-            }
-            
-            response = self.session.post(f"{self.api_url}/geocode/forward", json=test_data)
-            # Should return 404 for address not found
-            success = response.status_code == 404
-            
-            if success:
-                details = "Correctly returned 404 for invalid address"
-            else:
-                details = f"Expected 404, got {response.status_code}. Response: {response.text[:200]}"
-            
-            self.log_test("Forward Geocoding - Invalid Address", success, details)
-            return success
-            
-        except Exception as e:
-            self.log_test("Forward Geocoding - Invalid Address", False, str(e))
-            return False
-
-    def test_reverse_geocoding_basic(self):
-        """Test basic reverse geocoding with valid coordinates"""
-        try:
-            test_data = {
-                "latitude": 37.7749,
-                "longitude": -122.4194
-            }
-            
-            response = self.session.post(f"{self.api_url}/geocode/reverse", json=test_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                if isinstance(data, list) and len(data) > 0:
-                    first_result = data[0]
-                    required_fields = ['formatted_address', 'latitude', 'longitude', 'place_id', 'address_components', 'geometry_type']
-                    missing_fields = [field for field in required_fields if field not in first_result]
-                    
-                    if missing_fields:
-                        success = False
-                        details = f"Missing required fields in first result: {missing_fields}"
-                    else:
-                        details = f"Found {len(data)} addresses. First: {first_result.get('formatted_address', 'N/A')}"
-                        
-                        # Verify coordinates are close to input
-                        result_lat = first_result.get('latitude')
-                        result_lng = first_result.get('longitude')
-                        if result_lat and result_lng:
-                            lat_diff = abs(result_lat - test_data['latitude'])
-                            lng_diff = abs(result_lng - test_data['longitude'])
-                            if lat_diff > 0.01 or lng_diff > 0.01:  # Allow small differences
-                                details += f" - Warning: Coordinates differ significantly (lat: {lat_diff:.4f}, lng: {lng_diff:.4f})"
-                else:
-                    success = False
-                    details = "Expected list of results, got different format"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Reverse Geocoding - Basic Coordinates", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Reverse Geocoding - Basic Coordinates", False, str(e))
-            return False, {}
-
-    def test_reverse_geocoding_with_filters(self):
-        """Test reverse geocoding with result_type filter"""
-        try:
-            test_data = {
-                "latitude": 37.7749,
-                "longitude": -122.4194,
-                "result_type": ["street_address", "route"]
-            }
-            
-            response = self.session.post(f"{self.api_url}/geocode/reverse", json=test_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                if isinstance(data, list):
-                    details = f"Found {len(data)} filtered results"
-                    if data:
-                        first_result = data[0]
-                        details += f". First: {first_result.get('formatted_address', 'N/A')}"
-                else:
-                    success = False
-                    details = "Expected list of results"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Reverse Geocoding - With Filters", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Reverse Geocoding - With Filters", False, str(e))
-            return False, {}
-
-    def test_reverse_geocoding_invalid_coordinates(self):
-        """Test reverse geocoding with invalid coordinates"""
-        try:
-            test_data = {
-                "latitude": 91,  # Invalid latitude (> 90)
-                "longitude": -122.4194
-            }
-            
-            response = self.session.post(f"{self.api_url}/geocode/reverse", json=test_data)
-            # Should return 422 for validation error
-            success = response.status_code == 422
-            
-            if success:
-                details = "Correctly returned 422 for invalid coordinates"
-            else:
-                details = f"Expected 422, got {response.status_code}. Response: {response.text[:200]}"
-            
-            self.log_test("Reverse Geocoding - Invalid Coordinates", success, details)
-            return success
-            
-        except Exception as e:
-            self.log_test("Reverse Geocoding - Invalid Coordinates", False, str(e))
-            return False
-
-    def test_batch_geocoding_basic(self):
-        """Test basic batch geocoding with multiple addresses"""
-        try:
-            test_data = {
-                "addresses": [
-                    "1600 Amphitheatre Parkway, Mountain View, CA",
-                    "1 Infinite Loop, Cupertino, CA",
-                    "410 Terry Ave N, Seattle, WA"
-                ]
-            }
-            
-            response = self.session.post(f"{self.api_url}/geocode/batch", json=test_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                required_fields = ['results', 'errors']
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    success = False
-                    details = f"Missing required fields: {missing_fields}"
-                else:
-                    results = data.get('results', [])
-                    errors = data.get('errors', [])
-                    details = f"Processed {len(test_data['addresses'])} addresses: {len(results)} successful, {len(errors)} errors"
-                    
-                    # Verify each result has required fields
-                    for i, result in enumerate(results):
-                        result_fields = ['formatted_address', 'latitude', 'longitude', 'place_id']
-                        missing_result_fields = [field for field in result_fields if field not in result]
-                        if missing_result_fields:
-                            details += f" - Result {i} missing fields: {missing_result_fields}"
-                    
-                    if results:
-                        first_result = results[0]
-                        details += f". First result: {first_result.get('formatted_address', 'N/A')}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Batch Geocoding - Multiple Valid Addresses", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Batch Geocoding - Multiple Valid Addresses", False, str(e))
-            return False, {}
-
-    def test_batch_geocoding_with_errors(self):
-        """Test batch geocoding with mix of valid and invalid addresses"""
-        try:
-            test_data = {
-                "addresses": [
-                    "1600 Amphitheatre Parkway, Mountain View, CA",  # Valid
-                    "ThisIsNotARealAddressAnywhere12345XYZ",         # Invalid
-                    "1 Infinite Loop, Cupertino, CA"                 # Valid
-                ]
-            }
-            
-            response = self.session.post(f"{self.api_url}/geocode/batch", json=test_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                results = data.get('results', [])
-                errors = data.get('errors', [])
-                
-                # Should have some results and some errors
-                details = f"Results: {len(results)}, Errors: {len(errors)}"
-                
-                # Verify error format
-                if errors:
-                    first_error = errors[0]
-                    error_fields = ['index', 'address', 'error']
-                    missing_error_fields = [field for field in error_fields if field not in first_error]
-                    if missing_error_fields:
-                        details += f" - Error missing fields: {missing_error_fields}"
-                    else:
-                        details += f". First error: {first_error.get('error', 'N/A')} for address at index {first_error.get('index', 'N/A')}"
-                
-                # Should have at least 2 successful results and 1 error
-                expected_success = len(results) >= 2 and len(errors) >= 1
-                if not expected_success:
-                    details += " - Expected at least 2 results and 1 error"
-                    success = False
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Batch Geocoding - Mixed Valid/Invalid Addresses", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Batch Geocoding - Mixed Valid/Invalid Addresses", False, str(e))
-            return False, {}
-
-    def test_batch_geocoding_max_limit(self):
-        """Test batch geocoding with maximum number of addresses"""
-        try:
-            # Create 10 addresses (the maximum allowed)
-            test_addresses = [
-                f"Main Street, City {i}, CA" for i in range(10)
-            ]
-            
-            test_data = {
-                "addresses": test_addresses,
-                "max_results": 10
-            }
-            
-            response = self.session.post(f"{self.api_url}/geocode/batch", json=test_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                results = data.get('results', [])
-                errors = data.get('errors', [])
-                total_processed = len(results) + len(errors)
-                
-                details = f"Processed {total_processed}/10 addresses: {len(results)} successful, {len(errors)} errors"
-                
-                # Should process all 10 addresses
-                if total_processed != 10:
-                    details += f" - Expected 10 total processed, got {total_processed}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Batch Geocoding - Maximum Limit (10 addresses)", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Batch Geocoding - Maximum Limit (10 addresses)", False, str(e))
-            return False, {}
-
-    def test_batch_geocoding_over_limit(self):
-        """Test batch geocoding with more than maximum addresses"""
-        try:
-            # Create 15 addresses (over the 10 limit)
-            test_addresses = [
-                f"Main Street, City {i}, CA" for i in range(15)
-            ]
-            
-            test_data = {
-                "addresses": test_addresses
-            }
-            
-            response = self.session.post(f"{self.api_url}/geocode/batch", json=test_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                results = data.get('results', [])
-                errors = data.get('errors', [])
-                total_processed = len(results) + len(errors)
-                
-                # Should only process first 10 addresses
-                details = f"Processed {total_processed} addresses (should be ≤10 due to limit)"
-                
-                if total_processed > 10:
-                    details += f" - Warning: Processed more than limit ({total_processed})"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Batch Geocoding - Over Limit (15 addresses)", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Batch Geocoding - Over Limit (15 addresses)", False, str(e))
-            return False, {}
-
-    def test_legacy_geocoding_basic(self):
-        """Test legacy geocoding endpoint for backward compatibility"""
-        try:
-            params = {
-                'address': '1600 Amphitheatre Parkway, Mountain View, CA'
-            }
-            
-            response = self.session.get(f"{self.api_url}/geocode", params=params)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                required_fields = ['coordinates', 'formatted_address']
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    success = False
-                    details = f"Missing required fields: {missing_fields}"
-                else:
-                    coordinates = data.get('coordinates', {})
-                    coord_fields = ['latitude', 'longitude']
-                    missing_coord_fields = [field for field in coord_fields if field not in coordinates]
-                    
-                    if missing_coord_fields:
-                        success = False
-                        details = f"Missing coordinate fields: {missing_coord_fields}"
-                    else:
-                        lat = coordinates.get('latitude')
-                        lng = coordinates.get('longitude')
-                        formatted_address = data.get('formatted_address')
-                        details = f"Address: {formatted_address}, Coordinates: ({lat}, {lng})"
-                        
-                        # Validate coordinate ranges
-                        if not (-90 <= lat <= 90) or not (-180 <= lng <= 180):
-                            success = False
-                            details += " - Invalid coordinate values"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Legacy Geocoding - Basic Address", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Legacy Geocoding - Basic Address", False, str(e))
-            return False, {}
-
-    def test_legacy_geocoding_invalid_address(self):
-        """Test legacy geocoding with invalid address"""
-        try:
-            params = {
-                'address': 'ThisIsNotARealAddressAnywhere12345XYZ'
-            }
-            
-            response = self.session.get(f"{self.api_url}/geocode", params=params)
-            # Should return 404 for address not found
-            success = response.status_code == 404
-            
-            if success:
-                details = "Correctly returned 404 for invalid address"
-            else:
-                details = f"Expected 404, got {response.status_code}. Response: {response.text[:200]}"
-            
-            self.log_test("Legacy Geocoding - Invalid Address", success, details)
-            return success
-            
-        except Exception as e:
-            self.log_test("Legacy Geocoding - Invalid Address", False, str(e))
-            return False
-
-    def test_geocoding_error_handling(self):
-        """Test geocoding endpoints error handling"""
-        test_cases = [
-            {
-                'name': 'Forward Geocoding - Missing Address',
-                'endpoint': '/geocode/forward',
-                'method': 'POST',
-                'data': {},  # Missing required address field
-                'expected_status': 422
-            },
-            {
-                'name': 'Reverse Geocoding - Invalid Latitude Range',
-                'endpoint': '/geocode/reverse',
-                'method': 'POST',
-                'data': {'latitude': 100, 'longitude': -122.4194},  # lat > 90
-                'expected_status': 422
-            },
-            {
-                'name': 'Batch Geocoding - Empty Address List',
-                'endpoint': '/geocode/batch',
-                'method': 'POST',
-                'data': {'addresses': []},  # Empty list - should return empty results
-                'expected_status': 200
-            },
-            {
-                'name': 'Legacy Geocoding - Missing Address Parameter',
-                'endpoint': '/geocode',
-                'method': 'GET',
-                'params': {},  # Missing required address parameter
-                'expected_status': 422
-            }
-        ]
-        
-        all_passed = True
-        details_list = []
-        
-        for case in test_cases:
-            try:
-                if case['method'] == 'POST':
-                    response = self.session.post(f"{self.api_url}{case['endpoint']}", json=case['data'])
-                else:  # GET
-                    response = self.session.get(f"{self.api_url}{case['endpoint']}", params=case.get('params', {}))
-                
-                success = response.status_code == case['expected_status']
-                details_list.append(f"{case['name']}: {response.status_code} (expected {case['expected_status']})")
-                
-                if not success:
-                    all_passed = False
-                    
-            except Exception as e:
-                details_list.append(f"{case['name']}: Exception - {str(e)}")
-                all_passed = False
-        
-        self.log_test("Geocoding Error Handling", all_passed, "; ".join(details_list))
-        return all_passed
-
-    def _test_owner_token_user_access(self):
-        """Test accessing user endpoints with owner token"""
-        if not hasattr(self, 'owner_token') or not self.owner_token:
-            return True, "No owner token available - skipping test"
-        
-        try:
-            headers = {'Authorization': f'Bearer {self.owner_token}'}
-            response = self.session.get(f"{self.api_url}/users/me", headers=headers)
-            # Should fail because owner token shouldn't work for user endpoints
-            success = response.status_code == 401
-            details = f"Status: {response.status_code}"
-            return success, details
-            
-        except Exception as e:
-            return False, str(e)
-
-    def test_mobile_app_authentication_integration(self):
-        """Test complete mobile app authentication integration workflow"""
-        print("\n🔥 TESTING MOBILE APP AUTHENTICATION INTEGRATION")
+    async def run_all_tests(self):
+        """Run all owner dashboard tests"""
+        print("🚀 Starting Restaurant Owner Dashboard Integration Tests")
         print("=" * 60)
         
-        mobile_tests_passed = 0
-        mobile_tests_total = 0
+        # Core owner workflow tests
+        await self.test_owner_registration()
+        await self.test_owner_login()
+        await self.test_owner_dashboard()
+        await self.test_owner_restaurants()
+        await self.test_owner_specials()
         
-        # Test 1: User Registration API for Mobile App
-        mobile_tests_total += 1
-        success, user_data = self.test_mobile_user_registration()
-        if success:
-            mobile_tests_passed += 1
+        # Restaurant claim workflow tests
+        await self.test_restaurant_claim_submission()
+        await self.test_admin_pending_claims()
+        await self.test_claim_approval()
         
-        # Test 2: User Login API for Mobile App
-        mobile_tests_total += 1
-        success, login_data = self.test_mobile_user_login()
-        if success:
-            mobile_tests_passed += 1
+        # Special management workflow tests
+        await self.test_special_creation()
+        await self.test_admin_pending_specials()
+        await self.test_special_approval()
         
-        # Test 3: User Profile API with JWT Bearer token
-        mobile_tests_total += 1
-        success, profile_data = self.test_mobile_user_profile()
-        if success:
-            mobile_tests_passed += 1
+        # Authentication and authorization tests
+        await self.test_authentication_validation()
+        await self.test_user_type_differentiation()
         
-        # Test 4: Favorites API - GET favorites
-        mobile_tests_total += 1
-        success, favorites_data = self.test_mobile_get_favorites()
-        if success:
-            mobile_tests_passed += 1
+        # Summary
+        print("=" * 60)
+        print("📊 TEST SUMMARY")
+        print("=" * 60)
         
-        # Test 5: Favorites API - POST add favorite
-        mobile_tests_total += 1
-        success, add_favorite_data = self.test_mobile_add_favorite()
-        if success:
-            mobile_tests_passed += 1
+        total_tests = len(self.results)
+        passed_tests = len([r for r in self.results if "✅ PASS" in r["status"]])
+        failed_tests = total_tests - passed_tests
         
-        # Test 6: Favorites API - DELETE remove favorite
-        mobile_tests_total += 1
-        success, remove_favorite_data = self.test_mobile_remove_favorite()
-        if success:
-            mobile_tests_passed += 1
+        print(f"Total Tests: {total_tests}")
+        print(f"Passed: {passed_tests}")
+        print(f"Failed: {failed_tests}")
+        print(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
         
-        # Test 7: Restaurant Search API for Mobile App
-        mobile_tests_total += 1
-        success, search_data = self.test_mobile_restaurant_search()
-        if success:
-            mobile_tests_passed += 1
+        if failed_tests > 0:
+            print("\n❌ FAILED TESTS:")
+            for result in self.results:
+                if "❌ FAIL" in result["status"]:
+                    print(f"  - {result['test']}: {result['details']}")
         
-        # Test 8: Special Types API for Mobile App
-        mobile_tests_total += 1
-        success, types_data = self.test_mobile_special_types()
-        if success:
-            mobile_tests_passed += 1
+        await self.client.aclose()
         
-        # Test 9: Mobile App Error Handling
-        mobile_tests_total += 1
-        success = self.test_mobile_error_handling()
-        if success:
-            mobile_tests_passed += 1
-        
-        # Test 10: Mobile App Token Management
-        mobile_tests_total += 1
-        success = self.test_mobile_token_management()
-        if success:
-            mobile_tests_passed += 1
-        
-        print(f"\n📱 MOBILE APP AUTHENTICATION INTEGRATION SUMMARY:")
-        print(f"   Tests Passed: {mobile_tests_passed}/{mobile_tests_total}")
-        print(f"   Success Rate: {(mobile_tests_passed/mobile_tests_total)*100:.1f}%")
-        
-        overall_success = mobile_tests_passed == mobile_tests_total
-        self.log_test("Mobile App Authentication Integration", overall_success, 
-                     f"{mobile_tests_passed}/{mobile_tests_total} tests passed")
-        
-        return overall_success
+        return passed_tests, failed_tests
 
-    def test_mobile_user_registration(self):
-        """Test user registration API with mobile app data format"""
-        try:
-            # Generate unique email for mobile app testing
-            test_email = f"mobile_user_{uuid.uuid4().hex[:8]}@example.com"
-            
-            # Mobile app registration data format
-            registration_data = {
-                "first_name": "Sarah",
-                "last_name": "Johnson", 
-                "email": test_email,
-                "password": "MobileApp123!"
-            }
-            
-            response = self.session.post(f"{self.api_url}/users/register", json=registration_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                
-                # Verify mobile app expected response format
-                required_fields = ['access_token', 'user', 'user_type']
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    success = False
-                    details = f"Missing required fields: {missing_fields}"
-                else:
-                    # Store mobile user token for subsequent tests
-                    self.mobile_user_token = data.get('access_token')
-                    self.mobile_user_data = data.get('user')
-                    
-                    user = data.get('user', {})
-                    user_type = data.get('user_type')
-                    
-                    # Verify user data structure for mobile app
-                    user_required_fields = ['id', 'email', 'first_name', 'last_name']
-                    user_missing_fields = [field for field in user_required_fields if field not in user]
-                    
-                    if user_missing_fields:
-                        success = False
-                        details = f"Missing user fields: {user_missing_fields}"
-                    elif user_type != "user":
-                        success = False
-                        details = f"Expected user_type 'user', got '{user_type}'"
-                    else:
-                        details = f"✅ Mobile user registered: {user.get('first_name')} {user.get('last_name')} ({user.get('email')}), Token: {bool(self.mobile_user_token)}"
-            else:
-                details = f"❌ Registration failed: {response.status_code} - {response.text[:200]}"
-            
-            self.log_test("Mobile App - User Registration", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Mobile App - User Registration", False, str(e))
-            return False, {}
-
-    def test_mobile_user_login(self):
-        """Test user login API with mobile app format"""
-        try:
-            # First register a user for login testing
-            test_email = f"mobile_login_{uuid.uuid4().hex[:8]}@example.com"
-            registration_data = {
-                "first_name": "Mike",
-                "last_name": "Chen",
-                "email": test_email,
-                "password": "MobileLogin123!"
-            }
-            
-            reg_response = self.session.post(f"{self.api_url}/users/register", json=registration_data)
-            if reg_response.status_code != 200:
-                self.log_test("Mobile App - User Login", False, "Failed to create test user for login")
-                return False, {}
-            
-            # Test mobile app login
-            login_data = {
-                "email": test_email,
-                "password": "MobileLogin123!"
-            }
-            
-            response = self.session.post(f"{self.api_url}/users/login", json=login_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                
-                # Verify mobile app expected response format
-                required_fields = ['access_token', 'user', 'user_type']
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    success = False
-                    details = f"Missing required fields: {missing_fields}"
-                else:
-                    user = data.get('user', {})
-                    user_type = data.get('user_type')
-                    token = data.get('access_token')
-                    
-                    # Verify response structure matches mobile app expectations
-                    if user_type != "user":
-                        success = False
-                        details = f"Expected user_type 'user', got '{user_type}'"
-                    elif not token:
-                        success = False
-                        details = "No access_token in response"
-                    else:
-                        # Store for subsequent tests if we don't have one yet
-                        if not hasattr(self, 'mobile_user_token') or not self.mobile_user_token:
-                            self.mobile_user_token = token
-                            self.mobile_user_data = user
-                        
-                        details = f"✅ Mobile login successful: {user.get('first_name')} {user.get('last_name')} ({user.get('email')})"
-            else:
-                details = f"❌ Login failed: {response.status_code} - {response.text[:200]}"
-            
-            self.log_test("Mobile App - User Login", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Mobile App - User Login", False, str(e))
-            return False, {}
-
-    def test_mobile_user_profile(self):
-        """Test user profile API with JWT Bearer token for mobile app"""
-        if not hasattr(self, 'mobile_user_token') or not self.mobile_user_token:
-            self.log_test("Mobile App - User Profile", False, "No mobile user token available")
-            return False, {}
-        
-        try:
-            # Test authenticated access with JWT Bearer token
-            headers = {'Authorization': f'Bearer {self.mobile_user_token}'}
-            response = self.session.get(f"{self.api_url}/users/me", headers=headers)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                
-                # Verify mobile app expected profile data
-                required_fields = ['id', 'email', 'first_name', 'last_name', 'favorite_restaurant_ids']
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    success = False
-                    details = f"Missing profile fields: {missing_fields}"
-                else:
-                    details = f"✅ Profile retrieved: {data.get('first_name')} {data.get('last_name')} ({data.get('email')}), Favorites: {len(data.get('favorite_restaurant_ids', []))}"
-            else:
-                details = f"❌ Profile access failed: {response.status_code} - {response.text[:200]}"
-            
-            self.log_test("Mobile App - User Profile Access", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Mobile App - User Profile Access", False, str(e))
-            return False, {}
-
-    def test_mobile_get_favorites(self):
-        """Test GET /api/users/favorites for mobile app"""
-        if not hasattr(self, 'mobile_user_token') or not self.mobile_user_token:
-            self.log_test("Mobile App - Get Favorites", False, "No mobile user token available")
-            return False, {}
-        
-        try:
-            headers = {'Authorization': f'Bearer {self.mobile_user_token}'}
-            response = self.session.get(f"{self.api_url}/users/favorites", headers=headers)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                
-                # Verify mobile app expected response format
-                if 'favorites' not in data:
-                    success = False
-                    details = "Missing 'favorites' field in response"
-                else:
-                    favorites = data.get('favorites', [])
-                    details = f"✅ Retrieved {len(favorites)} favorite restaurants"
-                    
-                    # Verify favorite structure if any exist
-                    if favorites:
-                        first_favorite = favorites[0]
-                        expected_fields = ['id', 'name', 'address']
-                        missing_fields = [field for field in expected_fields if field not in first_favorite]
-                        if missing_fields:
-                            details += f" - Missing favorite fields: {missing_fields}"
-                        else:
-                            details += f" - First: {first_favorite.get('name', 'Unknown')}"
-            else:
-                details = f"❌ Get favorites failed: {response.status_code} - {response.text[:200]}"
-            
-            self.log_test("Mobile App - Get Favorites", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Mobile App - Get Favorites", False, str(e))
-            return False, {}
-
-    def test_mobile_add_favorite(self):
-        """Test POST /api/users/favorites/{restaurant_id} for mobile app"""
-        if not hasattr(self, 'mobile_user_token') or not self.mobile_user_token:
-            self.log_test("Mobile App - Add Favorite", False, "No mobile user token available")
-            return False, {}
-        
-        try:
-            headers = {'Authorization': f'Bearer {self.mobile_user_token}'}
-            
-            # First get a restaurant to add to favorites
-            search_params = {
-                'latitude': 37.7749,
-                'longitude': -122.4194,
-                'radius': 8047
-            }
-            
-            search_response = self.session.get(f"{self.api_url}/restaurants/search", params=search_params)
-            if search_response.status_code != 200:
-                self.log_test("Mobile App - Add Favorite", False, "Failed to get restaurants for testing")
-                return False, {}
-            
-            search_data = search_response.json()
-            restaurants = search_data.get('restaurants', [])
-            if not restaurants:
-                self.log_test("Mobile App - Add Favorite", False, "No restaurants found for testing")
-                return False, {}
-            
-            # Use the first restaurant
-            restaurant_id = restaurants[0]['id']
-            restaurant_name = restaurants[0]['name']
-            
-            # Add to favorites
-            response = self.session.post(f"{self.api_url}/users/favorites/{restaurant_id}", headers=headers)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                # Store for removal test
-                self.mobile_test_restaurant_id = restaurant_id
-                self.mobile_test_restaurant_name = restaurant_name
-                
-                details = f"✅ Added '{restaurant_name}' to favorites - {data.get('message', 'Success')}"
-            else:
-                details = f"❌ Add favorite failed: {response.status_code} - {response.text[:200]}"
-            
-            self.log_test("Mobile App - Add Favorite", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Mobile App - Add Favorite", False, str(e))
-            return False, {}
-
-    def test_mobile_remove_favorite(self):
-        """Test DELETE /api/users/favorites/{restaurant_id} for mobile app"""
-        if not hasattr(self, 'mobile_user_token') or not self.mobile_user_token:
-            self.log_test("Mobile App - Remove Favorite", False, "No mobile user token available")
-            return False, {}
-        
-        if not hasattr(self, 'mobile_test_restaurant_id'):
-            self.log_test("Mobile App - Remove Favorite", False, "No restaurant ID available - add favorite test may have failed")
-            return False, {}
-        
-        try:
-            headers = {'Authorization': f'Bearer {self.mobile_user_token}'}
-            restaurant_id = self.mobile_test_restaurant_id
-            restaurant_name = getattr(self, 'mobile_test_restaurant_name', 'Unknown')
-            
-            # Remove from favorites
-            response = self.session.delete(f"{self.api_url}/users/favorites/{restaurant_id}", headers=headers)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                details = f"✅ Removed '{restaurant_name}' from favorites - {data.get('message', 'Success')}"
-            else:
-                details = f"❌ Remove favorite failed: {response.status_code} - {response.text[:200]}"
-            
-            self.log_test("Mobile App - Remove Favorite", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Mobile App - Remove Favorite", False, str(e))
-            return False, {}
-
-    def test_mobile_restaurant_search(self):
-        """Test restaurant search API with location parameters for mobile app"""
-        try:
-            # Test with realistic mobile app search parameters
-            params = {
-                'latitude': 37.7749,  # San Francisco
-                'longitude': -122.4194,
-                'radius': 8047,  # 5 miles
-                'limit': 20
-            }
-            
-            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                
-                # Verify mobile app expected response format
-                required_fields = ['restaurants', 'total', 'search_location']
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    success = False
-                    details = f"Missing response fields: {missing_fields}"
-                else:
-                    restaurants = data.get('restaurants', [])
-                    total = data.get('total', 0)
-                    
-                    details = f"✅ Found {total} restaurants for mobile app"
-                    
-                    # Verify restaurant data structure for mobile app
-                    if restaurants:
-                        first_restaurant = restaurants[0]
-                        restaurant_required_fields = ['id', 'name', 'address', 'location']
-                        restaurant_missing_fields = [field for field in restaurant_required_fields if field not in first_restaurant]
-                        
-                        if restaurant_missing_fields:
-                            details += f" - Missing restaurant fields: {restaurant_missing_fields}"
-                        else:
-                            details += f" - First: {first_restaurant.get('name', 'Unknown')}"
-                            
-                            # Verify location structure
-                            location = first_restaurant.get('location', {})
-                            if 'latitude' not in location or 'longitude' not in location:
-                                details += " - Missing location coordinates"
-            else:
-                details = f"❌ Restaurant search failed: {response.status_code} - {response.text[:200]}"
-            
-            self.log_test("Mobile App - Restaurant Search", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Mobile App - Restaurant Search", False, str(e))
-            return False, {}
-
-    def test_mobile_special_types(self):
-        """Test special types API for mobile app filtering"""
-        try:
-            response = self.session.get(f"{self.api_url}/specials/types")
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                
-                # Verify mobile app expected response format
-                if 'special_types' not in data:
-                    success = False
-                    details = "Missing 'special_types' field in response"
-                else:
-                    special_types = data.get('special_types', [])
-                    details = f"✅ Retrieved {len(special_types)} special types for mobile filtering"
-                    
-                    # Verify special type structure for mobile app
-                    if special_types:
-                        first_type = special_types[0]
-                        expected_fields = ['value', 'label']
-                        missing_fields = [field for field in expected_fields if field not in first_type]
-                        
-                        if missing_fields:
-                            details += f" - Missing special type fields: {missing_fields}"
-                        else:
-                            type_labels = [st.get('label', 'Unknown') for st in special_types]
-                            details += f" - Types: {', '.join(type_labels)}"
-            else:
-                details = f"❌ Special types failed: {response.status_code} - {response.text[:200]}"
-            
-            self.log_test("Mobile App - Special Types", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Mobile App - Special Types", False, str(e))
-            return False, {}
-
-    def test_mobile_error_handling(self):
-        """Test mobile app error handling scenarios"""
-        test_cases = [
-            {
-                'name': 'Invalid Credentials',
-                'endpoint': '/users/login',
-                'method': 'POST',
-                'data': {'email': 'invalid@example.com', 'password': 'wrongpassword'},
-                'expected_status': 401
-            },
-            {
-                'name': 'Duplicate Registration',
-                'test_func': self._test_mobile_duplicate_registration
-            },
-            {
-                'name': 'Invalid Token Access',
-                'endpoint': '/users/me',
-                'method': 'GET',
-                'headers': {'Authorization': 'Bearer invalid_mobile_token'},
-                'expected_status': 401
-            },
-            {
-                'name': 'Missing Required Fields',
-                'endpoint': '/users/register',
-                'method': 'POST',
-                'data': {'email': 'test@example.com'},  # Missing required fields
-                'expected_status': 422
-            }
-        ]
-        
-        all_passed = True
-        details_list = []
-        
-        for case in test_cases:
-            try:
-                if 'test_func' in case:
-                    success, details = case['test_func']()
-                    details_list.append(f"{case['name']}: {details}")
-                else:
-                    if case['method'] == 'POST':
-                        response = self.session.post(f"{self.api_url}{case['endpoint']}", 
-                                                   json=case.get('data', {}),
-                                                   headers=case.get('headers', {}))
-                    else:
-                        response = self.session.get(f"{self.api_url}{case['endpoint']}", 
-                                                  headers=case.get('headers', {}))
-                    
-                    success = response.status_code == case['expected_status']
-                    details_list.append(f"{case['name']}: {response.status_code}")
-                
-                if not success:
-                    all_passed = False
-                    
-            except Exception as e:
-                details_list.append(f"{case['name']}: Exception - {str(e)}")
-                all_passed = False
-        
-        self.log_test("Mobile App - Error Handling", all_passed, "; ".join(details_list))
-        return all_passed
-
-    def _test_mobile_duplicate_registration(self):
-        """Test duplicate email registration for mobile app"""
-        try:
-            test_email = f"mobile_duplicate_{uuid.uuid4().hex[:8]}@example.com"
-            registration_data = {
-                "first_name": "Test",
-                "last_name": "User",
-                "email": test_email,
-                "password": "TestPassword123!"
-            }
-            
-            # Register once
-            response1 = self.session.post(f"{self.api_url}/users/register", json=registration_data)
-            # Register again with same email
-            response2 = self.session.post(f"{self.api_url}/users/register", json=registration_data)
-            
-            success = response1.status_code == 200 and response2.status_code == 400
-            details = f"First: {response1.status_code}, Second: {response2.status_code}"
-            return success, details
-            
-        except Exception as e:
-            return False, str(e)
-
-    def test_mobile_token_management(self):
-        """Test mobile app token management and AsyncStorage compatibility"""
-        if not hasattr(self, 'mobile_user_token') or not self.mobile_user_token:
-            self.log_test("Mobile App - Token Management", False, "No mobile user token available")
-            return False
-        
-        try:
-            # Test 1: Verify token format is suitable for AsyncStorage
-            token = self.mobile_user_token
-            token_parts = token.split('.')
-            
-            # JWT should have 3 parts separated by dots
-            if len(token_parts) != 3:
-                self.log_test("Mobile App - Token Management", False, f"Invalid JWT format: {len(token_parts)} parts")
-                return False
-            
-            # Test 2: Verify token works for multiple API calls (session persistence)
-            headers = {'Authorization': f'Bearer {token}'}
-            
-            # Make multiple API calls to test token persistence
-            endpoints_to_test = [
-                '/users/me',
-                '/users/favorites',
-                '/specials/types'
-            ]
-            
-            all_calls_successful = True
-            call_results = []
-            
-            for endpoint in endpoints_to_test:
-                response = self.session.get(f"{self.api_url}{endpoint}", headers=headers)
-                call_results.append(f"{endpoint}: {response.status_code}")
-                if endpoint == '/users/me' and response.status_code != 200:
-                    all_calls_successful = False
-                elif endpoint in ['/users/favorites', '/specials/types'] and response.status_code != 200:
-                    all_calls_successful = False
-            
-            if all_calls_successful:
-                details = f"✅ Token management working - JWT format valid, Multiple API calls successful: {'; '.join(call_results)}"
-                success = True
-            else:
-                details = f"❌ Token management issues - API calls: {'; '.join(call_results)}"
-                success = False
-            
-            self.log_test("Mobile App - Token Management", success, details)
-            return success
-            
-        except Exception as e:
-            self.log_test("Mobile App - Token Management", False, str(e))
-            return False
-
-    def test_fixed_google_places_favorites_workflow(self):
-        """Test the FIXED Google Places favorites functionality - comprehensive workflow"""
-        print("\n🔍 TESTING FIXED GOOGLE PLACES FAVORITES FUNCTIONALITY")
-        print("=" * 70)
-        
-        # Step 1: Create/login test user
-        try:
-            test_email = f"favorites_test_{uuid.uuid4().hex[:8]}@example.com"
-            registration_data = {
-                "email": test_email,
-                "password": "FavoritesTest123!",
-                "first_name": "Favorites",
-                "last_name": "Tester"
-            }
-            
-            reg_response = self.session.post(f"{self.api_url}/users/register", json=registration_data)
-            if reg_response.status_code != 200:
-                self.log_test("FIXED Google Places Favorites - User Registration", False, f"Failed to create test user: {reg_response.status_code}")
-                return False, {}
-            
-            reg_data = reg_response.json()
-            test_token = reg_data.get('access_token')
-            headers = {'Authorization': f'Bearer {test_token}'}
-            
-            print(f"✅ Step 1: Created test user: {test_email}")
-            
-        except Exception as e:
-            self.log_test("FIXED Google Places Favorites - User Registration", False, str(e))
-            return False, {}
-        
-        # Step 2: Search for restaurants to get Google Places results
-        try:
-            search_params = {
-                'latitude': 37.7749,  # San Francisco
-                'longitude': -122.4194,
-                'radius': 8047,  # 5 miles
-                'limit': 20
-            }
-            
-            search_response = self.session.get(f"{self.api_url}/restaurants/search", params=search_params)
-            if search_response.status_code != 200:
-                self.log_test("FIXED Google Places Favorites - Restaurant Search", False, f"Search failed: {search_response.status_code}")
-                return False, {}
-            
-            search_data = search_response.json()
-            restaurants = search_data.get('restaurants', [])
-            
-            # Find Google Places restaurants (IDs starting with "google_")
-            google_restaurants = [r for r in restaurants if r['id'].startswith('google_')]
-            db_restaurants = [r for r in restaurants if not r['id'].startswith('google_')]
-            
-            print(f"✅ Step 2: Found {len(restaurants)} total restaurants ({len(google_restaurants)} Google Places, {len(db_restaurants)} database)")
-            
-            if len(google_restaurants) < 2:
-                self.log_test("FIXED Google Places Favorites - Restaurant Search", False, f"Need at least 2 Google Places restaurants for testing, found {len(google_restaurants)}")
-                return False, {}
-                
-        except Exception as e:
-            self.log_test("FIXED Google Places Favorites - Restaurant Search", False, str(e))
-            return False, {}
-        
-        # Step 3: Add Google Places restaurants to favorites
-        try:
-            test_restaurants = google_restaurants[:3]  # Use first 3 Google Places restaurants
-            added_favorites = []
-            
-            for i, restaurant in enumerate(test_restaurants):
-                restaurant_id = restaurant['id']
-                restaurant_name = restaurant['name']
-                
-                add_response = self.session.post(f"{self.api_url}/users/favorites/{restaurant_id}", headers=headers)
-                
-                if add_response.status_code == 200:
-                    added_favorites.append({
-                        'id': restaurant_id,
-                        'name': restaurant_name,
-                        'address': restaurant.get('address', ''),
-                        'rating': restaurant.get('rating')
-                    })
-                    print(f"✅ Step 3.{i+1}: Added '{restaurant_name}' (ID: {restaurant_id}) to favorites")
-                else:
-                    print(f"❌ Step 3.{i+1}: Failed to add '{restaurant_name}' to favorites: {add_response.status_code}")
-                    self.log_test("FIXED Google Places Favorites - Add Favorites", False, f"Failed to add restaurant {restaurant_id}: {add_response.status_code}")
-                    return False, {}
-            
-            if len(added_favorites) < 3:
-                self.log_test("FIXED Google Places Favorites - Add Favorites", False, f"Only added {len(added_favorites)}/3 restaurants to favorites")
-                return False, {}
-                
-        except Exception as e:
-            self.log_test("FIXED Google Places Favorites - Add Favorites", False, str(e))
-            return False, {}
-        
-        # Step 4: Retrieve favorites and verify Google Places data is returned
-        try:
-            favorites_response = self.session.get(f"{self.api_url}/users/favorites", headers=headers)
-            
-            if favorites_response.status_code != 200:
-                self.log_test("FIXED Google Places Favorites - Get Favorites", False, f"Failed to get favorites: {favorites_response.status_code}")
-                return False, {}
-            
-            favorites_data = favorites_response.json()
-            favorites = favorites_data.get('favorites', [])
-            
-            print(f"✅ Step 4: Retrieved {len(favorites)} favorites from API")
-            
-            # Verify all added Google Places restaurants are returned with proper details
-            success = True
-            missing_restaurants = []
-            invalid_data = []
-            
-            for added_restaurant in added_favorites:
-                found = False
-                for favorite in favorites:
-                    if favorite['id'] == added_restaurant['id']:
-                        found = True
-                        # Verify the favorite has proper details (name, address, etc.)
-                        if not favorite.get('name') or favorite.get('name') == 'Restaurant (Details Unavailable)':
-                            invalid_data.append(f"Restaurant {added_restaurant['id']} has invalid name: '{favorite.get('name')}'")
-                        
-                        print(f"✅ Found favorite: {favorite.get('name', 'N/A')} - {favorite.get('address', 'N/A')} (Rating: {favorite.get('rating', 'N/A')})")
-                        break
-                
-                if not found:
-                    missing_restaurants.append(added_restaurant['name'])
-                    success = False
-            
-            if missing_restaurants:
-                details = f"Missing restaurants in favorites: {', '.join(missing_restaurants)}"
-                success = False
-            elif invalid_data:
-                details = f"Invalid data in favorites: {'; '.join(invalid_data)}"
-                success = False
-            else:
-                details = f"Successfully retrieved all {len(added_favorites)} Google Places restaurants with proper details"
-            
-            print(f"✅ Step 4 Complete: {details}")
-            
-        except Exception as e:
-            self.log_test("FIXED Google Places Favorites - Get Favorites", False, str(e))
-            return False, {}
-        
-        # Step 5: Test mixed favorites (Google Places + Database restaurants)
-        try:
-            if db_restaurants:
-                # Add one database restaurant to favorites
-                db_restaurant = db_restaurants[0]
-                db_restaurant_id = db_restaurant['id']
-                db_restaurant_name = db_restaurant['name']
-                
-                add_db_response = self.session.post(f"{self.api_url}/users/favorites/{db_restaurant_id}", headers=headers)
-                
-                if add_db_response.status_code == 200:
-                    print(f"✅ Step 5.1: Added database restaurant '{db_restaurant_name}' to favorites")
-                    
-                    # Get favorites again to verify mixed results
-                    mixed_favorites_response = self.session.get(f"{self.api_url}/users/favorites", headers=headers)
-                    
-                    if mixed_favorites_response.status_code == 200:
-                        mixed_favorites_data = mixed_favorites_response.json()
-                        mixed_favorites = mixed_favorites_data.get('favorites', [])
-                        
-                        google_count = len([f for f in mixed_favorites if f['id'].startswith('google_')])
-                        db_count = len([f for f in mixed_favorites if not f['id'].startswith('google_')])
-                        
-                        print(f"✅ Step 5.2: Mixed favorites working - {google_count} Google Places + {db_count} database restaurants")
-                        
-                        if google_count >= 3 and db_count >= 1:
-                            mixed_success = True
-                            mixed_details = f"Mixed favorites working correctly: {google_count} Google Places + {db_count} database restaurants"
-                        else:
-                            mixed_success = False
-                            mixed_details = f"Mixed favorites issue: Expected ≥3 Google + ≥1 DB, got {google_count} Google + {db_count} DB"
-                    else:
-                        mixed_success = False
-                        mixed_details = f"Failed to retrieve mixed favorites: {mixed_favorites_response.status_code}"
-                else:
-                    mixed_success = False
-                    mixed_details = f"Failed to add database restaurant: {add_db_response.status_code}"
-            else:
-                mixed_success = True
-                mixed_details = "No database restaurants available for mixed testing (Google Places only test passed)"
-                
-        except Exception as e:
-            mixed_success = False
-            mixed_details = str(e)
-        
-        # Final assessment
-        overall_success = success and mixed_success
-        
-        if overall_success:
-            final_details = f"🎉 FIXED FAVORITES FUNCTIONALITY WORKING CORRECTLY! Google Places restaurants are now properly retrieved with details from Google Places API. {details}. {mixed_details}"
-            print(f"\n🎉 SUCCESS: Fixed Google Places favorites functionality is working correctly!")
-            print(f"   - Google Places restaurants are properly retrieved with details")
-            print(f"   - Mixed favorites (Google Places + Database) working correctly")
-            print(f"   - Heart icon state management issue should now be resolved")
-        else:
-            final_details = f"❌ FIXED FAVORITES STILL HAS ISSUES: {details}. Mixed test: {mixed_details}"
-            print(f"\n❌ FAILURE: Fixed Google Places favorites functionality still has issues")
-        
-        self.log_test("FIXED Google Places Favorites - Complete Workflow", overall_success, final_details)
-        return overall_success, favorites_data if overall_success else {}
-
-    def test_google_places_api_integration(self):
-        """Test Google Places API integration for favorites retrieval"""
-        try:
-            # Create test user
-            test_email = f"places_api_test_{uuid.uuid4().hex[:8]}@example.com"
-            registration_data = {
-                "email": test_email,
-                "password": "PlacesTest123!",
-                "first_name": "Places",
-                "last_name": "Tester"
-            }
-            
-            reg_response = self.session.post(f"{self.api_url}/users/register", json=registration_data)
-            if reg_response.status_code != 200:
-                self.log_test("Google Places API Integration", False, "Failed to create test user")
-                return False, {}
-            
-            reg_data = reg_response.json()
-            test_token = reg_data.get('access_token')
-            headers = {'Authorization': f'Bearer {test_token}'}
-            
-            # Get restaurants from search
-            search_params = {
-                'latitude': 37.7749,
-                'longitude': -122.4194,
-                'radius': 8047
-            }
-            
-            search_response = self.session.get(f"{self.api_url}/restaurants/search", params=search_params)
-            if search_response.status_code != 200:
-                self.log_test("Google Places API Integration", False, "Restaurant search failed")
-                return False, {}
-            
-            search_data = search_response.json()
-            restaurants = search_data.get('restaurants', [])
-            google_restaurants = [r for r in restaurants if r['id'].startswith('google_')]
-            
-            if not google_restaurants:
-                self.log_test("Google Places API Integration", False, "No Google Places restaurants found")
-                return False, {}
-            
-            # Add a Google Places restaurant to favorites
-            test_restaurant = google_restaurants[0]
-            restaurant_id = test_restaurant['id']
-            
-            add_response = self.session.post(f"{self.api_url}/users/favorites/{restaurant_id}", headers=headers)
-            if add_response.status_code != 200:
-                self.log_test("Google Places API Integration", False, f"Failed to add favorite: {add_response.status_code}")
-                return False, {}
-            
-            # Retrieve favorites and check Google Places API integration
-            favorites_response = self.session.get(f"{self.api_url}/users/favorites", headers=headers)
-            if favorites_response.status_code != 200:
-                self.log_test("Google Places API Integration", False, f"Failed to get favorites: {favorites_response.status_code}")
-                return False, {}
-            
-            favorites_data = favorites_response.json()
-            favorites = favorites_data.get('favorites', [])
-            
-            # Verify the Google Places restaurant is returned with proper details
-            google_favorite = None
-            for favorite in favorites:
-                if favorite['id'] == restaurant_id:
-                    google_favorite = favorite
-                    break
-            
-            if not google_favorite:
-                self.log_test("Google Places API Integration", False, "Google Places restaurant not found in favorites")
-                return False, {}
-            
-            # Check if the restaurant has proper details from Google Places API
-            required_fields = ['name', 'address']
-            missing_fields = [field for field in required_fields if not google_favorite.get(field)]
-            
-            if missing_fields:
-                details = f"Google Places restaurant missing fields: {missing_fields}. Data: {google_favorite}"
-                success = False
-            elif google_favorite.get('name') == 'Restaurant (Details Unavailable)':
-                details = f"Google Places API call failed - restaurant shows as unavailable: {google_favorite}"
-                success = False
-            else:
-                details = f"Google Places API integration working - Restaurant: {google_favorite.get('name')} at {google_favorite.get('address')} (Rating: {google_favorite.get('rating', 'N/A')})"
-                success = True
-            
-            self.log_test("Google Places API Integration", success, details)
-            return success, favorites_data if success else {}
-            
-        except Exception as e:
-            self.log_test("Google Places API Integration", False, str(e))
-            return False, {}
-
-    def test_foursquare_service_initialization(self):
-        """Test Foursquare service initialization and credentials"""
-        try:
-            # This test checks if the service can be initialized properly
-            # We'll test this indirectly through the restaurant search endpoint
-            params = {
-                'latitude': 40.7589,  # NYC coordinates
-                'longitude': -73.9851,
-                'radius': 5000,
-                'limit': 5
-            }
-            
-            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                source_summary = data.get('source_summary', {})
-                fallback_used = data.get('fallback_system_used', False)
-                
-                details = f"Fallback system active: {fallback_used}, Sources: {source_summary}"
-                
-                # Check if Foursquare is available as a source
-                if 'foursquare' in source_summary:
-                    details += f" - Foursquare returned {source_summary['foursquare']} restaurants"
-                else:
-                    details += " - Foursquare not used (may be due to other sources providing enough results)"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Foursquare Service Initialization", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Foursquare Service Initialization", False, str(e))
-            return False, {}
-
-    def test_foursquare_fallback_system_nyc(self):
-        """Test Foursquare fallback system with NYC coordinates"""
-        try:
-            # Use NYC coordinates where we expect good Foursquare coverage
-            params = {
-                'latitude': 40.7589,  # Times Square, NYC
-                'longitude': -73.9851,
-                'radius': 2000,  # 2km radius
-                'limit': 20
-            }
-            
-            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                restaurants = data.get('restaurants', [])
-                source_summary = data.get('source_summary', {})
-                fallback_used = data.get('fallback_system_used', False)
-                
-                details = f"Found {len(restaurants)} restaurants, Fallback system: {fallback_used}"
-                details += f", Sources: {source_summary}"
-                
-                # Analyze source distribution
-                foursquare_count = source_summary.get('foursquare', 0)
-                google_count = source_summary.get('google_places', 0)
-                owner_count = source_summary.get('owner_managed', 0)
-                
-                details += f" (Owner: {owner_count}, Google: {google_count}, Foursquare: {foursquare_count})"
-                
-                # Check for Foursquare restaurants in results
-                foursquare_restaurants = [r for r in restaurants if r.get('source') == 'foursquare']
-                if foursquare_restaurants:
-                    first_foursquare = foursquare_restaurants[0]
-                    details += f". First Foursquare: {first_foursquare.get('name', 'Unknown')}"
-                    
-                    # Verify Foursquare restaurant format
-                    required_fields = ['id', 'name', 'source', 'distance']
-                    missing_fields = [field for field in required_fields if field not in first_foursquare]
-                    if missing_fields:
-                        details += f" - Missing fields: {missing_fields}"
-                        success = False
-                    
-                    # Verify ID format
-                    if not first_foursquare.get('id', '').startswith('foursquare_'):
-                        details += " - Invalid Foursquare ID format"
-                        success = False
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Foursquare Fallback System (NYC)", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Foursquare Fallback System (NYC)", False, str(e))
-            return False, {}
-
-    def test_foursquare_fallback_system_sf(self):
-        """Test Foursquare fallback system with San Francisco coordinates"""
-        try:
-            # Use SF coordinates to test different location
-            params = {
-                'latitude': 37.7749,  # San Francisco
-                'longitude': -122.4194,
-                'radius': 3000,  # 3km radius
-                'limit': 15
-            }
-            
-            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                restaurants = data.get('restaurants', [])
-                source_summary = data.get('source_summary', {})
-                
-                details = f"SF search: {len(restaurants)} restaurants, Sources: {source_summary}"
-                
-                # Check source priority order (owner_managed should be first, then google_places, then foursquare)
-                source_order = []
-                for restaurant in restaurants:
-                    source = restaurant.get('source')
-                    if source not in source_order:
-                        source_order.append(source)
-                
-                details += f", Source order: {source_order}"
-                
-                # Verify priority system is working
-                expected_priority = ['owner_managed', 'google_places', 'foursquare']
-                actual_priority = [s for s in expected_priority if s in source_order]
-                if source_order[:len(actual_priority)] != actual_priority:
-                    details += " - WARNING: Source priority may not be correct"
-                
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Foursquare Fallback System (SF)", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Foursquare Fallback System (SF)", False, str(e))
-            return False, {}
-
-    def test_foursquare_search_with_query(self):
-        """Test Foursquare search with query parameter"""
-        try:
-            # Search for pizza restaurants in NYC
-            params = {
-                'latitude': 40.7589,
-                'longitude': -73.9851,
-                'radius': 5000,
-                'query': 'pizza',
-                'limit': 10
-            }
-            
-            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                restaurants = data.get('restaurants', [])
-                source_summary = data.get('source_summary', {})
-                
-                details = f"Pizza search: {len(restaurants)} restaurants, Sources: {source_summary}"
-                
-                # Check if results are relevant to pizza
-                pizza_relevant = 0
-                for restaurant in restaurants:
-                    name = restaurant.get('name', '').lower()
-                    cuisine_types = [c.lower() for c in restaurant.get('cuisine_type', [])]
-                    
-                    if 'pizza' in name or any('pizza' in c for c in cuisine_types):
-                        pizza_relevant += 1
-                
-                details += f", Pizza-relevant results: {pizza_relevant}/{len(restaurants)}"
-                
-                # Check for Foursquare results specifically
-                foursquare_results = [r for r in restaurants if r.get('source') == 'foursquare']
-                if foursquare_results:
-                    details += f", Foursquare results: {len(foursquare_results)}"
-                    first_foursquare = foursquare_results[0]
-                    details += f" (e.g., {first_foursquare.get('name', 'Unknown')})"
-                
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Foursquare Search with Query (Pizza)", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Foursquare Search with Query (Pizza)", False, str(e))
-            return False, {}
-
-    def test_foursquare_data_format(self):
-        """Test Foursquare restaurant data format and integration"""
-        try:
-            # Get restaurants that should include Foursquare results
-            params = {
-                'latitude': 40.7589,  # NYC
-                'longitude': -73.9851,
-                'radius': 3000,
-                'limit': 20
-            }
-            
-            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                restaurants = data.get('restaurants', [])
-                
-                # Find Foursquare restaurants
-                foursquare_restaurants = [r for r in restaurants if r.get('source') == 'foursquare']
-                
-                if foursquare_restaurants:
-                    restaurant = foursquare_restaurants[0]
-                    
-                    # Check required fields
-                    required_fields = ['id', 'name', 'source', 'distance', 'location']
-                    missing_fields = [field for field in required_fields if field not in restaurant]
-                    
-                    # Check optional fields that should be present if available
-                    optional_fields = ['address', 'rating', 'cuisine_type', 'phone', 'website']
-                    present_optional = [field for field in optional_fields if restaurant.get(field)]
-                    
-                    details = f"Foursquare restaurant: {restaurant.get('name', 'Unknown')}"
-                    details += f", Required fields: {len(required_fields) - len(missing_fields)}/{len(required_fields)}"
-                    details += f", Optional fields present: {present_optional}"
-                    
-                    if missing_fields:
-                        details += f", Missing required: {missing_fields}"
-                        success = False
-                    
-                    # Verify ID format
-                    restaurant_id = restaurant.get('id', '')
-                    if not restaurant_id.startswith('foursquare_'):
-                        details += f" - Invalid ID format: {restaurant_id}"
-                        success = False
-                    
-                    # Verify location format
-                    location = restaurant.get('location', {})
-                    if not isinstance(location, dict) or 'latitude' not in location or 'longitude' not in location:
-                        details += " - Invalid location format"
-                        success = False
-                    
-                    # Verify source metadata
-                    if restaurant.get('source') != 'foursquare':
-                        details += f" - Incorrect source: {restaurant.get('source')}"
-                        success = False
-                    
-                else:
-                    details = f"No Foursquare restaurants found in {len(restaurants)} results"
-                    # This might be OK if other sources provided enough results
-                    
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Foursquare Data Format Integration", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Foursquare Data Format Integration", False, str(e))
-            return False, {}
-
-    def test_foursquare_error_handling(self):
-        """Test Foursquare API error handling and graceful degradation"""
-        try:
-            # Test with coordinates that might have limited results
-            params = {
-                'latitude': 0,  # Middle of ocean
-                'longitude': 0,
-                'radius': 1000,
-                'limit': 10
-            }
-            
-            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                restaurants = data.get('restaurants', [])
-                source_summary = data.get('source_summary', {})
-                
-                # Should handle gracefully even with no results
-                details = f"Remote location search: {len(restaurants)} restaurants, Sources: {source_summary}"
-                
-                # The system should not crash even if Foursquare returns no results
-                if 'foursquare' in source_summary:
-                    details += f" - Foursquare handled remote location gracefully"
-                else:
-                    details += " - Foursquare not used (expected for remote location)"
-                
-                # Test that fallback system continues to work
-                fallback_used = data.get('fallback_system_used', False)
-                if not fallback_used:
-                    details += " - WARNING: Fallback system not indicated as used"
-                
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Foursquare Error Handling", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Foursquare Error Handling", False, str(e))
-            return False, {}
-
-    def test_foursquare_no_duplicates(self):
-        """Test that Foursquare integration doesn't create duplicate restaurants"""
-        try:
-            # Search in an area where we might have restaurants from multiple sources
-            params = {
-                'latitude': 37.7749,  # San Francisco
-                'longitude': -122.4194,
-                'radius': 5000,
-                'limit': 30
-            }
-            
-            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                restaurants = data.get('restaurants', [])
-                
-                # Check for duplicate restaurant names
-                restaurant_names = [r.get('name', '').lower().strip() for r in restaurants]
-                unique_names = set(restaurant_names)
-                
-                details = f"Found {len(restaurants)} restaurants, {len(unique_names)} unique names"
-                
-                # Check for potential duplicates
-                duplicates = []
-                name_counts = {}
-                for name in restaurant_names:
-                    if name:
-                        name_counts[name] = name_counts.get(name, 0) + 1
-                        if name_counts[name] > 1:
-                            duplicates.append(name)
-                
-                if duplicates:
-                    details += f", Potential duplicates: {duplicates[:3]}"  # Show first 3
-                    # This might be OK if they're actually different locations
-                    details += " (may be different locations with same name)"
-                else:
-                    details += ", No obvious duplicates found"
-                
-                # Check source distribution
-                source_summary = data.get('source_summary', {})
-                details += f", Sources: {source_summary}"
-                
-                # Verify that restaurants from different sources have different IDs
-                restaurant_ids = [r.get('id', '') for r in restaurants]
-                unique_ids = set(restaurant_ids)
-                
-                if len(restaurant_ids) != len(unique_ids):
-                    details += f" - ERROR: Duplicate IDs found ({len(restaurant_ids)} vs {len(unique_ids)})"
-                    success = False
-                
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Foursquare No Duplicates", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Foursquare No Duplicates", False, str(e))
-            return False, {}
-
-    def test_foursquare_source_priority(self):
-        """Test that source priority system works correctly with Foursquare"""
-        try:
-            # Search in SF where we have mock data (owner_managed) and should get Google/Foursquare
-            params = {
-                'latitude': 37.7749,
-                'longitude': -122.4194,
-                'radius': 8000,
-                'limit': 25
-            }
-            
-            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                restaurants = data.get('restaurants', [])
-                
-                # Analyze source order in results
-                source_order = []
-                source_positions = {}
-                
-                for i, restaurant in enumerate(restaurants):
-                    source = restaurant.get('source')
-                    if source not in source_positions:
-                        source_positions[source] = i
-                        source_order.append(source)
-                
-                details = f"Found {len(restaurants)} restaurants, Source order: {source_order}"
-                
-                # Check priority: owner_managed should come first, then google_places, then foursquare
-                expected_priority = ['owner_managed', 'google_places', 'foursquare']
-                
-                # Verify that sources appear in correct priority order
-                priority_correct = True
-                for i in range(len(source_order) - 1):
-                    current_source = source_order[i]
-                    next_source = source_order[i + 1]
-                    
-                    if (current_source in expected_priority and 
-                        next_source in expected_priority and
-                        expected_priority.index(current_source) > expected_priority.index(next_source)):
-                        priority_correct = False
-                        break
-                
-                if priority_correct:
-                    details += " - Priority order correct"
-                else:
-                    details += " - WARNING: Priority order may be incorrect"
-                
-                # Check source summary
-                source_summary = data.get('source_summary', {})
-                details += f", Distribution: {source_summary}"
-                
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Foursquare Source Priority", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Foursquare Source Priority", False, str(e))
-            return False, {}
-
-    # =============================================================================
-    # PUSH NOTIFICATIONS TESTS
-    # =============================================================================
-
-    def test_onesignal_service_initialization(self):
-        """Test OneSignal service initialization with provided credentials"""
-        try:
-            # Test that the service initializes correctly
-            # We can't directly test the service class, but we can test the endpoints
-            response = self.session.post(f"{self.api_url}/notifications/test")
-            
-            # The endpoint should respond (success or failure based on OneSignal config)
-            success = response.status_code in [200, 500]  # 500 if OneSignal not configured properly
-            
-            if response.status_code == 200:
-                data = response.json()
-                details = f"OneSignal service working. Test notification result: {data.get('success', False)}"
-                if data.get('success'):
-                    details += f", Notification ID: {data.get('notification_id', 'N/A')}, Recipients: {data.get('recipients', 0)}"
-            elif response.status_code == 500:
-                details = "OneSignal service endpoint accessible but may have configuration issues (expected in test environment)"
-                success = True  # This is acceptable for testing
-            else:
-                details = f"Unexpected status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("OneSignal Service Initialization", success, details)
-            return success
-            
-        except Exception as e:
-            self.log_test("OneSignal Service Initialization", False, str(e))
-            return False
-
-    def test_send_general_notification(self):
-        """Test POST /api/notifications/send endpoint"""
-        try:
-            notification_data = {
-                "title": "Test General Notification",
-                "message": "This is a test notification from the API testing suite",
-                "url": "/test",
-                "segments": ["All"]
-            }
-            
-            response = self.session.post(f"{self.api_url}/notifications/send", json=notification_data)
-            success = response.status_code in [200, 500]  # Accept both success and OneSignal config errors
-            
-            if response.status_code == 200:
-                data = response.json()
-                details = f"General notification endpoint working. Success: {data.get('success', False)}"
-                if data.get('success'):
-                    details += f", Notification ID: {data.get('notification_id', 'N/A')}, Recipients: {data.get('recipients', 0)}"
-                else:
-                    details += f", Message: {data.get('message', 'N/A')}"
-            elif response.status_code == 500:
-                details = "Endpoint accessible but OneSignal configuration issue (expected in test environment)"
-                success = True
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Send General Notification", success, details)
-            return success, data if response.status_code == 200 else {}
-            
-        except Exception as e:
-            self.log_test("Send General Notification", False, str(e))
-            return False, {}
-
-    def test_send_restaurant_daily_special_notification(self):
-        """Test POST /api/notifications/restaurant with daily_special type"""
-        try:
-            notification_data = {
-                "type": "daily_special",
-                "data": {
-                    "name": "Fish & Chips Special",
-                    "description": "Fresh cod with hand-cut fries - available today only",
-                    "id": "special_123",
-                    "image_url": "https://example.com/fish-chips.jpg"
-                },
-                "target_users": None  # Send to all users with daily special notifications enabled
-            }
-            
-            response = self.session.post(f"{self.api_url}/notifications/restaurant", json=notification_data)
-            success = response.status_code in [200, 500]
-            
-            if response.status_code == 200:
-                data = response.json()
-                details = f"Daily special notification endpoint working. Success: {data.get('success', False)}"
-                if data.get('success'):
-                    details += f", Notification ID: {data.get('notification_id', 'N/A')}, Recipients: {data.get('recipients', 0)}"
-                else:
-                    details += f", Message: {data.get('message', 'N/A')}"
-            elif response.status_code == 500:
-                details = "Endpoint accessible but OneSignal configuration issue (expected in test environment)"
-                success = True
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Restaurant Daily Special Notification", success, details)
-            return success, data if response.status_code == 200 else {}
-            
-        except Exception as e:
-            self.log_test("Restaurant Daily Special Notification", False, str(e))
-            return False, {}
-
-    def test_send_restaurant_limited_offer_notification(self):
-        """Test POST /api/notifications/restaurant with limited_offer type"""
-        try:
-            notification_data = {
-                "type": "limited_offer",
-                "data": {
-                    "discount": "25",
-                    "item": "all appetizers",
-                    "id": "offer_456"
-                },
-                "target_users": ["user_123", "user_456"]  # Send to specific users
-            }
-            
-            response = self.session.post(f"{self.api_url}/notifications/restaurant", json=notification_data)
-            success = response.status_code in [200, 500]
-            
-            if response.status_code == 200:
-                data = response.json()
-                details = f"Limited offer notification endpoint working. Success: {data.get('success', False)}"
-                if data.get('success'):
-                    details += f", Notification ID: {data.get('notification_id', 'N/A')}, Recipients: {data.get('recipients', 0)}"
-            elif response.status_code == 500:
-                details = "Endpoint accessible but OneSignal configuration issue (expected in test environment)"
-                success = True
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Restaurant Limited Offer Notification", success, details)
-            return success, data if response.status_code == 200 else {}
-            
-        except Exception as e:
-            self.log_test("Restaurant Limited Offer Notification", False, str(e))
-            return False, {}
-
-    def test_send_restaurant_favorite_update_notification(self):
-        """Test POST /api/notifications/restaurant with favorite_update type"""
-        try:
-            notification_data = {
-                "type": "favorite_update",
-                "data": {
-                    "name": "Tony's Tavern",
-                    "id": "restaurant_789"
-                },
-                "target_users": ["user_123", "user_456"]  # Required for favorite updates
-            }
-            
-            response = self.session.post(f"{self.api_url}/notifications/restaurant", json=notification_data)
-            success = response.status_code in [200, 500]
-            
-            if response.status_code == 200:
-                data = response.json()
-                details = f"Favorite update notification endpoint working. Success: {data.get('success', False)}"
-                if data.get('success'):
-                    details += f", Notification ID: {data.get('notification_id', 'N/A')}, Recipients: {data.get('recipients', 0)}"
-            elif response.status_code == 500:
-                details = "Endpoint accessible but OneSignal configuration issue (expected in test environment)"
-                success = True
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Restaurant Favorite Update Notification", success, details)
-            return success, data if response.status_code == 200 else {}
-            
-        except Exception as e:
-            self.log_test("Restaurant Favorite Update Notification", False, str(e))
-            return False, {}
-
-    def test_send_restaurant_daily_digest_notification(self):
-        """Test POST /api/notifications/restaurant with daily_digest type"""
-        try:
-            notification_data = {
-                "type": "daily_digest",
-                "data": {
-                    "special_count": 8,
-                    "has_link": True
-                }
-            }
-            
-            response = self.session.post(f"{self.api_url}/notifications/restaurant", json=notification_data)
-            success = response.status_code in [200, 500]
-            
-            if response.status_code == 200:
-                data = response.json()
-                details = f"Daily digest notification endpoint working. Success: {data.get('success', False)}"
-                if data.get('success'):
-                    details += f", Notification ID: {data.get('notification_id', 'N/A')}, Recipients: {data.get('recipients', 0)}"
-            elif response.status_code == 500:
-                details = "Endpoint accessible but OneSignal configuration issue (expected in test environment)"
-                success = True
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Restaurant Daily Digest Notification", success, details)
-            return success, data if response.status_code == 200 else {}
-            
-        except Exception as e:
-            self.log_test("Restaurant Daily Digest Notification", False, str(e))
-            return False, {}
-
-    def test_send_restaurant_location_special_notification(self):
-        """Test POST /api/notifications/restaurant with location_special type"""
-        try:
-            notification_data = {
-                "type": "location_special",
-                "data": {
-                    "restaurant_name": "Sunset Sports Bar",
-                    "restaurant_id": "restaurant_456",
-                    "distance": "0.3",
-                    "location": "San Francisco"
-                }
-            }
-            
-            response = self.session.post(f"{self.api_url}/notifications/restaurant", json=notification_data)
-            success = response.status_code in [200, 500]
-            
-            if response.status_code == 200:
-                data = response.json()
-                details = f"Location special notification endpoint working. Success: {data.get('success', False)}"
-                if data.get('success'):
-                    details += f", Notification ID: {data.get('notification_id', 'N/A')}, Recipients: {data.get('recipients', 0)}"
-            elif response.status_code == 500:
-                details = "Endpoint accessible but OneSignal configuration issue (expected in test environment)"
-                success = True
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Restaurant Location Special Notification", success, details)
-            return success, data if response.status_code == 200 else {}
-            
-        except Exception as e:
-            self.log_test("Restaurant Location Special Notification", False, str(e))
-            return False, {}
-
-    def test_send_test_notification(self):
-        """Test POST /api/notifications/test endpoint"""
-        try:
-            response = self.session.post(f"{self.api_url}/notifications/test")
-            success = response.status_code in [200, 500]
-            
-            if response.status_code == 200:
-                data = response.json()
-                details = f"Test notification endpoint working. Success: {data.get('success', False)}"
-                if data.get('success'):
-                    details += f", Notification ID: {data.get('notification_id', 'N/A')}, Recipients: {data.get('recipients', 0)}"
-                    # Store notification ID for status test
-                    self.test_notification_id = data.get('notification_id')
-                else:
-                    details += f", Message: {data.get('message', 'N/A')}"
-            elif response.status_code == 500:
-                details = "Test notification endpoint accessible but OneSignal configuration issue (expected in test environment)"
-                success = True
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Test Notification Endpoint", success, details)
-            return success, data if response.status_code == 200 else {}
-            
-        except Exception as e:
-            self.log_test("Test Notification Endpoint", False, str(e))
-            return False, {}
-
-    def test_get_notification_status(self):
-        """Test GET /api/notifications/{id}/status endpoint"""
-        try:
-            # Use a test notification ID (if we have one from previous test)
-            notification_id = getattr(self, 'test_notification_id', 'test_notification_123')
-            
-            response = self.session.get(f"{self.api_url}/notifications/{notification_id}/status")
-            success = response.status_code in [200, 500]
-            
-            if response.status_code == 200:
-                data = response.json()
-                details = f"Notification status endpoint working. Success: {data.get('success', False)}"
-                if data.get('success'):
-                    status_data = data.get('status', {})
-                    details += f", Status retrieved with {len(status_data)} fields"
-                else:
-                    details += f", Message: {data.get('message', 'N/A')}"
-            elif response.status_code == 500:
-                details = "Status endpoint accessible but OneSignal configuration issue (expected in test environment)"
-                success = True
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Get Notification Status", success, details)
-            return success, data if response.status_code == 200 else {}
-            
-        except Exception as e:
-            self.log_test("Get Notification Status", False, str(e))
-            return False, {}
-
-    def test_notification_authentication_integration(self):
-        """Test that notification endpoints work with optional authentication"""
-        try:
-            # Test without authentication (should work)
-            notification_data = {
-                "title": "Test Auth Integration",
-                "message": "Testing notification without authentication",
-                "segments": ["All"]
-            }
-            
-            response_no_auth = self.session.post(f"{self.api_url}/notifications/send", json=notification_data)
-            
-            # Test with authentication (if we have a token)
-            response_with_auth = None
-            if hasattr(self, 'user_token') and self.user_token:
-                headers = {'Authorization': f'Bearer {self.user_token}'}
-                response_with_auth = self.session.post(f"{self.api_url}/notifications/send", 
-                                                     json=notification_data, headers=headers)
-            
-            # Both should work (optional authentication)
-            success = response_no_auth.status_code in [200, 500]
-            details = f"Without auth: {response_no_auth.status_code}"
-            
-            if response_with_auth:
-                auth_success = response_with_auth.status_code in [200, 500]
-                details += f", With auth: {response_with_auth.status_code}"
-                success = success and auth_success
-            else:
-                details += ", With auth: Not tested (no token available)"
-            
-            self.log_test("Notification Authentication Integration", success, details)
-            return success
-            
-        except Exception as e:
-            self.log_test("Notification Authentication Integration", False, str(e))
-            return False
-
-    def test_notification_error_handling(self):
-        """Test notification endpoints error handling"""
-        test_cases = [
-            {
-                'name': 'Invalid Notification Type',
-                'endpoint': '/notifications/restaurant',
-                'data': {
-                    "type": "invalid_type",
-                    "data": {"test": "data"}
-                },
-                'expected_status': 400
-            },
-            {
-                'name': 'Missing Required Fields - General Notification',
-                'endpoint': '/notifications/send',
-                'data': {
-                    "message": "Missing title field"
-                },
-                'expected_status': 422
-            },
-            {
-                'name': 'Missing Required Fields - Restaurant Notification',
-                'endpoint': '/notifications/restaurant',
-                'data': {
-                    "type": "daily_special"
-                    # Missing data field
-                },
-                'expected_status': 422
-            },
-            {
-                'name': 'Favorite Update Without Target Users',
-                'endpoint': '/notifications/restaurant',
-                'data': {
-                    "type": "favorite_update",
-                    "data": {"name": "Test Restaurant", "id": "123"}
-                    # Missing target_users for favorite_update
-                },
-                'expected_status': [200, 400, 500]  # May succeed with empty result or fail
-            }
-        ]
-        
-        all_passed = True
-        details_list = []
-        
-        for case in test_cases:
-            try:
-                response = self.session.post(f"{self.api_url}{case['endpoint']}", json=case['data'])
-                
-                if isinstance(case['expected_status'], list):
-                    success = response.status_code in case['expected_status']
-                else:
-                    success = response.status_code == case['expected_status']
-                
-                details_list.append(f"{case['name']}: {response.status_code}")
-                
-                if not success:
-                    all_passed = False
-                    
-            except Exception as e:
-                details_list.append(f"{case['name']}: Exception - {str(e)}")
-                all_passed = False
-        
-        self.log_test("Notification Error Handling", all_passed, "; ".join(details_list))
-        return all_passed
-
-    def test_notification_payload_validation(self):
-        """Test notification payload validation and data structure"""
-        try:
-            # Test comprehensive notification payload
-            notification_data = {
-                "title": "Comprehensive Test Notification",
-                "message": "Testing all notification payload fields",
-                "url": "/test-url",
-                "image_url": "https://example.com/test-image.jpg",
-                "segments": ["All"],
-                "user_ids": ["user_123", "user_456"],
-                "tags": {
-                    "notify_new_specials": "true",
-                    "preferred_cuisine": "italian"
-                }
-            }
-            
-            response = self.session.post(f"{self.api_url}/notifications/send", json=notification_data)
-            success = response.status_code in [200, 500]
-            
-            if response.status_code == 200:
-                data = response.json()
-                # Verify response structure
-                expected_fields = ['success', 'message']
-                if data.get('success'):
-                    expected_fields.extend(['notification_id', 'recipients'])
-                
-                missing_fields = [field for field in expected_fields if field not in data]
-                if missing_fields:
-                    success = False
-                    details = f"Missing response fields: {missing_fields}"
-                else:
-                    details = f"Payload validation successful. Response structure correct."
-                    if data.get('success'):
-                        details += f" Notification ID: {data.get('notification_id', 'N/A')}"
-            elif response.status_code == 500:
-                details = "Payload accepted but OneSignal configuration issue (expected in test environment)"
-                success = True
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Notification Payload Validation", success, details)
-            return success
-            
-        except Exception as e:
-            self.log_test("Notification Payload Validation", False, str(e))
-            return False
-
-    def run_all_tests(self):
-        """Run all API tests"""
-    def run_all_tests(self):
-        """Run all API tests"""
-        print("🚀 Starting On-the-Cheap API Tests")
-        print("=" * 50)
-        
-        # Basic functionality tests
-        self.test_api_health()
-        self.test_special_types()
-        
-        # Search functionality tests
-        self.test_restaurant_search_basic()
-        self.test_restaurant_search_with_filters()
-        self.test_restaurant_search_different_radius()
-        self.test_restaurant_search_edge_cases()
-        
-        # Foursquare Integration Tests
-        print("\n" + "🏢 FOURSQUARE API INTEGRATION TESTS")
-        print("=" * 50)
-        self.test_foursquare_service_initialization()
-        self.test_foursquare_fallback_system_nyc()
-        self.test_foursquare_fallback_system_sf()
-        self.test_foursquare_search_with_query()
-        self.test_foursquare_data_format()
-        self.test_foursquare_error_handling()
-        self.test_foursquare_no_duplicates()
-        self.test_foursquare_source_priority()
-        
-        # CRUD operations
-        self.test_create_restaurant()
-        
-        # Performance tests
-        self.test_performance()
-        
-        print("\n" + "🌍 GEOCODING API TESTS")
-        print("=" * 50)
-        
-        # Geocoding functionality tests
-        self.test_forward_geocoding_basic()
-        self.test_forward_geocoding_with_region()
-        self.test_forward_geocoding_invalid_address()
-        self.test_reverse_geocoding_basic()
-        self.test_reverse_geocoding_with_filters()
-        self.test_reverse_geocoding_invalid_coordinates()
-        self.test_batch_geocoding_basic()
-        self.test_batch_geocoding_with_errors()
-        self.test_batch_geocoding_max_limit()
-        self.test_batch_geocoding_over_limit()
-        self.test_legacy_geocoding_basic()
-        self.test_legacy_geocoding_invalid_address()
-        self.test_geocoding_error_handling()
-        
-        print("\n" + "🏪 RESTAURANT OWNER PORTAL TESTS")
-        print("=" * 50)
-        
-        # Owner authentication tests
-        self.test_owner_registration()
-        self.test_owner_login()
-        self.test_owner_auth_me()
-        
-        # Owner functionality tests
-        self.test_search_restaurants_to_claim()
-        self.test_claim_restaurant()
-        self.test_get_my_restaurants()
-        self.test_create_special()
-        
-        # Edge cases
-        self.test_auth_edge_cases()
-        
-        print("\n" + "👤 REGULAR USER TESTS")
-        print("=" * 50)
-        
-        # Regular user authentication and favorites tests
-        self.test_user_registration()
-        self.test_user_login()
-        self.test_user_auth_me()
-        self.test_add_favorite_restaurant()
-        self.test_remove_favorite_restaurant()
-        self.test_get_favorite_restaurants()
-        self.test_user_auth_edge_cases()
-        
-        # Mobile App Authentication Integration Tests
-        self.test_mobile_app_authentication_integration()
-        
-        print("\n" + "🔧 FIXED GOOGLE PLACES FAVORITES TESTS")
-        print("=" * 50)
-        
-        # Test the FIXED Google Places favorites functionality
-        self.test_fixed_google_places_favorites_workflow()
-        self.test_google_places_api_integration()
-        
-        print("\n" + "🔔 PUSH NOTIFICATIONS TESTS")
-        print("=" * 50)
-        
-        # Push Notifications functionality tests
-        self.test_onesignal_service_initialization()
-        self.test_send_general_notification()
-        self.test_send_restaurant_daily_special_notification()
-        self.test_send_restaurant_limited_offer_notification()
-        self.test_send_restaurant_favorite_update_notification()
-        self.test_send_restaurant_daily_digest_notification()
-        self.test_send_restaurant_location_special_notification()
-        self.test_send_test_notification()
-        self.test_get_notification_status()
-        self.test_notification_authentication_integration()
-        self.test_notification_error_handling()
-        self.test_notification_payload_validation()
-        
-        # Print summary
-        print("\n" + "=" * 50)
-        print(f"📊 Test Results: {self.tests_passed}/{self.tests_run} tests passed")
-        
-        if self.tests_passed == self.tests_run:
-            print("🎉 All tests passed!")
-            return 0
-        else:
-            print(f"⚠️  {self.tests_run - self.tests_passed} tests failed")
-            return 1
-
-    def test_restaurant_photos_integration_phase3a(self):
-        """Test Phase 3A: Restaurant Photos Integration - Comprehensive Testing"""
-        print("\n📸 TESTING PHASE 3A: RESTAURANT PHOTOS INTEGRATION")
-        print("=" * 70)
-        print("Testing Google Places Photos API integration and fallback photo system")
-        print("=" * 70)
-        
-        photos_tests_passed = 0
-        photos_tests_total = 0
-        
-        # Test 1: Restaurant Search Photos Array Field
-        photos_tests_total += 1
-        success, data = self.test_restaurant_search_photos_array()
-        if success:
-            photos_tests_passed += 1
-        
-        # Test 2: Google Places Photos API Integration
-        photos_tests_total += 1
-        success, data = self.test_google_places_photos_api()
-        if success:
-            photos_tests_passed += 1
-        
-        # Test 3: Fallback Photos System
-        photos_tests_total += 1
-        success, data = self.test_fallback_photos_system()
-        if success:
-            photos_tests_passed += 1
-        
-        # Test 4: Photo Data Structure Consistency
-        photos_tests_total += 1
-        success, data = self.test_photo_data_structure()
-        if success:
-            photos_tests_passed += 1
-        
-        # Test 5: Photo URL Accessibility
-        photos_tests_total += 1
-        success, data = self.test_photo_url_accessibility()
-        if success:
-            photos_tests_passed += 1
-        
-        # Test 6: Mobile Vendor Photo Fallbacks
-        photos_tests_total += 1
-        success, data = self.test_mobile_vendor_photo_fallbacks()
-        if success:
-            photos_tests_passed += 1
-        
-        # Test 7: Photo Limit Functionality (3 photos max)
-        photos_tests_total += 1
-        success, data = self.test_photo_limit_functionality()
-        if success:
-            photos_tests_passed += 1
-        
-        # Test 8: Search Enhancement with Photos
-        photos_tests_total += 1
-        success, data = self.test_search_enhancement_with_photos()
-        if success:
-            photos_tests_passed += 1
-        
-        print(f"\n📸 RESTAURANT PHOTOS INTEGRATION SUMMARY:")
-        print(f"   Tests Passed: {photos_tests_passed}/{photos_tests_total}")
-        print(f"   Success Rate: {(photos_tests_passed/photos_tests_total)*100:.1f}%")
-        
-        overall_success = photos_tests_passed == photos_tests_total
-        self.log_test("Restaurant Photos Integration Phase 3A", overall_success, 
-                     f"{photos_tests_passed}/{photos_tests_total} tests passed")
-        
-        return overall_success
-
-    def test_restaurant_search_photos_array(self):
-        """Test that restaurant search results include photos array field"""
-        try:
-            # Test restaurant search in San Francisco
-            params = {
-                'latitude': 37.7749,
-                'longitude': -122.4194,
-                'radius': 8047,
-                'limit': 20
-            }
-            
-            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                restaurants = data.get('restaurants', [])
-                
-                if not restaurants:
-                    success = False
-                    details = "No restaurants found in search results"
-                else:
-                    # Check that all restaurants have photos array
-                    restaurants_with_photos = 0
-                    restaurants_without_photos = 0
-                    google_places_with_photos = 0
-                    db_restaurants_with_photos = 0
-                    
-                    for restaurant in restaurants:
-                        if 'photos' in restaurant and isinstance(restaurant['photos'], list):
-                            restaurants_with_photos += 1
-                            
-                            # Check source-specific photo handling
-                            source = restaurant.get('source', 'unknown')
-                            if source == 'google_places' and restaurant['photos']:
-                                google_places_with_photos += 1
-                            elif source == 'owner_managed' and restaurant['photos']:
-                                db_restaurants_with_photos += 1
-                        else:
-                            restaurants_without_photos += 1
-                    
-                    if restaurants_without_photos > 0:
-                        success = False
-                        details = f"❌ {restaurants_without_photos}/{len(restaurants)} restaurants missing photos array"
-                    else:
-                        details = f"✅ All {len(restaurants)} restaurants have photos array. Google Places with photos: {google_places_with_photos}, Database with photos: {db_restaurants_with_photos}"
-                        
-                        # Verify photo structure in first restaurant
-                        first_restaurant = restaurants[0]
-                        photos = first_restaurant.get('photos', [])
-                        if photos:
-                            first_photo = photos[0]
-                            required_photo_fields = ['url', 'width', 'height']
-                            missing_photo_fields = [field for field in required_photo_fields if field not in first_photo]
-                            
-                            if missing_photo_fields:
-                                details += f" - Missing photo fields: {missing_photo_fields}"
-                            else:
-                                details += f" - Photo structure valid (url, width: {first_photo.get('width')}, height: {first_photo.get('height')})"
-            else:
-                details = f"❌ Restaurant search failed: {response.status_code} - {response.text[:200]}"
-            
-            self.log_test("Restaurant Search - Photos Array Field", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Restaurant Search - Photos Array Field", False, str(e))
-            return False, {}
-
-    def test_google_places_photos_api(self):
-        """Test Google Places Photos API integration with actual photo URLs"""
-        try:
-            # Search for restaurants to get Google Places results
-            params = {
-                'latitude': 37.7749,  # San Francisco
-                'longitude': -122.4194,
-                'radius': 8047,
-                'limit': 20
-            }
-            
-            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                restaurants = data.get('restaurants', [])
-                
-                # Find Google Places restaurants
-                google_places_restaurants = [r for r in restaurants if r.get('source') == 'google_places']
-                
-                if not google_places_restaurants:
-                    success = False
-                    details = "❌ No Google Places restaurants found for photo testing"
-                else:
-                    google_restaurants_with_photos = 0
-                    valid_photo_urls = 0
-                    photo_url_format_correct = 0
-                    
-                    for restaurant in google_places_restaurants:
-                        photos = restaurant.get('photos', [])
-                        if photos:
-                            google_restaurants_with_photos += 1
-                            
-                            for photo in photos:
-                                photo_url = photo.get('url', '')
-                                
-                                # Check if URL is valid Google Places Photo API format
-                                if 'places.googleapis.com/v1/' in photo_url and 'media' in photo_url:
-                                    valid_photo_urls += 1
-                                    
-                                    # Check for proper dimensions in URL
-                                    if 'maxWidthPx=400' in photo_url and 'maxHeightPx=300' in photo_url:
-                                        photo_url_format_correct += 1
-                    
-                    if google_restaurants_with_photos == 0:
-                        success = False
-                        details = f"❌ None of {len(google_places_restaurants)} Google Places restaurants have photos"
-                    else:
-                        details = f"✅ {google_restaurants_with_photos}/{len(google_places_restaurants)} Google Places restaurants have photos"
-                        details += f", {valid_photo_urls} valid Google Places Photo API URLs"
-                        details += f", {photo_url_format_correct} URLs with correct dimensions (400x300)"
-                        
-                        # Check photo limit (max 3 photos per restaurant)
-                        max_photos = max(len(r.get('photos', [])) for r in google_places_restaurants if r.get('photos'))
-                        if max_photos > 3:
-                            details += f" - WARNING: Found restaurant with {max_photos} photos (limit should be 3)"
-                        else:
-                            details += f" - Photo limit respected (max {max_photos} photos per restaurant)"
-            else:
-                details = f"❌ Restaurant search failed: {response.status_code} - {response.text[:200]}"
-            
-            self.log_test("Google Places Photos API Integration", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Google Places Photos API Integration", False, str(e))
-            return False, {}
-
-    def test_fallback_photos_system(self):
-        """Test fallback photos system for restaurants without photos"""
-        try:
-            # Search for restaurants to test fallback system
-            params = {
-                'latitude': 37.7749,
-                'longitude': -122.4194,
-                'radius': 8047,
-                'limit': 20
-            }
-            
-            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                restaurants = data.get('restaurants', [])
-                
-                if not restaurants:
-                    success = False
-                    details = "❌ No restaurants found for fallback photo testing"
-                else:
-                    restaurants_with_fallback_photos = 0
-                    fallback_photo_types = set()
-                    unsplash_urls = 0
-                    correct_dimensions = 0
-                    
-                    for restaurant in restaurants:
-                        photos = restaurant.get('photos', [])
-                        
-                        for photo in photos:
-                            if photo.get('is_fallback', False):
-                                restaurants_with_fallback_photos += 1
-                                
-                                # Check if using Unsplash URLs
-                                photo_url = photo.get('url', '')
-                                if 'images.unsplash.com' in photo_url:
-                                    unsplash_urls += 1
-                                
-                                # Check dimensions
-                                if photo.get('width') == 400 and photo.get('height') == 300:
-                                    correct_dimensions += 1
-                                
-                                # Determine fallback type based on URL
-                                if 'photo-1517248135467-4c7edcad34c4' in photo_url:
-                                    fallback_photo_types.add('restaurant')
-                                elif 'photo-1514933651103-005eec06c04b' in photo_url:
-                                    fallback_photo_types.add('bar')
-                                elif 'photo-1501339847302-ac426a4a7cbb' in photo_url:
-                                    fallback_photo_types.add('cafe')
-                                elif 'photo-1571091718767-18b5b1457add' in photo_url:
-                                    fallback_photo_types.add('fast_food')
-                                elif 'photo-1565299624946-b28f40a0ca4b' in photo_url:
-                                    fallback_photo_types.add('food_truck')
-                                
-                                break  # Only check first fallback photo per restaurant
-                    
-                    if restaurants_with_fallback_photos == 0:
-                        # This might be OK if all restaurants have real photos
-                        details = f"ℹ️  No restaurants with fallback photos found (all may have real photos)"
-                        success = True
-                    else:
-                        details = f"✅ {restaurants_with_fallback_photos} restaurants with fallback photos"
-                        details += f", {unsplash_urls} using Unsplash URLs"
-                        details += f", {correct_dimensions} with correct dimensions (400x300)"
-                        details += f", Fallback types: {', '.join(sorted(fallback_photo_types))}"
-            else:
-                details = f"❌ Restaurant search failed: {response.status_code} - {response.text[:200]}"
-            
-            self.log_test("Fallback Photos System", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Fallback Photos System", False, str(e))
-            return False, {}
-
-    def test_photo_data_structure(self):
-        """Test photo data structure consistency across all restaurants"""
-        try:
-            # Test multiple locations to get diverse restaurant sources
-            test_locations = [
-                {'latitude': 37.7749, 'longitude': -122.4194, 'name': 'San Francisco'},
-                {'latitude': 40.7589, 'longitude': -73.9851, 'name': 'New York'},
-            ]
-            
-            all_photos_valid = True
-            total_restaurants_tested = 0
-            total_photos_tested = 0
-            structure_issues = []
-            
-            for location in test_locations:
-                params = {
-                    'latitude': location['latitude'],
-                    'longitude': location['longitude'],
-                    'radius': 5000,
-                    'limit': 10
-                }
-                
-                response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
-                
-                if response.status_code == 200:
-                    data = response.json()
-                    restaurants = data.get('restaurants', [])
-                    total_restaurants_tested += len(restaurants)
-                    
-                    for restaurant in restaurants:
-                        photos = restaurant.get('photos', [])
-                        
-                        if not isinstance(photos, list):
-                            all_photos_valid = False
-                            structure_issues.append(f"Restaurant {restaurant.get('name', 'Unknown')} has non-list photos field")
-                            continue
-                        
-                        for i, photo in enumerate(photos):
-                            total_photos_tested += 1
-                            
-                            # Check required fields
-                            required_fields = ['url', 'width', 'height']
-                            missing_fields = [field for field in required_fields if field not in photo]
-                            
-                            if missing_fields:
-                                all_photos_valid = False
-                                structure_issues.append(f"Photo {i} in {restaurant.get('name', 'Unknown')} missing: {missing_fields}")
-                            
-                            # Check field types
-                            if not isinstance(photo.get('url'), str):
-                                all_photos_valid = False
-                                structure_issues.append(f"Photo {i} in {restaurant.get('name', 'Unknown')} has non-string URL")
-                            
-                            if not isinstance(photo.get('width'), int) or not isinstance(photo.get('height'), int):
-                                all_photos_valid = False
-                                structure_issues.append(f"Photo {i} in {restaurant.get('name', 'Unknown')} has non-integer dimensions")
-                            
-                            # Check is_fallback field if present
-                            if 'is_fallback' in photo and not isinstance(photo.get('is_fallback'), bool):
-                                all_photos_valid = False
-                                structure_issues.append(f"Photo {i} in {restaurant.get('name', 'Unknown')} has non-boolean is_fallback")
-            
-            if all_photos_valid:
-                details = f"✅ All photo structures valid across {total_restaurants_tested} restaurants, {total_photos_tested} photos tested"
-            else:
-                details = f"❌ Photo structure issues found: {'; '.join(structure_issues[:5])}"  # Limit to first 5 issues
-                if len(structure_issues) > 5:
-                    details += f" (and {len(structure_issues) - 5} more issues)"
-            
-            self.log_test("Photo Data Structure Consistency", all_photos_valid, details)
-            return all_photos_valid, {'total_restaurants': total_restaurants_tested, 'total_photos': total_photos_tested}
-            
-        except Exception as e:
-            self.log_test("Photo Data Structure Consistency", False, str(e))
-            return False, {}
-
-    def test_photo_url_accessibility(self):
-        """Test that photo URLs are accessible and properly formatted"""
-        try:
-            # Get restaurants with photos
-            params = {
-                'latitude': 37.7749,
-                'longitude': -122.4194,
-                'radius': 8047,
-                'limit': 10
-            }
-            
-            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                restaurants = data.get('restaurants', [])
-                
-                accessible_urls = 0
-                inaccessible_urls = 0
-                google_photo_urls = 0
-                unsplash_urls = 0
-                total_urls_tested = 0
-                
-                for restaurant in restaurants[:5]:  # Test first 5 restaurants to avoid too many HTTP requests
-                    photos = restaurant.get('photos', [])
-                    
-                    for photo in photos:
-                        photo_url = photo.get('url', '')
-                        if not photo_url:
-                            continue
-                        
-                        total_urls_tested += 1
-                        
-                        # Categorize URL types
-                        if 'places.googleapis.com' in photo_url:
-                            google_photo_urls += 1
-                        elif 'images.unsplash.com' in photo_url:
-                            unsplash_urls += 1
-                        
-                        # Test URL accessibility (HEAD request to avoid downloading full image)
-                        try:
-                            url_response = self.session.head(photo_url, timeout=10)
-                            if url_response.status_code in [200, 301, 302]:
-                                accessible_urls += 1
-                            else:
-                                inaccessible_urls += 1
-                        except:
-                            inaccessible_urls += 1
-                
-                if total_urls_tested == 0:
-                    details = "ℹ️  No photo URLs found to test accessibility"
-                    success = True
-                else:
-                    accessibility_rate = (accessible_urls / total_urls_tested) * 100
-                    details = f"✅ Photo URL accessibility: {accessible_urls}/{total_urls_tested} ({accessibility_rate:.1f}%)"
-                    details += f", Google Photos: {google_photo_urls}, Unsplash: {unsplash_urls}"
-                    
-                    if accessibility_rate < 80:
-                        success = False
-                        details = f"❌ Low photo URL accessibility: {accessibility_rate:.1f}% (expected >80%)"
-            else:
-                details = f"❌ Restaurant search failed: {response.status_code} - {response.text[:200]}"
-            
-            self.log_test("Photo URL Accessibility", success, details)
-            return success, {'accessible': accessible_urls, 'total': total_urls_tested}
-            
-        except Exception as e:
-            self.log_test("Photo URL Accessibility", False, str(e))
-            return False, {}
-
-    def test_mobile_vendor_photo_fallbacks(self):
-        """Test that mobile vendors get appropriate food truck fallback photos"""
-        try:
-            # Search for restaurants with mobile vendor filtering
-            params = {
-                'latitude': 40.7589,  # NYC - more likely to have mobile vendors
-                'longitude': -73.9851,
-                'radius': 10000,
-                'vendor_type': 'mobile',
-                'limit': 20
-            }
-            
-            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                restaurants = data.get('restaurants', [])
-                
-                mobile_vendors_found = 0
-                mobile_vendors_with_food_truck_photos = 0
-                
-                for restaurant in restaurants:
-                    if restaurant.get('is_mobile_vendor', False) or restaurant.get('vendor_type') == 'mobile':
-                        mobile_vendors_found += 1
-                        photos = restaurant.get('photos', [])
-                        
-                        for photo in photos:
-                            photo_url = photo.get('url', '')
-                            # Check for food truck fallback image
-                            if 'photo-1565299624946-b28f40a0ca4b' in photo_url:  # Food truck Unsplash image
-                                mobile_vendors_with_food_truck_photos += 1
-                                break
-                
-                if mobile_vendors_found == 0:
-                    details = "ℹ️  No mobile vendors found in search results (may be location-dependent)"
-                    success = True
-                else:
-                    details = f"✅ Found {mobile_vendors_found} mobile vendors"
-                    details += f", {mobile_vendors_with_food_truck_photos} with food truck fallback photos"
-                    
-                    if mobile_vendors_with_food_truck_photos > 0:
-                        details += " - Mobile vendor photo fallbacks working correctly"
-                    else:
-                        details += " - Mobile vendors may have real photos or different fallback system"
-            else:
-                details = f"❌ Mobile vendor search failed: {response.status_code} - {response.text[:200]}"
-            
-            self.log_test("Mobile Vendor Photo Fallbacks", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Mobile Vendor Photo Fallbacks", False, str(e))
-            return False, {}
-
-    def test_photo_limit_functionality(self):
-        """Test that restaurants return maximum 3 photos per restaurant"""
-        try:
-            # Search for restaurants to test photo limits
-            params = {
-                'latitude': 37.7749,
-                'longitude': -122.4194,
-                'radius': 8047,
-                'limit': 20
-            }
-            
-            response = self.session.get(f"{self.api_url}/restaurants/search", params=params)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                restaurants = data.get('restaurants', [])
-                
-                restaurants_with_photos = 0
-                max_photos_found = 0
-                restaurants_exceeding_limit = 0
-                photo_count_distribution = {}
-                
-                for restaurant in restaurants:
-                    photos = restaurant.get('photos', [])
-                    photo_count = len(photos)
-                    
-                    if photo_count > 0:
-                        restaurants_with_photos += 1
-                        max_photos_found = max(max_photos_found, photo_count)
-                        
-                        # Track photo count distribution
-                        photo_count_distribution[photo_count] = photo_count_distribution.get(photo_count, 0) + 1
-                        
-                        if photo_count > 3:
-                            restaurants_exceeding_limit += 1
-                
-                if restaurants_with_photos == 0:
-                    details = "ℹ️  No restaurants with photos found for limit testing"
-                    success = True
-                else:
-                    details = f"✅ Photo limit testing: {restaurants_with_photos} restaurants with photos"
-                    details += f", max photos per restaurant: {max_photos_found}"
-                    details += f", distribution: {photo_count_distribution}"
-                    
-                    if restaurants_exceeding_limit > 0:
-                        success = False
-                        details = f"❌ {restaurants_exceeding_limit} restaurants exceed 3-photo limit (max found: {max_photos_found})"
-                    else:
-                        details += " - Photo limit (≤3) respected by all restaurants"
-            else:
-                details = f"❌ Restaurant search failed: {response.status_code} - {response.text[:200]}"
-            
-            self.log_test("Photo Limit Functionality (Max 3 Photos)", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Photo Limit Functionality (Max 3 Photos)", False, str(e))
-            return False, {}
-
-    def test_search_enhancement_with_photos(self):
-        """Test that photo integration doesn't break existing search functionality"""
-        try:
-            # Test various search scenarios to ensure photos don't break functionality
-            test_scenarios = [
-                {
-                    'name': 'Basic Location Search',
-                    'params': {'latitude': 37.7749, 'longitude': -122.4194, 'radius': 8047}
-                },
-                {
-                    'name': 'Search with Special Type Filter',
-                    'params': {'latitude': 37.7749, 'longitude': -122.4194, 'radius': 8047, 'special_type': 'happy_hour'}
-                },
-                {
-                    'name': 'Search with Vendor Type Filter',
-                    'params': {'latitude': 37.7749, 'longitude': -122.4194, 'radius': 8047, 'vendor_type': 'permanent'}
-                },
-                {
-                    'name': 'Search with Query Parameter',
-                    'params': {'latitude': 37.7749, 'longitude': -122.4194, 'radius': 8047, 'query': 'pizza'}
-                }
-            ]
-            
-            all_scenarios_passed = True
-            scenario_results = []
-            
-            for scenario in test_scenarios:
-                try:
-                    response = self.session.get(f"{self.api_url}/restaurants/search", params=scenario['params'])
-                    
-                    if response.status_code == 200:
-                        data = response.json()
-                        restaurants = data.get('restaurants', [])
-                        
-                        # Check that all restaurants have photos array
-                        restaurants_with_photos_array = sum(1 for r in restaurants if 'photos' in r)
-                        
-                        # Check that other data is intact
-                        required_fields = ['id', 'name', 'address', 'location', 'source']
-                        restaurants_with_required_fields = 0
-                        
-                        for restaurant in restaurants:
-                            missing_fields = [field for field in required_fields if field not in restaurant]
-                            if not missing_fields:
-                                restaurants_with_required_fields += 1
-                        
-                        scenario_result = f"{scenario['name']}: {len(restaurants)} restaurants"
-                        scenario_result += f", {restaurants_with_photos_array} with photos array"
-                        scenario_result += f", {restaurants_with_required_fields} with complete data"
-                        
-                        if restaurants_with_photos_array != len(restaurants):
-                            all_scenarios_passed = False
-                            scenario_result += " ❌"
-                        else:
-                            scenario_result += " ✅"
-                        
-                        scenario_results.append(scenario_result)
-                    else:
-                        all_scenarios_passed = False
-                        scenario_results.append(f"{scenario['name']}: FAILED ({response.status_code}) ❌")
-                        
-                except Exception as e:
-                    all_scenarios_passed = False
-                    scenario_results.append(f"{scenario['name']}: ERROR ({str(e)}) ❌")
-            
-            if all_scenarios_passed:
-                details = f"✅ All search scenarios working with photos integration: {'; '.join(scenario_results)}"
-            else:
-                details = f"❌ Some search scenarios failed with photos integration: {'; '.join(scenario_results)}"
-            
-            self.log_test("Search Enhancement with Photos Integration", all_scenarios_passed, details)
-            return all_scenarios_passed, {'scenarios': scenario_results}
-            
-        except Exception as e:
-            self.log_test("Search Enhancement with Photos Integration", False, str(e))
-            return False, {}
-
-    # =================== RESTAURANT OWNER DASHBOARD TESTING ===================
+async def main():
+    """Main test execution"""
+    tester = OwnerDashboardTester()
+    passed, failed = await tester.run_all_tests()
     
-    def test_owner_service_integration(self):
-        """Test that owner service is properly initialized and integrated"""
-        try:
-            # Test a simple endpoint to verify service integration
-            response = self.session.get(f"{self.api_url}/admin/owners/claims")
-            success = response.status_code in [200, 401, 403]  # Service should respond, auth may be required
-            
-            if success:
-                details = f"Owner service responding correctly (status: {response.status_code})"
-            else:
-                details = f"Owner service not responding properly (status: {response.status_code})"
-            
-            self.log_test("Owner Service Integration", success, details)
-            return success
-            
-        except Exception as e:
-            self.log_test("Owner Service Integration", False, str(e))
-            return False
-
-    def test_owner_registration(self):
-        """Test restaurant owner registration"""
-        try:
-            # Generate unique email for testing
-            unique_id = str(uuid.uuid4())[:8]
-            test_data = {
-                "first_name": "John",
-                "last_name": "Smith",
-                "email": f"owner_{unique_id}@restaurant.com",
-                "password": "securepassword123",
-                "phone": "+1-555-0123",
-                "business_name": "Smith's Bistro",
-                "business_type": "restaurant"
-            }
-            
-            response = self.session.post(f"{self.api_url}/owners/register", json=test_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                required_fields = ['id', 'first_name', 'last_name', 'email', 'business_name', 'status']
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    success = False
-                    details = f"Missing required fields: {missing_fields}"
-                else:
-                    details = f"Owner registered: {data.get('email')}, Status: {data.get('status')}, ID: {data.get('id')}"
-                    # Store owner data for subsequent tests
-                    self.test_owner_data = {
-                        'id': data.get('id'),
-                        'email': data.get('email'),
-                        'password': test_data['password']
-                    }
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Owner Registration", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Owner Registration", False, str(e))
-            return False, {}
-
-    def test_owner_login(self):
-        """Test restaurant owner login and JWT token generation"""
-        try:
-            if not hasattr(self, 'test_owner_data'):
-                # Create a test owner first
-                success, owner_data = self.test_owner_registration()
-                if not success:
-                    self.log_test("Owner Login", False, "Failed to create test owner for login test")
-                    return False, {}
-            
-            login_data = {
-                "email": self.test_owner_data['email'],
-                "password": self.test_owner_data['password']
-            }
-            
-            response = self.session.post(f"{self.api_url}/owners/login", json=login_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                required_fields = ['access_token', 'token_type', 'user_type', 'user']
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    success = False
-                    details = f"Missing required fields: {missing_fields}"
-                elif data.get('user_type') != 'owner':
-                    success = False
-                    details = f"Expected user_type 'owner', got '{data.get('user_type')}'"
-                else:
-                    details = f"Owner logged in successfully, Token type: {data.get('token_type')}, User type: {data.get('user_type')}"
-                    # Store token for authenticated requests
-                    self.owner_token = data.get('access_token')
-                    self.session.headers.update({'Authorization': f"Bearer {self.owner_token}"})
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Owner Login & JWT Authentication", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Owner Login & JWT Authentication", False, str(e))
-            return False, {}
-
-    def test_restaurant_claim_submission(self):
-        """Test restaurant claim submission workflow"""
-        try:
-            if not hasattr(self, 'owner_token'):
-                # Login first
-                success, _ = self.test_owner_login()
-                if not success:
-                    self.log_test("Restaurant Claim Submission", False, "Failed to authenticate owner")
-                    return False, {}
-            
-            # First, get a restaurant ID from the database
-            restaurants_response = self.session.get(f"{self.api_url}/restaurants/search?latitude=37.7749&longitude=-122.4194&limit=1")
-            if restaurants_response.status_code != 200:
-                self.log_test("Restaurant Claim Submission", False, "Failed to get restaurant for claim test")
-                return False, {}
-            
-            restaurants_data = restaurants_response.json()
-            if not restaurants_data.get('restaurants'):
-                self.log_test("Restaurant Claim Submission", False, "No restaurants available for claim test")
-                return False, {}
-            
-            restaurant_id = restaurants_data['restaurants'][0]['id']
-            
-            claim_data = {
-                "restaurant_id": restaurant_id,
-                "owner_id": self.test_owner_data['id'],  # Will be overridden by server
-                "business_license": "BL123456789",
-                "proof_of_ownership": "Lease agreement and business registration",
-                "additional_documents": ["tax_id.pdf", "insurance.pdf"],
-                "notes": "I am the owner of this restaurant and would like to claim it to manage specials.",
-                "status": "pending",
-                "submitted_at": datetime.now().isoformat()
-            }
-            
-            response = self.session.post(f"{self.api_url}/owners/claims", json=claim_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                required_fields = ['restaurant_id', 'owner_id', 'status', 'submitted_at']
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    success = False
-                    details = f"Missing required fields: {missing_fields}"
-                elif data.get('status') != 'pending':
-                    success = False
-                    details = f"Expected status 'pending', got '{data.get('status')}'"
-                else:
-                    details = f"Claim submitted for restaurant {data.get('restaurant_id')}, Status: {data.get('status')}"
-                    self.test_claim_id = data.get('id') or data.get('restaurant_id')  # Store for admin tests
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Restaurant Claim Submission", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Restaurant Claim Submission", False, str(e))
-            return False, {}
-
-    def test_special_creation_pending_approval(self):
-        """Test special creation with pending approval workflow"""
-        try:
-            if not hasattr(self, 'owner_token'):
-                # Login first
-                success, _ = self.test_owner_login()
-                if not success:
-                    self.log_test("Special Creation (Pending Approval)", False, "Failed to authenticate owner")
-                    return False, {}
-            
-            # Get a restaurant ID for the special
-            restaurants_response = self.session.get(f"{self.api_url}/restaurants/search?latitude=37.7749&longitude=-122.4194&limit=1")
-            if restaurants_response.status_code != 200:
-                self.log_test("Special Creation (Pending Approval)", False, "Failed to get restaurant for special test")
-                return False, {}
-            
-            restaurants_data = restaurants_response.json()
-            if not restaurants_data.get('restaurants'):
-                self.log_test("Special Creation (Pending Approval)", False, "No restaurants available for special test")
-                return False, {}
-            
-            restaurant_id = restaurants_data['restaurants'][0]['id']
-            
-            special_data = {
-                "restaurant_id": restaurant_id,
-                "title": "Happy Hour Special",
-                "description": "50% off all appetizers and $5 craft cocktails during happy hour",
-                "special_type": "happy_hour",
-                "price": 5.00,
-                "original_price": 10.00,
-                "discount_percentage": 50,
-                "days_available": ["monday", "tuesday", "wednesday", "thursday", "friday"],
-                "time_start": "16:00",
-                "time_end": "19:00",
-                "valid_from": datetime.now().isoformat(),
-                "valid_until": "2024-12-31T23:59:59",
-                "max_redemptions": 100,
-                "terms_conditions": "Cannot be combined with other offers. Valid for dine-in only."
-            }
-            
-            response = self.session.post(f"{self.api_url}/owners/specials", json=special_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                required_fields = ['id', 'restaurant_id', 'title', 'approval_status', 'is_active']
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    success = False
-                    details = f"Missing required fields: {missing_fields}"
-                elif data.get('approval_status') != 'pending':
-                    success = False
-                    details = f"Expected approval_status 'pending', got '{data.get('approval_status')}'"
-                elif data.get('is_active') != False:
-                    success = False
-                    details = f"Expected is_active False (pending approval), got {data.get('is_active')}"
-                else:
-                    details = f"Special created: {data.get('title')}, Status: {data.get('approval_status')}, Active: {data.get('is_active')}"
-                    self.test_special_id = data.get('id')  # Store for admin tests
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Special Creation (Pending Approval)", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Special Creation (Pending Approval)", False, str(e))
-            return False, {}
-
-    def test_owner_dashboard_stats(self):
-        """Test owner dashboard statistics endpoint"""
-        try:
-            if not hasattr(self, 'owner_token'):
-                # Login first
-                success, _ = self.test_owner_login()
-                if not success:
-                    self.log_test("Owner Dashboard Statistics", False, "Failed to authenticate owner")
-                    return False, {}
-            
-            response = self.session.get(f"{self.api_url}/owners/dashboard")
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                required_fields = ['total_restaurants', 'pending_claims', 'active_specials', 'pending_specials', 'total_views', 'total_favorites']
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    success = False
-                    details = f"Missing required fields: {missing_fields}"
-                else:
-                    details = f"Dashboard stats - Restaurants: {data.get('total_restaurants')}, Pending Claims: {data.get('pending_claims')}, Active Specials: {data.get('active_specials')}, Pending Specials: {data.get('pending_specials')}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Owner Dashboard Statistics", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Owner Dashboard Statistics", False, str(e))
-            return False, {}
-
-    def test_owner_specials_list(self):
-        """Test getting owner's specials list"""
-        try:
-            if not hasattr(self, 'owner_token'):
-                # Login first
-                success, _ = self.test_owner_login()
-                if not success:
-                    self.log_test("Owner Specials List", False, "Failed to authenticate owner")
-                    return False, {}
-            
-            response = self.session.get(f"{self.api_url}/owners/specials")
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                if 'specials' not in data:
-                    success = False
-                    details = "Missing 'specials' field in response"
-                else:
-                    specials = data['specials']
-                    details = f"Found {len(specials)} specials for owner"
-                    
-                    # Validate special structure if any exist
-                    if specials:
-                        first_special = specials[0]
-                        required_fields = ['id', 'restaurant_id', 'title', 'approval_status']
-                        missing_fields = [field for field in required_fields if field not in first_special]
-                        if missing_fields:
-                            success = False
-                            details += f" - Missing fields in special: {missing_fields}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Owner Specials List", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Owner Specials List", False, str(e))
-            return False, {}
-
-    def test_owner_restaurants_list(self):
-        """Test getting owner's restaurants list"""
-        try:
-            if not hasattr(self, 'owner_token'):
-                # Login first
-                success, _ = self.test_owner_login()
-                if not success:
-                    self.log_test("Owner Restaurants List", False, "Failed to authenticate owner")
-                    return False, {}
-            
-            response = self.session.get(f"{self.api_url}/owners/restaurants")
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                if 'restaurants' not in data:
-                    success = False
-                    details = "Missing 'restaurants' field in response"
-                else:
-                    restaurants = data['restaurants']
-                    details = f"Found {len(restaurants)} restaurants for owner"
-                    
-                    # Validate restaurant structure if any exist
-                    if restaurants:
-                        first_restaurant = restaurants[0]
-                        required_fields = ['id', 'name', 'address']
-                        missing_fields = [field for field in required_fields if field not in first_restaurant]
-                        if missing_fields:
-                            success = False
-                            details += f" - Missing fields in restaurant: {missing_fields}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Owner Restaurants List", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Owner Restaurants List", False, str(e))
-            return False, {}
-
-    def test_admin_pending_claims(self):
-        """Test admin endpoint for viewing pending claims"""
-        try:
-            # Remove owner auth header for admin test
-            if 'Authorization' in self.session.headers:
-                del self.session.headers['Authorization']
-            
-            response = self.session.get(f"{self.api_url}/admin/owners/claims")
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                if 'claims' not in data:
-                    success = False
-                    details = "Missing 'claims' field in response"
-                else:
-                    claims = data['claims']
-                    details = f"Found {len(claims)} pending claims"
-                    
-                    # Validate claim structure if any exist
-                    if claims:
-                        first_claim = claims[0]
-                        required_fields = ['restaurant_id', 'owner_id', 'status']
-                        missing_fields = [field for field in required_fields if field not in first_claim]
-                        if missing_fields:
-                            success = False
-                            details += f" - Missing fields in claim: {missing_fields}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Admin Pending Claims View", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Admin Pending Claims View", False, str(e))
-            return False, {}
-
-    def test_admin_claim_approval(self):
-        """Test admin endpoint for approving claims"""
-        try:
-            # First ensure we have a claim to approve
-            if not hasattr(self, 'test_claim_id'):
-                # Create a claim first
-                self.test_restaurant_claim_submission()
-            
-            if not hasattr(self, 'test_claim_id'):
-                self.log_test("Admin Claim Approval", False, "No claim ID available for approval test")
-                return False, {}
-            
-            # Remove owner auth header for admin test
-            if 'Authorization' in self.session.headers:
-                del self.session.headers['Authorization']
-            
-            approval_data = {
-                "admin_notes": "Claim approved after verification of business documents"
-            }
-            
-            response = self.session.post(f"{self.api_url}/admin/owners/claims/{self.test_claim_id}/approve", json=approval_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                required_fields = ['message', 'success']
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    success = False
-                    details = f"Missing required fields: {missing_fields}"
-                elif not data.get('success'):
-                    success = False
-                    details = f"Approval failed: {data.get('message')}"
-                else:
-                    details = f"Claim approved successfully: {data.get('message')}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Admin Claim Approval", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Admin Claim Approval", False, str(e))
-            return False, {}
-
-    def test_admin_pending_specials(self):
-        """Test admin endpoint for viewing pending specials"""
-        try:
-            # Remove owner auth header for admin test
-            if 'Authorization' in self.session.headers:
-                del self.session.headers['Authorization']
-            
-            response = self.session.get(f"{self.api_url}/admin/owners/specials")
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                if 'specials' not in data:
-                    success = False
-                    details = "Missing 'specials' field in response"
-                else:
-                    specials = data['specials']
-                    details = f"Found {len(specials)} pending specials"
-                    
-                    # Validate special structure if any exist
-                    if specials:
-                        first_special = specials[0]
-                        required_fields = ['id', 'restaurant_id', 'title', 'approval_status']
-                        missing_fields = [field for field in required_fields if field not in first_special]
-                        if missing_fields:
-                            success = False
-                            details += f" - Missing fields in special: {missing_fields}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Admin Pending Specials View", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Admin Pending Specials View", False, str(e))
-            return False, {}
-
-    def test_admin_special_approval(self):
-        """Test admin endpoint for approving specials"""
-        try:
-            # First ensure we have a special to approve
-            if not hasattr(self, 'test_special_id'):
-                # Create a special first
-                self.test_special_creation_pending_approval()
-            
-            if not hasattr(self, 'test_special_id'):
-                self.log_test("Admin Special Approval", False, "No special ID available for approval test")
-                return False, {}
-            
-            # Remove owner auth header for admin test
-            if 'Authorization' in self.session.headers:
-                del self.session.headers['Authorization']
-            
-            approval_data = {
-                "admin_notes": "Special approved - meets all guidelines and requirements"
-            }
-            
-            response = self.session.post(f"{self.api_url}/admin/owners/specials/{self.test_special_id}/approve", json=approval_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                required_fields = ['message', 'success']
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    success = False
-                    details = f"Missing required fields: {missing_fields}"
-                elif not data.get('success'):
-                    success = False
-                    details = f"Approval failed: {data.get('message')}"
-                else:
-                    details = f"Special approved successfully: {data.get('message')}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Admin Special Approval", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Admin Special Approval", False, str(e))
-            return False, {}
-
-    def test_database_integration_owners(self):
-        """Test database integration for owner data"""
-        try:
-            # Test that owner registration creates proper database records
-            unique_id = str(uuid.uuid4())[:8]
-            test_data = {
-                "first_name": "Database",
-                "last_name": "Test",
-                "email": f"dbtest_{unique_id}@restaurant.com",
-                "password": "testpassword123",
-                "phone": "+1-555-9999",
-                "business_name": "DB Test Restaurant",
-                "business_type": "restaurant"
-            }
-            
-            # Register owner
-            response = self.session.post(f"{self.api_url}/owners/register", json=test_data)
-            success = response.status_code == 200
-            
-            if success:
-                owner_data = response.json()
-                owner_id = owner_data.get('id')
-                
-                # Login to get token
-                login_response = self.session.post(f"{self.api_url}/owners/login", json={
-                    "email": test_data['email'],
-                    "password": test_data['password']
-                })
-                
-                if login_response.status_code == 200:
-                    login_data = login_response.json()
-                    token = login_data.get('access_token')
-                    
-                    # Test authenticated endpoint to verify database persistence
-                    self.session.headers.update({'Authorization': f"Bearer {token}"})
-                    dashboard_response = self.session.get(f"{self.api_url}/owners/dashboard")
-                    
-                    if dashboard_response.status_code == 200:
-                        dashboard_data = dashboard_response.json()
-                        details = f"Database integration working - Owner ID: {owner_id}, Dashboard accessible with stats: {dashboard_data}"
-                    else:
-                        success = False
-                        details = f"Database integration issue - Dashboard not accessible after registration"
-                else:
-                    success = False
-                    details = f"Database integration issue - Login failed after registration"
-            else:
-                details = f"Database integration issue - Registration failed: {response.text[:200]}"
-            
-            self.log_test("Database Integration (Owners)", success, details)
-            return success
-            
-        except Exception as e:
-            self.log_test("Database Integration (Owners)", False, str(e))
-            return False
-
-
-def main():
-    """Main test runner"""
-    tester = OnTheCheapAPITester()
-    return tester.run_all_tests()
-
-def test_phase3a_restaurant_photos_only():
-    """Test runner specifically for Phase 3A: Restaurant Photos Integration"""
-    print("📸 TESTING PHASE 3A: RESTAURANT PHOTOS INTEGRATION")
-    print("=" * 70)
-    print("This test focuses on verifying the newly implemented restaurant photos integration.")
-    print("Testing Google Places Photos API integration and fallback photo system.")
-    print("=" * 70)
-    
-    tester = OnTheCheapAPITester()
-    
-    # Run the comprehensive restaurant photos integration test
-    print("\n📋 Running Phase 3A restaurant photos integration tests...")
-    
-    success = tester.test_restaurant_photos_integration_phase3a()
-    
-    # Print focused summary
-    print("\n" + "=" * 70)
-    print(f"📊 PHASE 3A RESTAURANT PHOTOS Results: {tester.tests_passed}/{tester.tests_run} tests passed")
-    
-    if success and tester.tests_passed == tester.tests_run:
-        print("🎉 All Phase 3A restaurant photos integration tests passed!")
-        print("✅ Restaurant photos integration is working correctly for mobile app consumption")
-        return 0
+    if failed == 0:
+        print("\n🎉 All tests passed! Restaurant Owner Dashboard system is working correctly.")
     else:
-        print(f"⚠️  {tester.tests_run - tester.tests_passed} Phase 3A tests failed - photos integration may have issues")
-        return 1
-
-def test_fixed_favorites_only():
-    """Test runner specifically for the FIXED Google Places favorites functionality"""
-    print("🔧 TESTING FIXED GOOGLE PLACES FAVORITES FUNCTIONALITY")
-    print("=" * 70)
-    print("This test focuses on verifying that the Google Places favorites bug has been fixed.")
-    print("The fix should allow Google Places restaurants to be properly retrieved with details.")
-    print("=" * 70)
+        print(f"\n⚠️  {failed} test(s) failed. Please review the issues above.")
     
-    tester = OnTheCheapAPITester()
-    
-    # Run only the favorites-related tests
-    print("\n📋 Running focused favorites tests...")
-    
-    # Test basic user functionality first
-    tester.test_user_registration()
-    tester.test_user_login()
-    tester.test_user_auth_me()
-    
-    # Test the core fixed functionality
-    tester.test_fixed_google_places_favorites_workflow()
-    tester.test_google_places_api_integration()
-    
-    # Test basic favorites operations
-    tester.test_add_favorite_restaurant()
-    tester.test_get_favorite_restaurants()
-    tester.test_remove_favorite_restaurant()
-    
-    # Print focused summary
-    print("\n" + "=" * 70)
-    print(f"📊 FIXED FAVORITES TEST Results: {tester.tests_passed}/{tester.tests_run} tests passed")
-    
-    if tester.tests_passed == tester.tests_run:
-        print("🎉 All FIXED FAVORITES tests passed! The Google Places favorites bug appears to be resolved.")
-        return 0
-    else:
-        print(f"⚠️  {tester.tests_run - tester.tests_passed} FIXED FAVORITES tests failed - bug may still exist")
-        return 1
-
-    # =================== RESTAURANT OWNER DASHBOARD TESTING ===================
-    
-    def test_owner_service_integration(self):
-        """Test that owner service is properly initialized and integrated"""
-        try:
-            # Test a simple endpoint to verify service integration
-            response = self.session.get(f"{self.api_url}/admin/owners/claims")
-            success = response.status_code in [200, 401, 403]  # Service should respond, auth may be required
-            
-            if success:
-                details = f"Owner service responding correctly (status: {response.status_code})"
-            else:
-                details = f"Owner service not responding properly (status: {response.status_code})"
-            
-            self.log_test("Owner Service Integration", success, details)
-            return success
-            
-        except Exception as e:
-            self.log_test("Owner Service Integration", False, str(e))
-            return False
-
-    def test_owner_registration(self):
-        """Test restaurant owner registration"""
-        try:
-            # Generate unique email for testing
-            unique_id = str(uuid.uuid4())[:8]
-            test_data = {
-                "first_name": "John",
-                "last_name": "Smith",
-                "email": f"owner_{unique_id}@restaurant.com",
-                "password": "securepassword123",
-                "phone": "+1-555-0123",
-                "business_name": "Smith's Bistro",
-                "business_type": "restaurant"
-            }
-            
-            response = self.session.post(f"{self.api_url}/owners/register", json=test_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                required_fields = ['id', 'first_name', 'last_name', 'email', 'business_name', 'status']
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    success = False
-                    details = f"Missing required fields: {missing_fields}"
-                else:
-                    details = f"Owner registered: {data.get('email')}, Status: {data.get('status')}, ID: {data.get('id')}"
-                    # Store owner data for subsequent tests
-                    self.test_owner_data = {
-                        'id': data.get('id'),
-                        'email': data.get('email'),
-                        'password': test_data['password']
-                    }
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Owner Registration", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Owner Registration", False, str(e))
-            return False, {}
-
-    def test_owner_login(self):
-        """Test restaurant owner login and JWT token generation"""
-        try:
-            if not hasattr(self, 'test_owner_data'):
-                # Create a test owner first
-                success, owner_data = self.test_owner_registration()
-                if not success:
-                    self.log_test("Owner Login", False, "Failed to create test owner for login test")
-                    return False, {}
-            
-            login_data = {
-                "email": self.test_owner_data['email'],
-                "password": self.test_owner_data['password']
-            }
-            
-            response = self.session.post(f"{self.api_url}/owners/login", json=login_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                required_fields = ['access_token', 'token_type', 'user_type', 'user']
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    success = False
-                    details = f"Missing required fields: {missing_fields}"
-                elif data.get('user_type') != 'owner':
-                    success = False
-                    details = f"Expected user_type 'owner', got '{data.get('user_type')}'"
-                else:
-                    details = f"Owner logged in successfully, Token type: {data.get('token_type')}, User type: {data.get('user_type')}"
-                    # Store token for authenticated requests
-                    self.owner_token = data.get('access_token')
-                    self.session.headers.update({'Authorization': f"Bearer {self.owner_token}"})
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Owner Login & JWT Authentication", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Owner Login & JWT Authentication", False, str(e))
-            return False, {}
-
-    def test_restaurant_claim_submission(self):
-        """Test restaurant claim submission workflow"""
-        try:
-            if not hasattr(self, 'owner_token'):
-                # Login first
-                success, _ = self.test_owner_login()
-                if not success:
-                    self.log_test("Restaurant Claim Submission", False, "Failed to authenticate owner")
-                    return False, {}
-            
-            # First, get a restaurant ID from the database
-            restaurants_response = self.session.get(f"{self.api_url}/restaurants/search?latitude=37.7749&longitude=-122.4194&limit=1")
-            if restaurants_response.status_code != 200:
-                self.log_test("Restaurant Claim Submission", False, "Failed to get restaurant for claim test")
-                return False, {}
-            
-            restaurants_data = restaurants_response.json()
-            if not restaurants_data.get('restaurants'):
-                self.log_test("Restaurant Claim Submission", False, "No restaurants available for claim test")
-                return False, {}
-            
-            restaurant_id = restaurants_data['restaurants'][0]['id']
-            
-            claim_data = {
-                "restaurant_id": restaurant_id,
-                "owner_id": self.test_owner_data['id'],  # Will be overridden by server
-                "business_license": "BL123456789",
-                "proof_of_ownership": "Lease agreement and business registration",
-                "additional_documents": ["tax_id.pdf", "insurance.pdf"],
-                "notes": "I am the owner of this restaurant and would like to claim it to manage specials.",
-                "status": "pending",
-                "submitted_at": datetime.now().isoformat()
-            }
-            
-            response = self.session.post(f"{self.api_url}/owners/claims", json=claim_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                required_fields = ['restaurant_id', 'owner_id', 'status', 'submitted_at']
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    success = False
-                    details = f"Missing required fields: {missing_fields}"
-                elif data.get('status') != 'pending':
-                    success = False
-                    details = f"Expected status 'pending', got '{data.get('status')}'"
-                else:
-                    details = f"Claim submitted for restaurant {data.get('restaurant_id')}, Status: {data.get('status')}"
-                    self.test_claim_id = data.get('id') or data.get('restaurant_id')  # Store for admin tests
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Restaurant Claim Submission", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Restaurant Claim Submission", False, str(e))
-            return False, {}
-
-    def test_special_creation_pending_approval(self):
-        """Test special creation with pending approval workflow"""
-        try:
-            if not hasattr(self, 'owner_token'):
-                # Login first
-                success, _ = self.test_owner_login()
-                if not success:
-                    self.log_test("Special Creation (Pending Approval)", False, "Failed to authenticate owner")
-                    return False, {}
-            
-            # Get a restaurant ID for the special
-            restaurants_response = self.session.get(f"{self.api_url}/restaurants/search?latitude=37.7749&longitude=-122.4194&limit=1")
-            if restaurants_response.status_code != 200:
-                self.log_test("Special Creation (Pending Approval)", False, "Failed to get restaurant for special test")
-                return False, {}
-            
-            restaurants_data = restaurants_response.json()
-            if not restaurants_data.get('restaurants'):
-                self.log_test("Special Creation (Pending Approval)", False, "No restaurants available for special test")
-                return False, {}
-            
-            restaurant_id = restaurants_data['restaurants'][0]['id']
-            
-            special_data = {
-                "restaurant_id": restaurant_id,
-                "title": "Happy Hour Special",
-                "description": "50% off all appetizers and $5 craft cocktails during happy hour",
-                "special_type": "happy_hour",
-                "price": 5.00,
-                "original_price": 10.00,
-                "discount_percentage": 50,
-                "days_available": ["monday", "tuesday", "wednesday", "thursday", "friday"],
-                "time_start": "16:00",
-                "time_end": "19:00",
-                "valid_from": datetime.now().isoformat(),
-                "valid_until": "2024-12-31T23:59:59",
-                "max_redemptions": 100,
-                "terms_conditions": "Cannot be combined with other offers. Valid for dine-in only."
-            }
-            
-            response = self.session.post(f"{self.api_url}/owners/specials", json=special_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                required_fields = ['id', 'restaurant_id', 'title', 'approval_status', 'is_active']
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    success = False
-                    details = f"Missing required fields: {missing_fields}"
-                elif data.get('approval_status') != 'pending':
-                    success = False
-                    details = f"Expected approval_status 'pending', got '{data.get('approval_status')}'"
-                elif data.get('is_active') != False:
-                    success = False
-                    details = f"Expected is_active False (pending approval), got {data.get('is_active')}"
-                else:
-                    details = f"Special created: {data.get('title')}, Status: {data.get('approval_status')}, Active: {data.get('is_active')}"
-                    self.test_special_id = data.get('id')  # Store for admin tests
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Special Creation (Pending Approval)", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Special Creation (Pending Approval)", False, str(e))
-            return False, {}
-
-    def test_owner_dashboard_stats(self):
-        """Test owner dashboard statistics endpoint"""
-        try:
-            if not hasattr(self, 'owner_token'):
-                # Login first
-                success, _ = self.test_owner_login()
-                if not success:
-                    self.log_test("Owner Dashboard Statistics", False, "Failed to authenticate owner")
-                    return False, {}
-            
-            response = self.session.get(f"{self.api_url}/owners/dashboard")
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                required_fields = ['total_restaurants', 'pending_claims', 'active_specials', 'pending_specials', 'total_views', 'total_favorites']
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    success = False
-                    details = f"Missing required fields: {missing_fields}"
-                else:
-                    details = f"Dashboard stats - Restaurants: {data.get('total_restaurants')}, Pending Claims: {data.get('pending_claims')}, Active Specials: {data.get('active_specials')}, Pending Specials: {data.get('pending_specials')}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Owner Dashboard Statistics", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Owner Dashboard Statistics", False, str(e))
-            return False, {}
-
-    def test_owner_specials_list(self):
-        """Test getting owner's specials list"""
-        try:
-            if not hasattr(self, 'owner_token'):
-                # Login first
-                success, _ = self.test_owner_login()
-                if not success:
-                    self.log_test("Owner Specials List", False, "Failed to authenticate owner")
-                    return False, {}
-            
-            response = self.session.get(f"{self.api_url}/owners/specials")
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                if 'specials' not in data:
-                    success = False
-                    details = "Missing 'specials' field in response"
-                else:
-                    specials = data['specials']
-                    details = f"Found {len(specials)} specials for owner"
-                    
-                    # Validate special structure if any exist
-                    if specials:
-                        first_special = specials[0]
-                        required_fields = ['id', 'restaurant_id', 'title', 'approval_status']
-                        missing_fields = [field for field in required_fields if field not in first_special]
-                        if missing_fields:
-                            success = False
-                            details += f" - Missing fields in special: {missing_fields}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Owner Specials List", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Owner Specials List", False, str(e))
-            return False, {}
-
-    def test_owner_restaurants_list(self):
-        """Test getting owner's restaurants list"""
-        try:
-            if not hasattr(self, 'owner_token'):
-                # Login first
-                success, _ = self.test_owner_login()
-                if not success:
-                    self.log_test("Owner Restaurants List", False, "Failed to authenticate owner")
-                    return False, {}
-            
-            response = self.session.get(f"{self.api_url}/owners/restaurants")
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                if 'restaurants' not in data:
-                    success = False
-                    details = "Missing 'restaurants' field in response"
-                else:
-                    restaurants = data['restaurants']
-                    details = f"Found {len(restaurants)} restaurants for owner"
-                    
-                    # Validate restaurant structure if any exist
-                    if restaurants:
-                        first_restaurant = restaurants[0]
-                        required_fields = ['id', 'name', 'address']
-                        missing_fields = [field for field in required_fields if field not in first_restaurant]
-                        if missing_fields:
-                            success = False
-                            details += f" - Missing fields in restaurant: {missing_fields}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Owner Restaurants List", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Owner Restaurants List", False, str(e))
-            return False, {}
-
-    def test_admin_pending_claims(self):
-        """Test admin endpoint for viewing pending claims"""
-        try:
-            # Remove owner auth header for admin test
-            if 'Authorization' in self.session.headers:
-                del self.session.headers['Authorization']
-            
-            response = self.session.get(f"{self.api_url}/admin/owners/claims")
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                if 'claims' not in data:
-                    success = False
-                    details = "Missing 'claims' field in response"
-                else:
-                    claims = data['claims']
-                    details = f"Found {len(claims)} pending claims"
-                    
-                    # Validate claim structure if any exist
-                    if claims:
-                        first_claim = claims[0]
-                        required_fields = ['restaurant_id', 'owner_id', 'status']
-                        missing_fields = [field for field in required_fields if field not in first_claim]
-                        if missing_fields:
-                            success = False
-                            details += f" - Missing fields in claim: {missing_fields}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Admin Pending Claims View", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Admin Pending Claims View", False, str(e))
-            return False, {}
-
-    def test_admin_claim_approval(self):
-        """Test admin endpoint for approving claims"""
-        try:
-            # First ensure we have a claim to approve
-            if not hasattr(self, 'test_claim_id'):
-                # Create a claim first
-                self.test_restaurant_claim_submission()
-            
-            if not hasattr(self, 'test_claim_id'):
-                self.log_test("Admin Claim Approval", False, "No claim ID available for approval test")
-                return False, {}
-            
-            # Remove owner auth header for admin test
-            if 'Authorization' in self.session.headers:
-                del self.session.headers['Authorization']
-            
-            approval_data = {
-                "admin_notes": "Claim approved after verification of business documents"
-            }
-            
-            response = self.session.post(f"{self.api_url}/admin/owners/claims/{self.test_claim_id}/approve", json=approval_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                required_fields = ['message', 'success']
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    success = False
-                    details = f"Missing required fields: {missing_fields}"
-                elif not data.get('success'):
-                    success = False
-                    details = f"Approval failed: {data.get('message')}"
-                else:
-                    details = f"Claim approved successfully: {data.get('message')}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Admin Claim Approval", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Admin Claim Approval", False, str(e))
-            return False, {}
-
-    def test_admin_pending_specials(self):
-        """Test admin endpoint for viewing pending specials"""
-        try:
-            # Remove owner auth header for admin test
-            if 'Authorization' in self.session.headers:
-                del self.session.headers['Authorization']
-            
-            response = self.session.get(f"{self.api_url}/admin/owners/specials")
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                if 'specials' not in data:
-                    success = False
-                    details = "Missing 'specials' field in response"
-                else:
-                    specials = data['specials']
-                    details = f"Found {len(specials)} pending specials"
-                    
-                    # Validate special structure if any exist
-                    if specials:
-                        first_special = specials[0]
-                        required_fields = ['id', 'restaurant_id', 'title', 'approval_status']
-                        missing_fields = [field for field in required_fields if field not in first_special]
-                        if missing_fields:
-                            success = False
-                            details += f" - Missing fields in special: {missing_fields}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Admin Pending Specials View", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Admin Pending Specials View", False, str(e))
-            return False, {}
-
-    def test_admin_special_approval(self):
-        """Test admin endpoint for approving specials"""
-        try:
-            # First ensure we have a special to approve
-            if not hasattr(self, 'test_special_id'):
-                # Create a special first
-                self.test_special_creation_pending_approval()
-            
-            if not hasattr(self, 'test_special_id'):
-                self.log_test("Admin Special Approval", False, "No special ID available for approval test")
-                return False, {}
-            
-            # Remove owner auth header for admin test
-            if 'Authorization' in self.session.headers:
-                del self.session.headers['Authorization']
-            
-            approval_data = {
-                "admin_notes": "Special approved - meets all guidelines and requirements"
-            }
-            
-            response = self.session.post(f"{self.api_url}/admin/owners/specials/{self.test_special_id}/approve", json=approval_data)
-            success = response.status_code == 200
-            
-            if success:
-                data = response.json()
-                required_fields = ['message', 'success']
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    success = False
-                    details = f"Missing required fields: {missing_fields}"
-                elif not data.get('success'):
-                    success = False
-                    details = f"Approval failed: {data.get('message')}"
-                else:
-                    details = f"Special approved successfully: {data.get('message')}"
-            else:
-                details = f"Status: {response.status_code}, Response: {response.text[:200]}"
-            
-            self.log_test("Admin Special Approval", success, details)
-            return success, data if success else {}
-            
-        except Exception as e:
-            self.log_test("Admin Special Approval", False, str(e))
-            return False, {}
-
-    def test_database_integration_owners(self):
-        """Test database integration for owner data"""
-        try:
-            # Test that owner registration creates proper database records
-            unique_id = str(uuid.uuid4())[:8]
-            test_data = {
-                "first_name": "Database",
-                "last_name": "Test",
-                "email": f"dbtest_{unique_id}@restaurant.com",
-                "password": "testpassword123",
-                "phone": "+1-555-9999",
-                "business_name": "DB Test Restaurant",
-                "business_type": "restaurant"
-            }
-            
-            # Register owner
-            response = self.session.post(f"{self.api_url}/owners/register", json=test_data)
-            success = response.status_code == 200
-            
-            if success:
-                owner_data = response.json()
-                owner_id = owner_data.get('id')
-                
-                # Login to get token
-                login_response = self.session.post(f"{self.api_url}/owners/login", json={
-                    "email": test_data['email'],
-                    "password": test_data['password']
-                })
-                
-                if login_response.status_code == 200:
-                    login_data = login_response.json()
-                    token = login_data.get('access_token')
-                    
-                    # Test authenticated endpoint to verify database persistence
-                    self.session.headers.update({'Authorization': f"Bearer {token}"})
-                    dashboard_response = self.session.get(f"{self.api_url}/owners/dashboard")
-                    
-                    if dashboard_response.status_code == 200:
-                        dashboard_data = dashboard_response.json()
-                        details = f"Database integration working - Owner ID: {owner_id}, Dashboard accessible with stats: {dashboard_data}"
-                    else:
-                        success = False
-                        details = f"Database integration issue - Dashboard not accessible after registration"
-                else:
-                    success = False
-                    details = f"Database integration issue - Login failed after registration"
-            else:
-                details = f"Database integration issue - Registration failed: {response.text[:200]}"
-            
-            self.log_test("Database Integration (Owners)", success, details)
-            return success
-            
-        except Exception as e:
-            self.log_test("Database Integration (Owners)", False, str(e))
-            return False
-
-def test_owner_dashboard_system():
-    """Test runner specifically for Restaurant Owner Dashboard system"""
-    print("🏪 TESTING RESTAURANT OWNER DASHBOARD SYSTEM")
-    print("=" * 70)
-    print("Testing the newly implemented Restaurant Owner Dashboard system including:")
-    print("- Owner Service Integration")
-    print("- Owner Registration & Authentication")
-    print("- Restaurant Claiming System")
-    print("- Special Management System")
-    print("- Owner Dashboard Functionality")
-    print("- Admin Approval Workflows")
-    print("- Database Integration")
-    print("=" * 70)
-    
-    tester = OnTheCheapAPITester()
-    
-    # Run owner dashboard system tests
-    print("\n📋 Running Restaurant Owner Dashboard tests...")
-    
-    # 1. Owner Service Integration
-    tester.test_owner_service_integration()
-    
-    # 2. Owner Registration & Authentication
-    tester.test_owner_registration()
-    tester.test_owner_login()
-    
-    # 3. Restaurant Claiming System
-    tester.test_restaurant_claim_submission()
-    
-    # 4. Special Management System
-    tester.test_special_creation_pending_approval()
-    tester.test_owner_specials_list()
-    
-    # 5. Owner Dashboard
-    tester.test_owner_dashboard_stats()
-    tester.test_owner_restaurants_list()
-    
-    # 6. Admin Endpoints
-    tester.test_admin_pending_claims()
-    tester.test_admin_claim_approval()
-    tester.test_admin_pending_specials()
-    tester.test_admin_special_approval()
-    
-    # 7. Database Integration
-    tester.test_database_integration_owners()
-    
-    # Print summary
-    print("\n" + "=" * 70)
-    print(f"📊 RESTAURANT OWNER DASHBOARD Results: {tester.tests_passed}/{tester.tests_run} tests passed")
-    
-    if tester.tests_passed == tester.tests_run:
-        print("🎉 All Restaurant Owner Dashboard tests passed!")
-        print("✅ Owner Dashboard system is working correctly")
-        return 0
-    else:
-        print(f"⚠️  {tester.tests_run - tester.tests_passed} Owner Dashboard tests failed")
-        return 1
+    return failed == 0
 
 if __name__ == "__main__":
-    sys.exit(main())
+    success = asyncio.run(main())
