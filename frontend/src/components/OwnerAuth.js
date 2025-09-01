@@ -45,7 +45,7 @@ const OwnerAuth = ({ onClose, onAuthSuccess }) => {
       if (response.ok) {
         if (isLogin) {
           // Login successful
-          onSuccess(data.owner || data.user, data.access_token, 'owner');
+          onAuthSuccess(data.owner || data.user, data.access_token, 'owner');
         } else {
           // Registration successful - automatically login
           setError('');
