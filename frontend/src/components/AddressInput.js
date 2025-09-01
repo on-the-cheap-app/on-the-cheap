@@ -70,8 +70,14 @@ const AddressInput = ({
   }, [inputValue, forwardGeocode, region, disabled]);
 
   const handleInputChange = (e) => {
-    setInputValue(e.target.value);
+    const newValue = e.target.value;
+    setInputValue(newValue);
     setSelectedIndex(-1);
+    
+    // Call the parent's onInputChange callback if provided
+    if (onInputChange) {
+      onInputChange(newValue);
+    }
   };
 
   const handleSuggestionClick = (suggestion) => {
