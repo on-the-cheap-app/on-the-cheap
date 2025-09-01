@@ -34,7 +34,7 @@ const FavoritesScreen = ({ navigation }: any) => {
 
   const handleToggleFavorite = async (restaurantId: string) => {
     try {
-      await APIService.toggleFavorite(restaurantId);
+      await APIService.toggleFavorite(restaurantId, true); // Always removing from favorites
       // Remove from favorites list
       setFavorites(prev => prev.filter((fav: any) => fav.id !== restaurantId));
     } catch (error) {
