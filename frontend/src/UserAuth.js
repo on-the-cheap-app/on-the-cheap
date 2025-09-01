@@ -22,7 +22,7 @@ import { Badge } from "./components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
 import { Alert, AlertDescription } from "./components/ui/alert";
 
-const BACKEND_URL = "https://cheapdeals-app.preview.emergentagent.com"; // HTTPS for mixed content security
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 const API = `${BACKEND_URL}/api`;
 
 const UserAuth = ({ onClose, onUserLogin, currentFavorites = [], onFavoritesUpdate, onShowNotificationPreferences }) => {
