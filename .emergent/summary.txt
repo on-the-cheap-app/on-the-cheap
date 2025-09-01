@@ -1,87 +1,106 @@
 <analysis>
-The previous AI engineer successfully developed the On-the-Cheap application from MVP to a feature-rich product, integrating Google Places/Geocoding, user authentication, and restaurant owner portals. The core work involved extensive debugging and refinement across both backend (FastAPI, MongoDB) and frontend (React, shadcn/ui). A significant effort was made to implement and stabilize a user registration and favorites system, which required fixing data mismatches and state synchronization issues between components. Subsequently, the Google Geocoding API was fully integrated to enhance location search. Most recently, the focus shifted to populating current specials data for non-registered restaurants, leading to API research and a plan for a multi-source free-tier integration strategy, with Zomato and Foursquare APIs identified for initial implementation. The immediate next step involves fetching integration playbooks for these APIs.
+The AI engineer's work trajectory details the evolution of the On-the-Cheap application from a PWA to a native mobile app, then back to perfecting the PWA due to environmental challenges. Initially, the focus was on stabilizing the React Native (Expo) mobile environment, addressing setup issues, and porting core features. Phase 1 involved a complete overhaul of the mobile app's authentication system, including API endpoint corrections, UI component creation, and robust state management. Phase 2 integrated core search functionalities like geocoding, advanced filtering, and enhanced restaurant card displays.
+
+Subsequent user feedback shifted the focus to integrating restaurant images and planning an owner workflow. Phase 3A began with image integration, which uncovered persistent and challenging networking and caching issues across both web and mobile platforms. The engineer systematically debugged problems like hardcoded URLs, double API paths, mixed content security errors, and client-side validation logic that prevented search functionality. Despite numerous fixes and internal screenshot confirmations, a significant discrepancy persisted between the engineer's test environment and the user's observed application state. The latest efforts pivoted back to enhancing the PWA, troubleshooting image display issues by verifying data presence in the frontend console, and currently, applying aggressive CSS debugging to uncover a suspected styling problem preventing images from being visible.
 </analysis>
 
 <product_requirements>
-The On-the-Cheap application aims to help users find local restaurant and bar specials. Key features include searching by city/address, GPS-based near me functionality (5-mile radius default), displaying only current specials, and allowing restaurant owners to register, claim restaurants, and manage their specials. The app also integrates Google Places API for restaurant data and Google Geocoding API for address conversion. A user registration/login system was added for regular users to save favorite restaurants and personalize their experience. The application is deployed on Vercel (frontend) and Render (backend), using MongoDB Atlas. The current objective is to populate current specials data for restaurants not managed by registered owners, potentially through external APIs.
+The On-the-Cheap application helps users find local restaurant and bar specials by city/address or GPS, supporting user accounts and saving favorites. Initial features included external API integrations (Google Places/Geocoding, Foursquare), social sharing (Text, WhatsApp), ride-sharing (Uber, Lyft), and an interactive map. Google Analytics 4 was added for tracking, followed by a robust OneSignal push notification system for updates and daily digests. The application was then converted into a Progressive Web App (PWA) with installability and offline support.
+
+The current objective is to evolve the application into a downloadable native Android/iOS app using React Native (Expo), which led to setting up the mobile development environment. Recent user requests have highlighted two key areas:
+1.  **Restaurant Images**: Displaying pictures of restaurants, bars, food trucks, or pop-ups on their respective cards, prioritizing Google Places photos.
+2.  **Restaurant Owner Workflow**: Developing a system for restaurant owners to register their venues and schedule specials, with an emphasis on special scheduling to outperform competitors like . The initial focus is on a modular approach for the owner platform, starting with basic features.
 </product_requirements>
 
 <key_technical_concepts>
-- **Frontend**: React, shadcn/ui, Tailwind CSS, Axios
-- **Backend**: FastAPI, MongoDB (Motor, Pydantic), JWT, Uvicorn, httpx, googlemaps
-- **APIs**: Google Places API, Google Geocoding API, Zomato/Eternal Limited API, Foursquare Places API, Groupon Affiliate API
-- **Deployment**: Vercel (frontend), Render.com (backend), MongoDB Atlas
-- **Authentication**: JWT-based for users and restaurant owners
+- **Frontend**: React, Tailwind CSS, Leaflet/OpenStreetMap, Google Analytics 4, OneSignal React SDK, PWA (Manifest, Service Worker), Expo, React Native, React Native Paper, AsyncStorage, , Axios.
+- **Backend**: FastAPI, MongoDB, JWT, Foursquare Places API, Google Places API (New), Google Geocoding API, httpx.
+- **Deployment**: Kubernetes container environment, Supervisor.
 </key_technical_concepts>
 
 <code_architecture>
-The application follows a standard full-stack architecture: React frontend, FastAPI backend, and MongoDB database.
+The application utilizes a full-stack architecture comprising a React frontend, a FastAPI backend, and a MongoDB database. A new React Native (Expo) project for mobile development has also been initiated.
 
 
 
 - ****:
-  - **Importance**: Core FastAPI backend defining all API endpoints and interacting with MongoDB and external APIs.
-  - **Changes**:
-    - Added  import.
-    - Defined new Pydantic models for , , , , , , , , .
-    - Enhanced  helper function.
-    - Replaced/enhanced the existing  endpoint with , ,  for comprehensive geocoding, maintaining backward compatibility for .
-    - Modified  to correctly fetch Google Places restaurant details using the *new* Google Places API, addressing a  error and ensuring both database and Google Places favorites are retrieved.
+  - **Importance**: Core FastAPI backend, handles API routes for restaurants, users, geocoding, and specials.
+  - **Changes**: Modified to process Google Places photos, added fallback image generation, and integrated photos into database and external restaurant data. Fixed  error in the web app's  by ensuring  variable accessibility in both online/offline paths.
 - ****:
-  - **Importance**: Manages Python dependencies.
-  - **Changes**: Added  to enable Google Geocoding API integration.
+  - **Importance**: Stores environment variables.
+  - **Changes**: Contains  and .
 - ****:
-  - **Importance**: Main React component managing global state, search functionality, and integrating various sub-components/modals.
-  - **Changes**:
-    - Imported new geocoding components (, , ).
-    - Added  state and  function for geocoding.
-    - Integrated  to replace the old search location input.
-    - Added a 🌍 Geocoding Demo button in the header and integrated the  modal.
-    - Updated  component usage to pass  and  as props, synchronizing favorites state.
-    - Removed various debugging  and  statements.
+  - **Importance**: Main React component, orchestrates search, state, and UI.
+  - **Changes**: Fixed  error. Integrated photo display into web app restaurant cards, including loading states, fallback images, and badges. Modified  integration to update  on input change. Updated backend URL references repeatedly to address connectivity issues (relative, hardcoded IP, HTTPS IP, then back to dynamic env variable with relative path fallback). Added CSS debugging for image visibility.
 - ****:
-  - **Importance**: Handles user registration, login, and displays the user dashboard including favorite restaurants.
-  - **Changes**:
-    - Modified to accept  and  props from its parent (), thereby synchronizing its favorites display with the global  state.
-    - Removed its internal  state and  function.
-    - Corrected a duplicate  function declaration.
-    - Removed debugging  statements.
+  - **Importance**: Handles user authentication and dashboard for the web app.
+  - **Changes**: Hardcoded backend URL to match the temporary fix in  and . Added  call to  for modal closure after successful login. Changed backend URL reference to use HTTPS for mixed content security.
 - ****:
-  - **Importance**: New custom React hook encapsulating geocoding logic, interacting with the backend geocoding endpoints.
-  - **Changes**: Created new file.
+  - **Importance**: Custom hook for geocoding logic in the web app.
+  - **Changes**: Hardcoded backend URL to match the temporary fix in . Changed backend URL reference to use HTTPS for mixed content security. Modified to use dynamic environment variable with relative path fallback.
 - ****:
-  - **Importance**: New React component for enhanced address input with real-time suggestions using the geocoding hook.
-  - **Changes**: Created new file.
+  - **Importance**: Component to display PWA install prompt.
+  - **Changes**: Removed PWA debug card logic.
+- ** (Web)**:
+  - **Importance**: Geocoding address input component for the web app.
+  - **Changes**: Fixed suggestion selection logic to prevent re-triggering. Added  prop and callback to update parent state as user types.
 - ****:
-  - **Importance**: New React component to display detailed geocoding results.
-  - **Changes**: Created new file.
+  - **Importance**: Frontend environment variables.
+  - **Changes**: Updated  to correct value.  was modified multiple times, from a hardcoded preview URL to relative , then , then , and finally configured for dynamic environment variable with  fallback.
 - ****:
-  - **Importance**: New React component providing an interactive demo modal for forward, reverse, and batch geocoding functionality.
-  - **Changes**: Created new file.
+  - **Importance**: Custom hook for OneSignal integration.
+  - **Changes**: Temporarily disabled OneSignal for debugging.
+- ****:
+  - **Importance**: Central service for API calls in the mobile app.
+  - **Changes**: Fixed authentication endpoints (, ), added missing favorites endpoints, fixed special types endpoint, and added  method. Added  method. Updated  for server-side token validation. Added extensive debugging logs for baseURL, requests, responses, and errors.
+- ****:
+  - **Importance**: Mobile app login UI.
+  - **Changes**: Created. Refined to handle navigation parameters.
+- ****:
+  - **Importance**: Mobile app registration UI.
+  - **Changes**: Created. Refined to handle navigation parameters.
+- ****:
+  - **Importance**: Mobile app user profile/dashboard.
+  - **Changes**: Updated to handle authenticated/unauthenticated states, logout, and integrate with login/register. Added  to refresh authentication state.
+- ****:
+  - **Importance**: Defines navigation flow for the mobile app.
+  - **Changes**: Updated to include authentication screens as modal presentations.
+- ****:
+  - **Importance**: Displays individual restaurant information in the mobile app.
+  - **Changes**: Fixed syntax errors. Enhanced to display specials information. Updated to include  in  and  interfaces, added  component for photo display, loading indicators, and styles. Added debugging fallback for images.
+- ****:
+  - **Importance**: Geocoding address input component for the mobile app.
+  - **Changes**: Created with autocomplete functionality. Implemented more aggressive fixes for dropdown behavior (force close, aggressive state clearing).
+- ****:
+  - **Importance**: Main screen for restaurant search in the mobile app.
+  - **Changes**: Enhanced to use , added advanced filtering (radius, special types, vendor types), refactored search function, replaced UI, and updated styles. Added comprehensive debugging logs for restaurant search and photo data.
+- ****:
+  - **Importance**: Mobile app dependencies.
+  - **Changes**:  installed (force install due to dependency conflicts),  installed.
 </code_architecture>
 
 <pending_tasks>
 - Implement an approval workflow for claimed restaurants and new specials.
-- User accounts: push notifications, search history, advanced filtering, map view.
-- Production readiness: API response caching, Google Places API quota management, database indexing for fast searches, CDN for static assets, database backup strategy, monitoring & logging.
+- User accounts: search history, advanced filtering, advanced map view features.
+- Production readiness: API response caching, Google Places API quota management, database indexing, CDN for static assets, database backup strategy, monitoring & logging.
 - Legal & compliance, analytics, marketing, and monetization features.
-- Integrate Foursquare API to complement Zomato for restaurant specials data.
-- Build the fallback system: Owner specials → Zomato/Foursquare → Mock data.
+- Build the fallback system: Zomato integration (still pending).
+- **Owner Dashboard (Phase 3B)**: Build the basic restaurant owner workflow for special scheduling.
+- **Mobile App Fixes**: Address mobile app login issues and get images displaying, and resolve the compilation errors preventing it from opening in Expo Go.
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer was working on integrating external APIs to populate current specials data for restaurants without registered owners.
+Immediately before this summary request, the AI engineer was focused on resolving a persistent issue where restaurant photos were not displaying in the web application (and by extension, the PWA), despite API responses confirming the presence of photo data and console logs indicating successful image loading.
 
-The user initially reported issues with the favorites functionality, where clicked hearts were not saving and favorites were not listed. This led to extensive debugging:
-1.  **Backend Fix**: It was discovered that the  function in  was failing to retrieve Google Places restaurant details due to using an outdated API call. This was fixed by updating it to use the new Google Places API, ensuring that favorited Google Places restaurants are correctly retrieved.
-2.  **Frontend Fix**: A critical issue was found where  and  components had unsynchronized  states. This was resolved by modifying  to pass  and  as props to , and updating  to use these props, thereby unifying the state management for favorites. Duplicate function declarations in  were also fixed.
-3.  **Deployment Issue**: Through debugging with the user, it was identified that the user was testing the deployed Vercel version () while all the fixes were implemented and tested on the local development environment (). All debugging code was then removed from the frontend and backend, and the fixes were made ready for deployment to the live site.
+The previous actions involved:
+1.  **Debugging in **: Adding  statements to  to inspect the  data, specifically the  array and  flag, directly within the browser's developer console.
+2.  **User Console Feedback**: The user provided console logs which definitively showed  and  for all restaurants. This confirmed that the photo data was reaching the frontend and the browser successfully loaded the image assets.
+3.  **Root Cause Identification**: Based on this evidence, the root cause was identified as a **CSS/Styling Issue**, implying that the images were present and loaded, but visually obstructed or incorrectly positioned by the application's styling.
+4.  **Implementing Debugging CSS**: To confirm this hypothesis and visually identify the problem, the AI engineer added aggressive debugging CSS to  (5px red border and yellow background on photo containers, 3px blue border on actual images, and minimum dimensions) to force the images to be visible.
 
-Following the favorites fix, the user requested the ability to pull current specials data for restaurants without registered owners. The AI researched various external APIs (Zomato, Foursquare, Yelp, Groupon) and provided a detailed pricing comparison. The recommended immediate next step, agreed upon by the user, is to implement a free-tier combo using Zomato API for specials data and Foursquare API for general restaurant data.
-
-The current task is to proceed with this external data integration, and the AI has just initiated fetching the integration playbook for the Zomato API.
+The current state is that this debugging CSS has been applied, and the next step is for the user to test the web application to see if these highly visible borders and potentially the images themselves are now displayed, which would pinpoint the exact CSS conflict.
 </current_work>
 
 <optional_next_step>
-Obtain the integration playbook for the Foursquare API to complement the Zomato API integration.
+The next step is to instruct the user to hard refresh their browser and search for restaurants to observe the debug CSS borders around the images.
 </optional_next_step>

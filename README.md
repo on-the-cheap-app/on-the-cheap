@@ -29,7 +29,7 @@ A full-stack restaurant discovery platform that helps users find active specials
 
 ## 🚀 Live Demo
 
-- **Main App**: [Find Restaurant Specials](https://cheapdeals-app.preview.emergentagent.com)
+- **Main App**: [Find Restaurant Specials](https://bargaineats.preview.emergentagent.com)
 - **Owner Portal**: Click "Restaurant Owner" in the app header
 
 ## 🏗️ Project Structure
