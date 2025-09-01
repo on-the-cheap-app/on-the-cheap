@@ -2424,7 +2424,7 @@ async def get_owner_dashboard(current_user: dict = Depends(get_current_user)):
             raise HTTPException(status_code=403, detail="Owner access required")
         
         owner_service = get_owner_service(db)
-        stats = await owner_service.get_owner_dashboard(current_user["user_id"])
+        stats = await owner_service.get_owner_dashboard(current_user["id"])
         return stats
     except HTTPException:
         raise
