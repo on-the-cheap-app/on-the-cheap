@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { BuildingStorefrontIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
-const OwnerAuth = ({ onClose, onSuccess }) => {
+const OwnerAuth = ({ onClose, onAuthSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
