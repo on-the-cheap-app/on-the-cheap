@@ -442,7 +442,7 @@ const OwnerPortal = () => {
           </Alert>
         )}
 
-        <Tabs defaultValue="restaurants" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList>
             <TabsTrigger value="restaurants">My Restaurants</TabsTrigger>
             <TabsTrigger value="claim">Claim Restaurant</TabsTrigger>
