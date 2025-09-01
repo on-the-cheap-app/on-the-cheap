@@ -513,51 +513,48 @@ function App() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2 justify-center sm:justify-end">
+              {/* Auth buttons */}
               {currentUser ? (
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowUserAuth(true)}
-                    className="border-orange-600 text-orange-600 hover:bg-orange-50 text-xs sm:text-sm"
-                  >
-                    <User className="w-4 h-4 mr-1 sm:mr-2" />
-                    <span className="hidden sm:inline">{currentUser.first_name}</span>
-                    <span className="sm:hidden">Profile</span>
-                  </Button>
-                  
-                  {notificationsInitialized && (
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowNotificationPreferences(true)}
-                      className={`${notificationsEnabled 
-                        ? 'border-green-600 text-green-600 hover:bg-green-50' 
-                        : 'border-gray-400 text-gray-600 hover:bg-gray-50'
-                      } p-2 sm:px-4`}
-                      title={notificationsEnabled ? 'Manage Notifications' : 'Enable Notifications'}
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-600">
+                    Welcome, {currentUser.first_name || currentUser.email}!
+                    {userType === 'owner' && (
+                      <span className="ml-1 px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded-full">
+                        Owner
+                      </span>
+                    )}
+                  </span>
+                  {userType === 'owner' && (
+                    <button
+                      onClick={() => setShowOwnerDashboard(true)}
+                      className="px-3 py-1 bg-orange-500 text-white text-sm rounded hover:bg-orange-600 transition-colors"
                     >
-                      <Bell className={`w-4 h-4 ${notificationsEnabled ? 'fill-current' : ''}`} />
-                    </Button>
+                      Dashboard
+                    </button>
                   )}
+                  <button
+                    onClick={handleLogout}
+                    className="px-3 py-1 bg-gray-500 text-white text-sm rounded hover:bg-gray-600 transition-colors"
+                  >
+                    Logout
+                  </button>
                 </div>
               ) : (
-                <Button
-                  variant="outline"
-                  onClick={() => setShowUserAuth(true)}
-                  className="border-orange-600 text-orange-600 hover:bg-orange-50 text-xs sm:text-sm"
-                >
-                  <User className="w-4 h-4 mr-1 sm:mr-2" />
-                  Sign In
-                </Button>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setShowUserAuth(true)}
+                    className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => setShowOwnerAuth(true)}
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                  >
+                    Owner Portal
+                  </button>
+                </div>
               )}
-              <Button
-                variant="outline"
-                onClick={() => setShowOwnerPortal(true)}
-                className="border-orange-600 text-orange-600 hover:bg-orange-50 text-xs sm:text-sm"
-              >
-                <Building2 className="w-4 h-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Restaurant Owner</span>
-                <span className="sm:hidden">Owner</span>
-              </Button>
             </div>
           </div>
         </div>
