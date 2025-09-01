@@ -87,8 +87,8 @@ class OwnerSpecialCreate(BaseModel):
     original_price: Optional[float] = Field(None, ge=0)
     discount_percentage: Optional[int] = Field(None, ge=0, le=100)
     days_available: List[str] = Field(..., min_items=1)  # ['monday', 'tuesday', etc.]
-    time_start: str = Field(..., regex=r"^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")  # HH:MM format
-    time_end: str = Field(..., regex=r"^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")    # HH:MM format
+    time_start: str = Field(..., pattern=r"^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")  # HH:MM format
+    time_end: str = Field(..., pattern=r"^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")    # HH:MM format
     valid_from: str  # ISO date string
     valid_until: str  # ISO date string
     max_redemptions: Optional[int] = Field(None, ge=1)
