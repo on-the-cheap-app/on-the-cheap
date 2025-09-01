@@ -286,7 +286,10 @@ const OwnerDashboard = ({ user, token, onClose }) => {
                     <h4 className="text-lg font-medium text-gray-600 mb-2">No Restaurants Yet</h4>
                     <p className="text-gray-500 mb-4">Claim your first restaurant to start managing specials</p>
                     <button
-                      onClick={handleClaimRestaurant}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleClaimRestaurant(e);
+                      }}
                       className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
                     >
                       Claim Restaurant
