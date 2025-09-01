@@ -2535,6 +2535,213 @@ async def approve_special(special_id: str, admin_notes: Optional[str] = None):
         logger.error(f"Error approving special: {e}")
         raise HTTPException(status_code=500, detail="Special approval failed")
 
+# =================== ADVANCED PRODUCTION MONITORING ENDPOINTS ===================
+
+@api_router.get("/admin/analytics/api")
+async def get_api_analytics(hours: int = Query(24, ge=1, le=168)):
+    """Get comprehensive API usage analytics"""
+    global monitoring_service
+    
+    if not monitoring_service:
+        raise HTTPException(status_code=503, detail="Monitoring service not available")
+    
+    try:
+        analytics = await monitoring_service.get_api_analytics(hours)
+        return analytics
+    except Exception as e:
+        logger.error(f"Error getting API analytics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get API analytics")
+
+@api_router.get("/admin/analytics/system")
+async def get_system_analytics(hours: int = Query(24, ge=1, le=168)):
+    """Get comprehensive system performance analytics"""
+    global monitoring_service
+    
+    if not monitoring_service:
+        raise HTTPException(status_code=503, detail="Monitoring service not available")
+    
+    try:
+        analytics = await monitoring_service.get_system_analytics(hours)
+        return analytics
+    except Exception as e:
+        logger.error(f"Error getting system analytics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get system analytics")
+
+@api_router.get("/admin/analytics/business")
+async def get_business_analytics(metric_name: Optional[str] = None, hours: int = Query(24, ge=1, le=168)):
+    """Get business metrics analytics"""
+    global monitoring_service
+    
+    if not monitoring_service:
+        raise HTTPException(status_code=503, detail="Monitoring service not available")
+    
+    try:
+        analytics = await monitoring_service.get_business_analytics(metric_name, hours)
+        return analytics
+    except Exception as e:
+        logger.error(f"Error getting business analytics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get business analytics")
+
+@api_router.get("/admin/analytics/errors")
+async def get_error_analytics(hours: int = Query(24, ge=1, le=168)):
+    """Get comprehensive error analytics"""
+    global monitoring_service
+    
+    if not monitoring_service:
+        raise HTTPException(status_code=503, detail="Monitoring service not available")
+    
+    try:
+        analytics = await monitoring_service.get_error_analytics(hours)
+        return analytics
+    except Exception as e:
+        logger.error(f"Error getting error analytics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get error analytics")
+
+@api_router.get("/admin/redis/stats")
+async def get_redis_stats():
+    """Get Redis performance statistics"""
+    global redis_service
+    
+    if not redis_service:
+        return {"message": "Redis service not available", "status": "disabled"}
+    
+    try:
+        stats = await redis_service.get_performance_stats()
+        return stats
+    except Exception as e:
+        logger.error(f"Error getting Redis stats: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get Redis statistics")
+
+@api_router.post("/admin/redis/invalidate")
+async def invalidate_redis_cache(pattern: str = Query(..., description="Cache key pattern to invalidate")):
+    """Invalidate Redis cache by pattern"""
+    global redis_service
+    
+    if not redis_service:
+        raise HTTPException(status_code=503, detail="Redis service not available")
+    
+    try:
+        invalidated_count = await redis_service.invalidate_pattern(pattern)
+        return {
+            "message": f"Invalidated {invalidated_count} cache entries",
+            "pattern": pattern,
+            "invalidated_count": invalidated_count
+        }
+    except Exception as e:
+        logger.error(f"Error invalidating Redis cache: {e}")
+        raise HTTPException(status_code=500, detail="Failed to invalidate cache")
+
+@api_router.post("/admin/cache/warm")
+async def warm_cache():
+    """Warm up cache with frequently accessed data"""
+    global redis_service, cache_service
+    
+    try:
+        # Prepare warm data for frequently accessed endpoints
+        warm_data = {
+            "special_types": await get_special_types(),
+            # Add more frequently accessed data as needed
+        }
+        
+        warmed_count = 0
+        if redis_service:
+            warmed_count += await redis_service.cache_warming(warm_data)
+        
+        return {
+            "message": f"Cache warming completed",
+            "warmed_entries": warmed_count,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error warming cache: {e}")
+        raise HTTPException(status_code=500, detail="Failed to warm cache")
+
+# =================== PRODUCTION HEALTH & STATUS ENDPOINTS ===================
+
+@api_router.get("/admin/status/comprehensive")
+async def comprehensive_status():
+    """Get comprehensive production system status"""
+    global cache_service, db_service, redis_service, monitoring_service
+    
+    status = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "overall_status": "healthy",
+        "services": {}
+    }
+    
+    # Cache service status
+    if cache_service:
+        cache_stats = cache_service.get_cache_stats()
+        status["services"]["cache"] = {
+            "status": "healthy",
+            "hit_rate": cache_stats["hit_rate"],
+            "entries": cache_stats["cache_entries"]
+        }
+    
+    # Database service status
+    if db_service:
+        db_health = await db_service.health_check()
+        status["services"]["database"] = db_health
+        if db_health["status"] != "healthy":
+            status["overall_status"] = "degraded"
+    
+    # Redis service status
+    if redis_service:
+        redis_stats = await redis_service.get_performance_stats()
+        status["services"]["redis"] = {
+            "status": redis_stats["connection_status"],
+            "hit_rate": redis_stats["hit_rate"],
+            "avg_response_time": redis_stats["avg_response_time_ms"]
+        }
+        if redis_stats["connection_status"] != "connected":
+            status["overall_status"] = "degraded"
+    else:
+        status["services"]["redis"] = {"status": "disabled"}
+    
+    # Monitoring service status
+    if monitoring_service:
+        status["services"]["monitoring"] = {
+            "status": "active" if monitoring_service.monitoring_enabled else "inactive",
+            "api_calls_tracked": len(monitoring_service.api_metrics),
+            "system_metrics_tracked": len(monitoring_service.system_metrics)
+        }
+    
+    return status
+
+# Enhanced health endpoint with monitoring integration
+@api_router.get("/admin/health/enhanced")
+async def enhanced_health_check():
+    """Enhanced health check with monitoring integration"""
+    # Record this API call for monitoring
+    start_time = datetime.now()
+    
+    try:
+        health_data = await comprehensive_health_check()
+        
+        # Record monitoring data
+        response_time = (datetime.now() - start_time).total_seconds() * 1000
+        if monitoring_service:
+            await monitoring_service.record_api_call(
+                endpoint="/admin/health/enhanced",
+                method="GET",
+                status_code=200,
+                response_time=response_time
+            )
+        
+        return health_data
+        
+    except Exception as e:
+        response_time = (datetime.now() - start_time).total_seconds() * 1000
+        if monitoring_service:
+            await monitoring_service.record_api_call(
+                endpoint="/admin/health/enhanced",
+                method="GET",
+                status_code=500,
+                response_time=response_time,
+                error_message=str(e)
+            )
+        raise
+
 # Include the router in the main app
 app.include_router(api_router)
 
