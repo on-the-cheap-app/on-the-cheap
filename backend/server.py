@@ -1124,8 +1124,34 @@ async def get_special_types():
 
 @api_router.post("/geocode/forward", response_model=GeocodeResponse)
 async def forward_geocode(request: GeocodeRequest):
-    """Convert address to coordinates using Google Geocoding API"""
+    """Convert address to coordinates using Google Geocoding API with caching"""
+    global cache_service
+    
+    # Try cache first
+    cache_params = {
+        "address": request.address.lower().strip(),
+        "region": request.region or "",
+        "bounds": request.bounds or ""
+    }
+    
+    if cache_service:
+        cached_data = await cache_service.get(CacheType.GEOCODING, **cache_params)
+        if cached_data:
+            logger.info("Cache hit for geocoding request")
+            cache_service.stats["api_calls_saved"] += 1
+            cache_service.stats["cost_saved"] += 0.005  # Estimated cost per geocoding call
+            return GeocodeResponse(**cached_data)
+    
     try:
+        # Track API usage
+        if cache_service:
+            cache_service.track_api_usage("google_geocoding", requests=1, cost=0.005)
+        
+        # Check if we should throttle API calls
+        if cache_service and cache_service.should_throttle("google_geocoding", threshold=0.85):
+            logger.warning("Google Geocoding API throttled due to high usage")
+            raise HTTPException(status_code=429, detail="API rate limit approached, please try again later")
+        
         gmaps_client = get_gmaps_client()
         
         # Prepare geocoding parameters
@@ -1144,14 +1170,20 @@ async def forward_geocode(request: GeocodeRequest):
         result = geocode_result[0]
         location = result["geometry"]["location"]
         
-        return GeocodeResponse(
-            formatted_address=result["formatted_address"],
-            latitude=location["lat"],
-            longitude=location["lng"],
-            place_id=result["place_id"],
-            address_components=result["address_components"],
-            geometry_type=result["geometry"]["location_type"]
-        )
+        response_data = {
+            "formatted_address": result["formatted_address"],
+            "latitude": location["lat"],
+            "longitude": location["lng"],
+            "place_id": result["place_id"],
+            "address_components": result["address_components"],
+            "geometry_type": result["geometry"]["location_type"]
+        }
+        
+        # Cache the result
+        if cache_service:
+            await cache_service.set(CacheType.GEOCODING, response_data, ttl=86400, **cache_params)  # 24 hour cache
+        
+        return GeocodeResponse(**response_data)
         
     except (gmaps_exceptions.ApiError, gmaps_exceptions.TransportError, gmaps_exceptions.Timeout) as e:
         logging.error(f"Google Maps API error: {e}")
