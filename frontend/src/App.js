@@ -21,7 +21,7 @@ import { usePWA } from "./hooks/usePWA";
 import * as Analytics from './utils/analytics';
 
 // Get backend URL from environment variables
-const BACKEND_URL = "https://cheapdeals-app.preview.emergentagent.com"; // HTTPS for mixed content security
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 const API = `${BACKEND_URL}/api`;
 
 // App link for sharing (update this when you have a production domain)
