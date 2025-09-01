@@ -29,7 +29,7 @@ const useGeocoding = () => {
         bounds: options.bounds || null
       };
       
-      const response = await axios.post(`${getBackendUrl()}/api/geocode/forward`, requestData);
+      const response = await axios.post(getApiUrl('/api/geocode/forward'), requestData);
       return response.data;
     } catch (err) {
       // Handle 404 errors gracefully (address not found)
