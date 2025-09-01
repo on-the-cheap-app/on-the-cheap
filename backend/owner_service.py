@@ -451,7 +451,16 @@ class OwnerAdminService:
         ).sort("submitted_at", 1)
         
         claims = await claims_cursor.to_list(length=None)
-        return [RestaurantClaimRequest(**claim) for claim in claims]
+        
+        # Clean MongoDB data for Pydantic models
+        cleaned_claims = []
+        for claim in claims:
+            # Remove MongoDB _id and prepare data
+            if '_id' in claim:
+                del claim['_id']
+            cleaned_claims.append(RestaurantClaimRequest(**claim))
+        
+        return cleaned_claims
     
     async def get_pending_specials(self) -> List[OwnerSpecial]:
         """Get all pending specials"""
