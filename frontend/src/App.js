@@ -250,6 +250,11 @@ function App() {
     searchRestaurants(geocodeResult.latitude, geocodeResult.longitude);
   };
 
+  // Handler for manual text input in AddressInput
+  const handleAddressInputChange = (value) => {
+    setSearchLocation(value);
+  };
+
   const searchRestaurants = async (latitude, longitude) => {
     if (!latitude || !longitude) return;
     
