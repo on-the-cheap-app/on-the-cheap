@@ -445,17 +445,21 @@ class ProductionOptimizationTester:
                     details = "Quota tracking endpoint accessible but no quota data available yet"
                     success = True
                 else:
-                    tracked_services = [key for key in quota_data.keys() if key != 'message']
-                    details = f"Quota tracking working for {len(tracked_services)} services"
+                    # Handle the actual response format
+                    quotas = quota_data.get('quotas', {})
+                    timestamp = quota_data.get('timestamp', 'N/A')
+                    cache_performance = quota_data.get('cache_performance', {})
                     
-                    if tracked_services:
+                    if quotas:
+                        tracked_services = list(quotas.keys())
+                        details = f"Quota tracking working for {len(tracked_services)} services"
                         details += f": {tracked_services}"
                         
                         # Check if any services show usage
                         total_requests = 0
                         for service in tracked_services:
-                            service_quota = quota_data[service]
-                            if service_quota:
+                            service_quota = quotas[service]
+                            if service_quota and isinstance(service_quota, dict):
                                 requests_made = service_quota.get('requests_made', 0)
                                 total_requests += requests_made
                                 usage_percent = service_quota.get('usage_percent', 0)
@@ -465,6 +469,8 @@ class ProductionOptimizationTester:
                             details += f" - Total API requests tracked: {total_requests}"
                         else:
                             details += " - No API usage recorded yet (may be due to caching)"
+                    else:
+                        details = f"Quota endpoint working, timestamp: {timestamp}, cache performance available: {bool(cache_performance)}"
             else:
                 details = f"Status: {quota_response.status_code}, Response: {quota_response.text[:200]}"
             
