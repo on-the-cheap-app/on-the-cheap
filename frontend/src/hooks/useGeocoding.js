@@ -8,7 +8,7 @@ const useGeocoding = () => {
 
   // Get backend URL from environment
   const getBackendUrl = () => {
-    return "http://10.64.132.142:8001"; // Temporarily hardcoded for debugging
+    return "https://cheapdeals-app.preview.emergentagent.com"; // HTTPS for mixed content security
   };
 
   const forwardGeocode = useCallback(async (address, options = {}) => {
