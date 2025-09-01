@@ -14,8 +14,17 @@ import json
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Union
-import aioredis
-from aioredis import Redis
+try:
+    import aioredis
+    from aioredis import Redis
+    REDIS_AVAILABLE = True
+except (ImportError, TypeError) as e:
+    print(f"Redis not available: {e}")
+    REDIS_AVAILABLE = False
+    # Create dummy classes for when Redis is not available
+    class Redis:
+        pass
+    aioredis = None
 import os
 from contextlib import asynccontextmanager
 from enum import Enum
