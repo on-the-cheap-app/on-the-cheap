@@ -60,7 +60,7 @@ const useGeocoding = () => {
         location_type: options.locationType || null
       };
       
-      const response = await axios.post(`${getBackendUrl()}/api/geocode/reverse`, requestData);
+      const response = await axios.post(getApiUrl('/api/geocode/reverse'), requestData);
       return response.data;
     } catch (err) {
       const errorMessage = err.response?.data?.detail || 'Reverse geocoding failed';
