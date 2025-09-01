@@ -29,6 +29,8 @@ from onesignal_service import (
 # Import production services
 from cache_service import get_cache_service, CacheType, initialize_cache_service
 from database_service import get_database_service, initialize_database_service
+from redis_service import get_redis_service, initialize_redis_service
+from monitoring_service import get_monitoring_service, initialize_monitoring_service
 from owner_service import (
     get_owner_service, 
     get_owner_admin_service,
