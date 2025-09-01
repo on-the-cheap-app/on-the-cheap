@@ -470,7 +470,16 @@ class OwnerAdminService:
         ).sort("created_at", 1)
         
         specials = await specials_cursor.to_list(length=None)
-        return [OwnerSpecial(**special) for special in specials]
+        
+        # Clean MongoDB data for Pydantic models
+        cleaned_specials = []
+        for special in specials:
+            # Remove MongoDB _id and prepare data
+            if '_id' in special:
+                del special['_id']
+            cleaned_specials.append(OwnerSpecial(**special))
+        
+        return cleaned_specials
 
 # Global service instances
 _owner_service: Optional[RestaurantOwnerService] = None
