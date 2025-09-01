@@ -98,7 +98,7 @@ const useGeocoding = () => {
     setError(null);
     
     try {
-      const response = await axios.get(`${getBackendUrl()}/api/geocode`, {
+      const response = await axios.get(getApiUrl('/api/geocode'), {
         params: { address }
       });
       return response.data;
