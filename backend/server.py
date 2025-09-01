@@ -50,6 +50,37 @@ security = HTTPBearer()
 # Create the main app without a prefix
 app = FastAPI(title="On-the-Cheap API", description="Find local restaurant and bar specials")
 
+# Production startup and shutdown events
+@app.on_event("startup")
+async def startup_event():
+    """Initialize production services on startup"""
+    global cache_service, db_service
+    
+    logger.info("Initializing production services...")
+    
+    # Initialize cache service
+    cache_service = await initialize_cache_service()
+    
+    # Initialize database service with indexes
+    db_service = await initialize_database_service()
+    
+    # Initialize mock data if needed
+    await init_mock_data()
+    
+    logger.info("Production services initialized successfully")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup on shutdown"""
+    global db_service
+    
+    logger.info("Shutting down production services...")
+    
+    if db_service:
+        await db_service.close()
+    
+    logger.info("Production services shutdown complete")
+
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
