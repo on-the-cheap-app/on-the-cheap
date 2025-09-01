@@ -156,12 +156,13 @@ class RestaurantOwner(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class RestaurantOwnerCreate(BaseModel):
+    first_name: str = Field(..., min_length=1, max_length=50)
+    last_name: str = Field(..., min_length=1, max_length=50)
     email: str
-    password: str
-    business_name: str
-    phone: str
-    first_name: str
-    last_name: str
+    password: str = Field(..., min_length=8)
+    phone: str = Field(..., min_length=10, max_length=20)
+    business_name: Optional[str] = Field(None, max_length=100)
+    business_type: str = Field(default="restaurant")  # restaurant, bar, cafe, food_truck, etc.
 
 class RestaurantOwnerLogin(BaseModel):
     email: str
