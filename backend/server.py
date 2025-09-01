@@ -2440,7 +2440,7 @@ async def get_owner_specials(restaurant_id: Optional[str] = None, current_user: 
             raise HTTPException(status_code=403, detail="Owner access required")
         
         owner_service = get_owner_service(db)
-        specials = await owner_service.get_owner_specials(current_user["user_id"], restaurant_id)
+        specials = await owner_service.get_owner_specials(current_user["id"], restaurant_id)
         return {"specials": specials}
     except HTTPException:
         raise
