@@ -540,6 +540,7 @@ function App() {
                   placeholder="Enter city or address (e.g., San Francisco, New York)"
                   initialValue={searchLocation}
                   onAddressSelect={handleAddressSelect}
+                  onInputChange={handleAddressInputChange}
                   region="US"
                   className="w-full"
                 />
