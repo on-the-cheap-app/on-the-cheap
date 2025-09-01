@@ -22,6 +22,18 @@ class APIService {
       return config;
     });
 
+    // Add response/error interceptors for debugging
+    this.api.interceptors.response.use(
+      (response) => {
+        console.log('✅ API Response:', response.config.method?.toUpperCase(), response.config.url, response.status);
+        return response;
+      },
+      (error) => {
+        console.error('❌ API Error:', error.config?.method?.toUpperCase(), error.config?.url, error.response?.status, error.message);
+        return Promise.reject(error);
+      }
+    );
+
     // Handle token expiration
     this.api.interceptors.response.use(
       (response) => response,
