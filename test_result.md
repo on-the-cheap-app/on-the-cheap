@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the newly implemented Map View feature in the On-the-Cheap restaurant discovery app."
+user_problem_statement: "Fix restaurant photo display issue in web app and continue development with either Owner Dashboard or Mobile App fixes as user prefers."
 
 backend:
   - task: "User Registration API"
