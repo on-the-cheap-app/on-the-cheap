@@ -3,6 +3,7 @@ import useGeocoding from '../hooks/useGeocoding';
 
 const AddressInput = ({ 
   onAddressSelect, 
+  onInputChange,
   placeholder = "Enter an address", 
   className = "",
   region = null,
