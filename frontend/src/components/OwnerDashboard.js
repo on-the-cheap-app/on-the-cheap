@@ -68,14 +68,22 @@ const OwnerDashboard = ({ user, token, onClose }) => {
     }
   };
 
-  const handleCreateSpecial = () => {
+  const handleCreateSpecial = (restaurantId = null) => {
     // TODO: Open special creation modal
-    alert('Special creation modal coming soon!');
+    console.log('Create special for restaurant:', restaurantId);
+    alert('Special creation modal coming soon! Restaurant ID: ' + (restaurantId || 'No restaurant selected'));
   };
 
-  const handleClaimRestaurant = () => {
+  const handleClaimRestaurant = (e) => {
+    // Prevent any default behavior and event propagation
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
     // TODO: Open restaurant claim modal
-    alert('Restaurant claim modal coming soon!');
+    console.log('Opening restaurant claim modal');
+    alert('Restaurant claim modal coming soon! This will allow you to search for and claim existing restaurants in our database.');
   };
 
   if (loading) {
