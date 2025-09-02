@@ -489,10 +489,10 @@ function App() {
     localStorage.removeItem('userType');
   };
 
-  // If showing owner portal, render it
-  if (showOwnerPortal) {
-    return <OwnerPortal />;
-  }
+  // If showing owner portal, render it - DISABLED, using new Owner Dashboard system
+  // if (showOwnerPortal) {
+  //   return <OwnerPortal />;
+  // }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50">
