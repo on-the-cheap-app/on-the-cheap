@@ -597,6 +597,27 @@ async def get_current_regular_user(credentials: HTTPAuthorizationCredentials = D
 # Optional security for endpoints that can work with or without authentication
 optional_security = HTTPBearer(auto_error=False)
 
+async def get_current_user_from_token(token: str):
+    """Get current user from token string"""
+    payload = verify_token(token)
+    user_id = payload.get("user_id")
+    user_type = payload.get("user_type", "owner")  # Default to owner for backward compatibility
+    
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    if user_type == "owner":
+        user = await db.restaurant_owners.find_one({"id": user_id})
+    else:
+        user = await db.users.find_one({"id": user_id})
+    
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    
+    user_data = prepare_from_mongo(user)
+    user_data["user_type"] = user_type
+    return user_data
+
 async def get_current_user_optional(credentials: Optional[HTTPAuthorizationCredentials] = Depends(optional_security)):
     """Get current authenticated user (optional - returns None if no valid token)"""
     if not credentials:
