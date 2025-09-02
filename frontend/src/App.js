@@ -26,6 +26,11 @@ import * as Analytics from './utils/analytics';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 const API = BACKEND_URL || '/api';
 
+// Debug logging
+console.log('🔍 App.js Debug - BACKEND_URL:', BACKEND_URL);
+console.log('🔍 App.js Debug - API:', API);
+console.log('🔍 App.js Debug - process.env.REACT_APP_BACKEND_URL:', process.env.REACT_APP_BACKEND_URL);
+
 // App link for sharing (update this when you have a production domain)
 const APP_LINK = "https://on-the-cheap.app"; // Placeholder - update with your actual domain
 
