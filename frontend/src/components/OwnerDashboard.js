@@ -295,8 +295,16 @@ const OwnerDashboard = ({ user, token, onClose }) => {
                     <h4 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h4>
                     <div className="space-y-3">
                       <button
+                        onClick={() => handleCreateCoupon()}
+                        className="w-full flex items-center justify-center px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 transition-all transform hover:scale-105"
+                        disabled={restaurants.length === 0}
+                      >
+                        <SparklesIcon className="w-5 h-5 mr-2" />
+                        Create Digital Coupon
+                      </button>
+                      <button
                         onClick={handleCreateSpecial}
-                        className="w-full flex items-center justify-center px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                        className="w-full flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                         disabled={restaurants.length === 0}
                       >
                         <PlusIcon className="w-5 h-5 mr-2" />
@@ -304,7 +312,7 @@ const OwnerDashboard = ({ user, token, onClose }) => {
                       </button>
                       <button
                         onClick={handleClaimRestaurant}
-                        className="w-full flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                        className="w-full flex items-center justify-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
                       >
                         <BuildingStorefrontIcon className="w-5 h-5 mr-2" />
                         Claim Restaurant
