@@ -2919,10 +2919,12 @@ async def track_coupon_save(coupon_id: str, current_user: Optional[dict] = Depen
         raise HTTPException(status_code=500, detail="Failed to track save")
 
 # Helper function for optional authentication
-def get_current_user_optional():
+async def get_current_user_optional(authorization: HTTPAuthorizationCredentials = Depends(security)):
     """Get current user if authenticated, otherwise return None"""
     try:
-        return get_current_user()
+        if not authorization:
+            return None
+        return await get_current_user_from_token(authorization.credentials)
     except:
         return None
 
