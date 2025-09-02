@@ -398,6 +398,129 @@ const OwnerDashboard = ({ user, token, onClose }) => {
               </div>
             )}
 
+            {/* Digital Coupons Tab */}
+            {activeTab === 'coupons' && (
+              <div>
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-semibold text-gray-800">Digital Coupons</h3>
+                  <button
+                    onClick={() => handleCreateCoupon()}
+                    className="flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 transition-all transform hover:scale-105"
+                    disabled={restaurants.length === 0}
+                  >
+                    <SparklesIcon className="w-5 h-5 mr-2" />
+                    Create Coupon
+                  </button>
+                </div>
+
+                {coupons.length === 0 ? (
+                  <div className="text-center py-12 bg-gradient-to-br from-orange-50 to-red-50 rounded-lg border-2 border-dashed border-orange-300">
+                    <GiftIcon className="w-16 h-16 text-orange-400 mx-auto mb-4" />
+                    <h4 className="text-lg font-medium text-gray-800 mb-2">Start Driving Foot Traffic!</h4>
+                    <p className="text-gray-600 mb-4 max-w-md mx-auto">
+                      Create irresistible digital coupons that customers can't resist. 
+                      Get QR codes, track redemptions, and watch your revenue grow!
+                    </p>
+                    {restaurants.length === 0 ? (
+                      <div className="mb-4">
+                        <p className="text-sm text-orange-600 mb-2">You need to claim a restaurant first</p>
+                        <button
+                          onClick={handleClaimRestaurant}
+                          className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                        >
+                          Claim Restaurant
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleCreateCoupon()}
+                        className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 transition-all transform hover:scale-105"
+                      >
+                        <SparklesIcon className="w-5 h-5 mr-2 inline" />
+                        Create Your First Coupon
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {coupons.map((coupon) => (
+                      <div key={coupon.id} className="bg-white rounded-lg shadow-lg border overflow-hidden hover:shadow-xl transition-shadow">
+                        {/* Coupon Header */}
+                        <div className={`p-4 text-white bg-gradient-to-r ${
+                          coupon.status === 'active' 
+                            ? 'from-green-500 to-green-600' 
+                            : coupon.status === 'paused' 
+                            ? 'from-yellow-500 to-yellow-600'
+                            : 'from-gray-500 to-gray-600'
+                        }`}>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-bold text-lg">{coupon.title}</h4>
+                              <p className="text-sm opacity-90">{coupon.description}</p>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-2xl font-bold">
+                                {coupon.coupon_type === 'percentage' && `${coupon.discount_percentage}%`}
+                                {coupon.coupon_type === 'fixed_amount' && `$${coupon.discount_amount}`}
+                                {coupon.coupon_type === 'bogo' && 'BOGO'}
+                                {coupon.coupon_type === 'free_item' && 'FREE'}
+                                {coupon.coupon_type === 'combo_deal' && `$${coupon.combo_price}`}
+                              </div>
+                              <div className="text-xs opacity-75">
+                                {coupon.coupon_type === 'percentage' && 'OFF'}
+                                {coupon.coupon_type === 'fixed_amount' && 'OFF'}
+                                {coupon.coupon_type === 'combo_deal' && 'COMBO'}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Coupon Stats */}
+                        <div className="p-4">
+                          <div className="grid grid-cols-3 gap-4 mb-4">
+                            <div className="text-center">
+                              <div className="text-lg font-bold text-gray-800">{coupon.views || 0}</div>
+                              <div className="text-xs text-gray-500">Views</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-lg font-bold text-gray-800">{coupon.saves || 0}</div>
+                              <div className="text-xs text-gray-500">Saves</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-lg font-bold text-green-600">{coupon.total_redemptions || 0}</div>
+                              <div className="text-xs text-gray-500">Redeemed</div>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Valid until:</span>
+                              <span className="font-medium">{new Date(coupon.valid_until).toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Max uses:</span>
+                              <span className="font-medium">{coupon.max_redemptions || 'Unlimited'}</span>
+                            </div>
+                          </div>
+
+                          <div className="mt-4 flex space-x-2">
+                            <button className="flex-1 px-3 py-2 bg-blue-100 text-blue-700 text-sm rounded hover:bg-blue-200 transition-colors">
+                              <ChartBarIcon className="w-4 h-4 inline mr-1" />
+                              Analytics
+                            </button>
+                            <button className="flex-1 px-3 py-2 bg-orange-100 text-orange-700 text-sm rounded hover:bg-orange-200 transition-colors">
+                              <QrCodeIcon className="w-4 h-4 inline mr-1" />
+                              QR Code
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Specials Tab */}
             {activeTab === 'specials' && (
               <div>
