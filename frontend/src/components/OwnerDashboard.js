@@ -617,6 +617,19 @@ const OwnerDashboard = ({ user, token, onClose }) => {
             )}
           </div>
         </div>
+
+        {/* Coupon Creator Modal */}
+        {showCouponCreator && selectedRestaurant && (
+          <CouponCreator
+            restaurant={selectedRestaurant}
+            token={token}
+            onClose={() => {
+              setShowCouponCreator(false);
+              setSelectedRestaurant(null);
+            }}
+            onSuccess={handleCouponSuccess}
+          />
+        )}
       </div>
     </div>
   );
