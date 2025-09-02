@@ -145,6 +145,11 @@ const OwnerPortal = () => {
     setPendingClaims([]);
   };
 
+  const handleBackToMainApp = () => {
+    localStorage.removeItem('owner_token');
+    window.location.href = '/';
+  };
+
   const fetchMyRestaurants = async () => {
     try {
       const response = await axios.get(`${API}/owner/my-restaurants`, {
