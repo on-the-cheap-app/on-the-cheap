@@ -41,8 +41,8 @@ const OwnerDashboard = ({ user, token, onClose }) => {
     try {
       setLoading(true);
       
-      // Load dashboard stats, restaurants, and specials in parallel
-      const [statsResponse, restaurantsResponse, specialsResponse] = await Promise.all([
+      // Load dashboard stats, restaurants, specials, and coupons in parallel
+      const [statsResponse, restaurantsResponse, specialsResponse, couponsResponse] = await Promise.all([
         fetch(`${backendUrl}/owners/dashboard`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
@@ -50,6 +50,9 @@ const OwnerDashboard = ({ user, token, onClose }) => {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
         fetch(`${backendUrl}/owners/specials`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch(`${backendUrl}/owners/coupons`, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
       ]);
@@ -67,6 +70,11 @@ const OwnerDashboard = ({ user, token, onClose }) => {
       if (specialsResponse.ok) {
         const specialsData = await specialsResponse.json();
         setSpecials(specialsData.specials || []);
+      }
+
+      if (couponsResponse.ok) {
+        const couponsData = await couponsResponse.json();
+        setCoupons(couponsData.coupons || []);
       }
 
     } catch (error) {
