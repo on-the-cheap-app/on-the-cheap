@@ -22,9 +22,12 @@ const OwnerDashboard = ({ user, token, onClose }) => {
   const [dashboardData, setDashboardData] = useState(null);
   const [restaurants, setRestaurants] = useState([]);
   const [specials, setSpecials] = useState([]);
+  const [coupons, setCoupons] = useState([]);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showCouponCreator, setShowCouponCreator] = useState(false);
+  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || '/api';
 
