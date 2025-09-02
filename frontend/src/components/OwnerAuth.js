@@ -21,6 +21,10 @@ const OwnerAuth = ({ onClose, onAuthSuccess }) => {
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || '/api';
 
+  // Debug logging
+  console.log('🔍 OwnerAuth Debug - backendUrl:', backendUrl);
+  console.log('🔍 OwnerAuth Debug - process.env.REACT_APP_BACKEND_URL:', process.env.REACT_APP_BACKEND_URL);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
