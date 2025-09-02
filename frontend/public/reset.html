@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reset App State</title>
+</head>
+<body>
+    <h1>Resetting App State...</h1>
+    <p>Clearing all cached data and redirecting to main app...</p>
+    
+    <script>
+        // Clear all localStorage and sessionStorage
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // Clear any cached data
+        if ('caches' in window) {
+            caches.keys().then(names => {
+                names.forEach(name => {
+                    caches.delete(name);
+                });
+            });
+        }
+        
+        // Redirect to main app after 2 seconds
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 2000);
+        
+        console.log('All browser storage cleared');
+    </script>
+</body>
+</html>
