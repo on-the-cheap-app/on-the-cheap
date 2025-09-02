@@ -423,6 +423,9 @@ const OwnerPortal = () => {
                 <p className="font-medium text-gray-900">{user.business_name}</p>
                 <p className="text-sm text-gray-600">{user.email}</p>
               </div>
+              <Button variant="outline" onClick={handleBackToMainApp}>
+                ← Back to Main App
+              </Button>
               <Button variant="outline" onClick={handleLogout}>
                 <LogOut className="w-4 h-4 mr-2" />
                 Logout
