@@ -47,6 +47,13 @@ from owner_service import (
     OwnerSpecial,
     OwnerDashboardStats
 )
+from coupon_service import (
+    get_coupon_service,
+    CouponCreate,
+    Coupon,
+    CouponRedemption,
+    CouponAnalytics
+)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
