@@ -2754,6 +2754,157 @@ async def enhanced_health_check():
             )
         raise
 
+# =================== DIGITAL COUPON ENDPOINTS ===================
+
+@api_router.post("/owners/coupons", response_model=Coupon)
+async def create_coupon(coupon_data: CouponCreate, restaurant_id: str, current_user: dict = Depends(get_current_user)):
+    """Create a new digital coupon for a restaurant"""
+    try:
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Only owners can create coupons")
+        
+        coupon_service = get_coupon_service(db)
+        coupon = await coupon_service.create_coupon(coupon_data, current_user["user_id"], restaurant_id)
+        return coupon
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating coupon: {e}")
+        raise HTTPException(status_code=500, detail="Coupon creation failed")
+
+@api_router.get("/owners/coupons")
+async def get_owner_coupons(restaurant_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Get all coupons for the authenticated owner"""
+    try:
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Owner access required")
+        
+        coupon_service = get_coupon_service(db)
+        coupons = await coupon_service.get_owner_coupons(current_user["user_id"], restaurant_id)
+        return {"coupons": coupons}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting owner coupons: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get coupons")
+
+@api_router.get("/coupons/near")
+async def get_coupons_near_location(
+    latitude: float = Query(..., description="Latitude"),
+    longitude: float = Query(..., description="Longitude"), 
+    radius: float = Query(default=10, description="Search radius in miles")
+):
+    """Get active coupons near a location"""
+    try:
+        coupon_service = get_coupon_service(db)
+        coupons = await coupon_service.get_active_coupons_by_location(latitude, longitude, radius)
+        return {"coupons": coupons, "total": len(coupons)}
+    except Exception as e:
+        logger.error(f"Error getting coupons near location: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get nearby coupons")
+
+@api_router.post("/coupons/{coupon_id}/redeem")
+async def redeem_coupon(
+    coupon_id: str, 
+    order_total: Optional[float] = None,
+    current_user: Optional[dict] = Depends(get_current_user_optional)
+):
+    """Redeem a coupon"""
+    try:
+        coupon_service = get_coupon_service(db)
+        customer_id = current_user.get("user_id") if current_user else None
+        
+        result = await coupon_service.redeem_coupon(
+            coupon_id=coupon_id,
+            customer_id=customer_id,
+            order_total=order_total
+        )
+        
+        # Record business metric for monitoring
+        if monitoring_service:
+            await monitoring_service.record_business_metric(
+                "coupon_redemption", 
+                result["discount_applied"],
+                {"coupon_id": coupon_id, "customer_type": "registered" if customer_id else "guest"}
+            )
+        
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error redeeming coupon: {e}")
+        raise HTTPException(status_code=500, detail="Coupon redemption failed")
+
+@api_router.get("/owners/coupons/{coupon_id}/analytics", response_model=CouponAnalytics)
+async def get_coupon_analytics(
+    coupon_id: str, 
+    days: int = Query(default=30, ge=1, le=365),
+    current_user: dict = Depends(get_current_user)
+):
+    """Get detailed analytics for a coupon"""
+    try:
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Owner access required")
+        
+        coupon_service = get_coupon_service(db)
+        analytics = await coupon_service.get_coupon_analytics(coupon_id, days)
+        return analytics
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting coupon analytics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get coupon analytics")
+
+@api_router.post("/coupons/{coupon_id}/view")
+async def track_coupon_view(coupon_id: str):
+    """Track when a coupon is viewed by a customer"""
+    try:
+        # Update view count
+        result = await db.coupons.update_one(
+            {"id": coupon_id},
+            {"$inc": {"views": 1}}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Coupon not found")
+        
+        return {"success": True, "message": "View tracked"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error tracking coupon view: {e}")
+        raise HTTPException(status_code=500, detail="Failed to track view")
+
+@api_router.post("/coupons/{coupon_id}/save")
+async def track_coupon_save(coupon_id: str, current_user: Optional[dict] = Depends(get_current_user_optional)):
+    """Track when a coupon is saved by a customer"""
+    try:
+        # Update save count
+        result = await db.coupons.update_one(
+            {"id": coupon_id},
+            {"$inc": {"saves": 1}}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Coupon not found")
+        
+        # TODO: Add to user's saved coupons if user is logged in
+        
+        return {"success": True, "message": "Save tracked"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error tracking coupon save: {e}")
+        raise HTTPException(status_code=500, detail="Failed to track save")
+
+# Helper function for optional authentication
+def get_current_user_optional():
+    """Get current user if authenticated, otherwise return None"""
+    try:
+        return get_current_user()
+    except:
+        return None
+
 # Include the router in the main app
 app.include_router(api_router)
 
