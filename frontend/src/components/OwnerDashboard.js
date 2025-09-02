@@ -103,6 +103,22 @@ const OwnerDashboard = ({ user, token, onClose }) => {
     alert('Restaurant claim modal coming soon! This will allow you to search for and claim existing restaurants in our database.');
   };
 
+  const handleCreateCoupon = (restaurant = null) => {
+    if (restaurants.length === 0) {
+      alert('You need to have at least one restaurant to create coupons. Please claim a restaurant first!');
+      return;
+    }
+    
+    setSelectedRestaurant(restaurant || restaurants[0]);
+    setShowCouponCreator(true);
+  };
+
+  const handleCouponSuccess = (newCoupon) => {
+    setCoupons(prev => [newCoupon, ...prev]);
+    setShowCouponCreator(false);
+    setSelectedRestaurant(null);
+  };
+
   if (loading) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
