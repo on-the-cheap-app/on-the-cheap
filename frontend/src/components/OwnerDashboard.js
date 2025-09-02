@@ -176,6 +176,22 @@ const OwnerDashboard = ({ user, token, onClose }) => {
                 My Restaurants
               </button>
               <button
+                onClick={() => setActiveTab('coupons')}
+                className={`w-full flex items-center px-4 py-2 text-left rounded-lg transition-colors ${
+                  activeTab === 'coupons' 
+                    ? 'bg-orange-100 text-orange-700 border-orange-200' 
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                <TagIcon className="w-5 h-5 mr-3" />
+                Digital Coupons
+                {coupons.length > 0 && (
+                  <span className="ml-auto bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
+                    {coupons.length}
+                  </span>
+                )}
+              </button>
+              <button
                 onClick={() => setActiveTab('specials')}
                 className={`w-full flex items-center px-4 py-2 text-left rounded-lg transition-colors ${
                   activeTab === 'specials' 
