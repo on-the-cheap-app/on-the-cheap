@@ -257,7 +257,7 @@ class CouponService:
             "type": "coupon_redemption",
             "coupon_id": coupon_id,
             "code": redemption_code,
-            "url": f"https://bargaineats.preview.emergentagent.com/redeem/{coupon_id}"
+            "url": f"https://foodspecials.preview.emergentagent.com/redeem/{coupon_id}"
         }
         
         qr = qrcode.QRCode(

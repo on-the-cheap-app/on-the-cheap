@@ -1,106 +1,133 @@
 <analysis>
-The AI engineer's work trajectory details the evolution of the On-the-Cheap application from a PWA to a native mobile app, then back to perfecting the PWA due to environmental challenges. Initially, the focus was on stabilizing the React Native (Expo) mobile environment, addressing setup issues, and porting core features. Phase 1 involved a complete overhaul of the mobile app's authentication system, including API endpoint corrections, UI component creation, and robust state management. Phase 2 integrated core search functionalities like geocoding, advanced filtering, and enhanced restaurant card displays.
+The AI engineer's work trajectory outlines the development of the On-the-Cheap application, focusing on critical fixes and new feature implementation. Initially, the engineer successfully resolved a web application issue where restaurant images were not displaying, diagnosing and fixing a CSS styling conflict after extensive console debugging. Following this, the project pivoted to implementing production optimizations, including a caching system, database indexing, and monitoring endpoints, which were thoroughly tested.
 
-Subsequent user feedback shifted the focus to integrating restaurant images and planning an owner workflow. Phase 3A began with image integration, which uncovered persistent and challenging networking and caching issues across both web and mobile platforms. The engineer systematically debugged problems like hardcoded URLs, double API paths, mixed content security errors, and client-side validation logic that prevented search functionality. Despite numerous fixes and internal screenshot confirmations, a significant discrepancy persisted between the engineer's test environment and the user's observed application state. The latest efforts pivoted back to enhancing the PWA, troubleshooting image display issues by verifying data presence in the frontend console, and currently, applying aggressive CSS debugging to uncover a suspected styling problem preventing images from being visible.
+A major segment of the work involved stabilizing and fixing the React Native mobile application. This included converting it to an Expo development setup, resolving numerous TypeScript compilation errors, and ensuring core services like  and  were functional. Concurrently, the engineer developed a robust Owner Dashboard system, comprising new backend services and frontend components for owner authentication and management.
+
+Throughout the development, persistent challenges arose with URL configurations, specifically Mixed Content errors due to hardcoded HTTP URLs and double  prefixes in API calls. This was exacerbated by browser caching issues and a confusion between an old and new Owner Portal system. The engineer systematically debugged these, ensuring correct  usage and proper frontend routing. The trajectory concludes with the initiation and foundational build-out of a digital coupon system for restaurant owners, involving new backend services and a frontend coupon creation component.
 </analysis>
 
 <product_requirements>
-The On-the-Cheap application helps users find local restaurant and bar specials by city/address or GPS, supporting user accounts and saving favorites. Initial features included external API integrations (Google Places/Geocoding, Foursquare), social sharing (Text, WhatsApp), ride-sharing (Uber, Lyft), and an interactive map. Google Analytics 4 was added for tracking, followed by a robust OneSignal push notification system for updates and daily digests. The application was then converted into a Progressive Web App (PWA) with installability and offline support.
+The On-the-Cheap application aims to help users find local restaurant and bar specials by location, supporting user accounts and saving favorites. Core features include external API integrations (Google Places/Geocoding, Foursquare), social sharing, ride-sharing, an interactive map, Google Analytics 4 tracking, and OneSignal push notifications. It was developed as a Progressive Web App (PWA) with installability and offline support.
 
-The current objective is to evolve the application into a downloadable native Android/iOS app using React Native (Expo), which led to setting up the mobile development environment. Recent user requests have highlighted two key areas:
-1.  **Restaurant Images**: Displaying pictures of restaurants, bars, food trucks, or pop-ups on their respective cards, prioritizing Google Places photos.
-2.  **Restaurant Owner Workflow**: Developing a system for restaurant owners to register their venues and schedule specials, with an emphasis on special scheduling to outperform competitors like . The initial focus is on a modular approach for the owner platform, starting with basic features.
+The primary development objectives in this trajectory were:
+1.  **Restaurant Images**: Displaying restaurant photos, primarily from Google Places, on restaurant cards.
+2.  **Restaurant Owner Workflow**: Developing a system for owners to register venues and schedule specials, with a modular approach.
+Recent explicit requests included:
+*   Resolving web app restaurant photo display issues.
+*   Implementing Production/Performance Features (caching, database indexing, monitoring).
+*   Fixing mobile app compilation and login issues.
+*   Building the Owner Dashboard system.
+*   Developing Digital Coupons for restaurant owners to entice foot traffic.
 </product_requirements>
 
 <key_technical_concepts>
-- **Frontend**: React, Tailwind CSS, Leaflet/OpenStreetMap, Google Analytics 4, OneSignal React SDK, PWA (Manifest, Service Worker), Expo, React Native, React Native Paper, AsyncStorage, , Axios.
-- **Backend**: FastAPI, MongoDB, JWT, Foursquare Places API, Google Places API (New), Google Geocoding API, httpx.
+- **Frontend**: React, Tailwind CSS, shadcn/ui, Leaflet/OpenStreetMap, Google Analytics 4, OneSignal React SDK, PWA (Manifest, Service Worker), Expo, React Native, Axios, Heroicons.
+- **Backend**: FastAPI, MongoDB, JWT, Foursquare Places API, Google Places API (New), Google Geocoding API, httpx, Redis (for caching).
 - **Deployment**: Kubernetes container environment, Supervisor.
 </key_technical_concepts>
 
 <code_architecture>
-The application utilizes a full-stack architecture comprising a React frontend, a FastAPI backend, and a MongoDB database. A new React Native (Expo) project for mobile development has also been initiated.
+The application uses a full-stack architecture with a React frontend, a FastAPI backend, and a MongoDB database, with an additional React Native (Expo) project for mobile.
 
 
 
-- ****:
-  - **Importance**: Core FastAPI backend, handles API routes for restaurants, users, geocoding, and specials.
-  - **Changes**: Modified to process Google Places photos, added fallback image generation, and integrated photos into database and external restaurant data. Fixed  error in the web app's  by ensuring  variable accessibility in both online/offline paths.
-- ****:
-  - **Importance**: Stores environment variables.
-  - **Changes**: Contains  and .
-- ****:
-  - **Importance**: Main React component, orchestrates search, state, and UI.
-  - **Changes**: Fixed  error. Integrated photo display into web app restaurant cards, including loading states, fallback images, and badges. Modified  integration to update  on input change. Updated backend URL references repeatedly to address connectivity issues (relative, hardcoded IP, HTTPS IP, then back to dynamic env variable with relative path fallback). Added CSS debugging for image visibility.
-- ****:
-  - **Importance**: Handles user authentication and dashboard for the web app.
-  - **Changes**: Hardcoded backend URL to match the temporary fix in  and . Added  call to  for modal closure after successful login. Changed backend URL reference to use HTTPS for mixed content security.
-- ****:
-  - **Importance**: Custom hook for geocoding logic in the web app.
-  - **Changes**: Hardcoded backend URL to match the temporary fix in . Changed backend URL reference to use HTTPS for mixed content security. Modified to use dynamic environment variable with relative path fallback.
-- ****:
-  - **Importance**: Component to display PWA install prompt.
-  - **Changes**: Removed PWA debug card logic.
-- ** (Web)**:
-  - **Importance**: Geocoding address input component for the web app.
-  - **Changes**: Fixed suggestion selection logic to prevent re-triggering. Added  prop and callback to update parent state as user types.
-- ****:
-  - **Importance**: Frontend environment variables.
-  - **Changes**: Updated  to correct value.  was modified multiple times, from a hardcoded preview URL to relative , then , then , and finally configured for dynamic environment variable with  fallback.
-- ****:
-  - **Importance**: Custom hook for OneSignal integration.
-  - **Changes**: Temporarily disabled OneSignal for debugging.
-- ****:
-  - **Importance**: Central service for API calls in the mobile app.
-  - **Changes**: Fixed authentication endpoints (, ), added missing favorites endpoints, fixed special types endpoint, and added  method. Added  method. Updated  for server-side token validation. Added extensive debugging logs for baseURL, requests, responses, and errors.
-- ****:
-  - **Importance**: Mobile app login UI.
-  - **Changes**: Created. Refined to handle navigation parameters.
-- ****:
-  - **Importance**: Mobile app registration UI.
-  - **Changes**: Created. Refined to handle navigation parameters.
-- ****:
-  - **Importance**: Mobile app user profile/dashboard.
-  - **Changes**: Updated to handle authenticated/unauthenticated states, logout, and integrate with login/register. Added  to refresh authentication state.
-- ****:
-  - **Importance**: Defines navigation flow for the mobile app.
-  - **Changes**: Updated to include authentication screens as modal presentations.
-- ****:
-  - **Importance**: Displays individual restaurant information in the mobile app.
-  - **Changes**: Fixed syntax errors. Enhanced to display specials information. Updated to include  in  and  interfaces, added  component for photo display, loading indicators, and styles. Added debugging fallback for images.
-- ****:
-  - **Importance**: Geocoding address input component for the mobile app.
-  - **Changes**: Created with autocomplete functionality. Implemented more aggressive fixes for dropdown behavior (force close, aggressive state clearing).
-- ****:
-  - **Importance**: Main screen for restaurant search in the mobile app.
-  - **Changes**: Enhanced to use , added advanced filtering (radius, special types, vendor types), refactored search function, replaced UI, and updated styles. Added comprehensive debugging logs for restaurant search and photo data.
-- ****:
-  - **Importance**: Mobile app dependencies.
-  - **Changes**:  installed (force install due to dependency conflicts),  installed.
+-   ****:
+    *   **Importance**: Core FastAPI backend, routes for restaurants, users, geocoding, specials.
+    *   **Changes**: Integrated Google Places photos, fallback image generation. Modified to use new , , , , and . Added production startup events, cached API functions, and admin/monitoring endpoints.
+-   ** (NEW)**:
+    *   **Importance**: Implements basic in-memory caching for API responses.
+    *   **Changes**: Created for efficient API response management.
+-   ** (NEW)**:
+    *   **Importance**: Handles all business logic related to restaurant owners (registration, claiming, specials).
+    *   **Changes**: Created with endpoints for managing owner data, restaurants, and specials.
+-   ** (NEW)**:
+    *   **Importance**: Provides endpoints for system health and performance monitoring.
+    *   **Changes**: Created to integrate with FastAPI.
+-   ** (NEW)**:
+    *   **Importance**: Integrates Redis for distributed caching.
+    *   **Changes**: Created to provide a Redis client and caching utilities.
+-   ** (NEW)**:
+    *   **Importance**: Manages digital coupon creation, distribution, and redemption logic.
+    *   **Changes**: Created with initial endpoints for coupon management.
+-   ****:
+    *   **Importance**: Frontend environment variables, crucial for backend URL.
+    *   **Changes**: Repeatedly updated  to ensure it uses the correct HTTPS URL with the  prefix, resolving mixed content and double-prefix issues.  also updated.
+-   ****:
+    *   **Importance**: Main React component, orchestrates search, state, and UI.
+    *   **Changes**: Initially fixed photo display with debug CSS, then removed it. Integrated  and  components. Fixed API URL construction (removed redundant  concatenation). Modified routing to use new owner system, preventing access to old .
+-   ****:
+    *   **Importance**: User authentication for the web app.
+    *   **Changes**: Fixed API URL construction (removed redundant  concatenation).
+-   ****:
+    *   **Importance**: An older, deprecated component for owner management.
+    *   **Changes**: Debugged multiple times for JavaScript errors (e.g., ). Updated to use React state for tab management (). Added Back to Main App button for user navigation out of this old system. Ultimately, its direct routing was disabled in .
+-   ** (NEW)**:
+    *   **Importance**: Provides the professional modal interface for owner login/registration.
+    *   **Changes**: Created. Fixed  prop name mismatch from . Debugging logs added.
+-   ** (NEW)**:
+    *   **Importance**: Displays the main owner dashboard with statistics, restaurant management, and specials.
+    *   **Changes**: Created. Fixed button  handlers. Integrated the new  component, adding a Digital Coupons tab and corresponding state/handlers.
+-   ** (NEW)**:
+    *   **Importance**: Frontend interface for restaurant owners to create and manage digital coupons.
+    *   **Changes**: Created with initial UI and integration points.
+-   ****:
+    *   **Importance**: Frontend dependencies.
+    *   **Changes**: Added  for UI components.
+-   ****:
+    *   **Importance**: Central service for API calls in the mobile app.
+    *   **Changes**: Fixed authentication, added missing endpoints, updated . Type interface issues addressed.
+-   ** (NEW)**:
+    *   **Importance**: TypeScript declaration file for icon types.
+    *   **Changes**: Created to resolve type conflicts related to React Native Vector Icons.
+-   ** (NEW)**:
+    *   **Importance**: TypeScript declaration file for restaurant-related types, including photos.
+    *   **Changes**: Created to ensure proper type checking for restaurant data.
+-   ****:
+    *   **Importance**: Main screen for restaurant search in the mobile app.
+    *   **Changes**: Updated to use correct  interface with photos.
+-   ****:
+    *   **Importance**: Handles OneSignal push notification integration for mobile.
+    *   **Changes**: Simplified to resolve compilation errors.
+-   ****:
+    *   **Importance**: Displays user's favorite restaurants in the mobile app.
+    *   **Changes**: Fixed  call signature for compilation.
+-   ****:
+    *   **Importance**: Mobile app dependencies.
+    *   **Changes**: ,  and other dependencies installed/updated for Expo development workflow.
+-   ****:
+    *   **Importance**: Expo configuration file.
+    *   **Changes**: Updated for proper Expo setup and asset paths.
 </code_architecture>
 
 <pending_tasks>
-- Implement an approval workflow for claimed restaurants and new specials.
+- Implement an approval workflow for claimed restaurants and new specials (though the backend infrastructure is largely in place).
 - User accounts: search history, advanced filtering, advanced map view features.
-- Production readiness: API response caching, Google Places API quota management, database indexing, CDN for static assets, database backup strategy, monitoring & logging.
+- Production readiness: API response caching (further enhancements beyond Redis), Google Places API quota management (beyond basic caching), CDN for static assets, database backup strategy, comprehensive monitoring & logging (beyond admin endpoints).
 - Legal & compliance, analytics, marketing, and monetization features.
-- Build the fallback system: Zomato integration (still pending).
-- **Owner Dashboard (Phase 3B)**: Build the basic restaurant owner workflow for special scheduling.
-- **Mobile App Fixes**: Address mobile app login issues and get images displaying, and resolve the compilation errors preventing it from opening in Expo Go.
+- Build the fallback system: Zomato integration.
+- **Mobile App Development**: Fully publish and test the React Native app.
+- **Advanced Owner Features**: Implement special scheduling, analytics, and customer engagement tools within the Owner Dashboard beyond the basic coupon system.
+- **Customer-facing coupon discovery and redemption system**.
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer was focused on resolving a persistent issue where restaurant photos were not displaying in the web application (and by extension, the PWA), despite API responses confirming the presence of photo data and console logs indicating successful image loading.
+Immediately before this summary, the AI engineer was focused on developing the **Digital Coupon System for Restaurant Owners**. This work was initiated in response to the user's strategic priority to provide enticing options for owners to drive foot traffic.
 
-The previous actions involved:
-1.  **Debugging in **: Adding  statements to  to inspect the  data, specifically the  array and  flag, directly within the browser's developer console.
-2.  **User Console Feedback**: The user provided console logs which definitively showed  and  for all restaurants. This confirmed that the photo data was reaching the frontend and the browser successfully loaded the image assets.
-3.  **Root Cause Identification**: Based on this evidence, the root cause was identified as a **CSS/Styling Issue**, implying that the images were present and loaded, but visually obstructed or incorrectly positioned by the application's styling.
-4.  **Implementing Debugging CSS**: To confirm this hypothesis and visually identify the problem, the AI engineer added aggressive debugging CSS to  (5px red border and yellow background on photo containers, 3px blue border on actual images, and minimum dimensions) to force the images to be visible.
+The following has been accomplished:
+1.  **Backend **: A new service file () was created to handle the business logic for digital coupons.
+2.  **Backend Integration**: The  was integrated into the main FastAPI application (), including adding necessary dependencies to  and setting up API endpoints for coupon management.
+3.  **Frontend **: A new React component () was created to serve as the user interface for owners to create coupons.
+4.  **Frontend Integration into Owner Dashboard**: The  component was integrated into the existing  component (). This involved:
+    *   Adding import statements for .
+    *   Implementing state variables (, ) to control the visibility and context of the coupon creation modal.
+    *   Adding handler functions (, ) for managing the coupon creation flow.
+    *   Adding a new Digital Coupons tab to the owner dashboard's sidebar navigation.
+    *   Adding a Create Digital Coupon button to the dashboard's Quick Actions section.
+    *   Integrating the  modal component at the end of the  file, ensuring it appears conditionally based on state.
 
-The current state is that this debugging CSS has been applied, and the next step is for the user to test the web application to see if these highly visible borders and potentially the images themselves are now displayed, which would pinpoint the exact CSS conflict.
+The current state is that the foundational backend and frontend components for digital coupon creation are in place and integrated into the owner dashboard. The AI engineer has stated that this has been implemented and tested to the best of their capabilities, and is now awaiting user review and further testing.
 </current_work>
 
 <optional_next_step>
-The next step is to instruct the user to hard refresh their browser and search for restaurants to observe the debug CSS borders around the images.
+Test the newly integrated Digital Coupon System in the Owner Dashboard.
 </optional_next_step>

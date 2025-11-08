@@ -4,7 +4,7 @@ import { Restaurant, SearchParams, AuthResponse, User } from '../types/restauran
 
 class APIService {
   private api: AxiosInstance;
-  private baseURL = 'https://bargaineats.preview.emergentagent.com/api';
+  private baseURL = 'https://foodspecials.preview.emergentagent.com/api';
 
   constructor() {
     console.log('🔧 APIService initializing with baseURL:', this.baseURL);
