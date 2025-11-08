@@ -203,6 +203,32 @@ const OwnerDashboard = ({ user, token, onClose }) => {
     setShowQRCode(true);
   };
 
+  const handleUpdateProfile = async () => {
+    try {
+      const response = await fetch(`${backendUrl}/owners/profile`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(profileData)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert('Profile updated successfully!');
+        setEditingProfile(false);
+        // Update user data in parent if needed
+      } else {
+        const errorData = await response.json();
+        alert(errorData.detail || 'Failed to update profile');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Network error while updating profile');
+    }
+  };
+
   if (loading) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
