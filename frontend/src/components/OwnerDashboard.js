@@ -739,6 +739,195 @@ const OwnerDashboard = ({ user, token, onClose }) => {
             onSuccess={handleCouponSuccess}
           />
         )}
+
+        {/* QR Code Modal */}
+        {showQRCode && selectedCoupon && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold text-gray-800">Coupon QR Code</h3>
+                <button
+                  onClick={() => {
+                    setShowQRCode(false);
+                    setSelectedCoupon(null);
+                  }}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="text-center">
+                <h4 className="font-semibold text-gray-800 mb-2">{selectedCoupon.title}</h4>
+                <p className="text-sm text-gray-600 mb-4">{selectedCoupon.description}</p>
+
+                {selectedCoupon.qr_code ? (
+                  <div className="bg-white p-4 rounded-lg border-2 border-gray-200 mb-4">
+                    <img
+                      src={selectedCoupon.qr_code}
+                      alt="QR Code"
+                      className="w-full max-w-xs mx-auto"
+                    />
+                  </div>
+                ) : (
+                  <div className="bg-gray-100 p-8 rounded-lg mb-4">
+                    <QrCodeIcon className="w-16 h-16 text-gray-400 mx-auto" />
+                    <p className="text-gray-500 mt-2">QR Code not available</p>
+                  </div>
+                )}
+
+                <div className="bg-orange-50 p-4 rounded-lg mb-4">
+                  <p className="text-xs text-gray-600 mb-1">Redemption Code</p>
+                  <p className="text-2xl font-mono font-bold text-orange-600">{selectedCoupon.redemption_code}</p>
+                </div>
+
+                <button
+                  onClick={() => {
+                    // Download QR code
+                    const link = document.createElement('a');
+                    link.href = selectedCoupon.qr_code;
+                    link.download = `coupon-${selectedCoupon.id}-qr.png`;
+                    link.click();
+                  }}
+                  className="w-full px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                >
+                  Download QR Code
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Analytics Modal */}
+        {showCouponAnalytics && selectedCoupon && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-2xl font-bold">Coupon Analytics</h3>
+                    <p className="text-blue-100">{selectedCoupon.title}</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowCouponAnalytics(false);
+                      setSelectedCoupon(null);
+                      setCouponAnalytics(null);
+                    }}
+                    className="text-white hover:text-blue-200"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6">
+                {couponAnalytics ? (
+                  <>
+                    {/* Key Metrics */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                      <div className="bg-blue-50 p-4 rounded-lg text-center">
+                        <div className="text-3xl font-bold text-blue-600">{couponAnalytics.total_views || 0}</div>
+                        <div className="text-sm text-gray-600">Views</div>
+                      </div>
+                      <div className="bg-purple-50 p-4 rounded-lg text-center">
+                        <div className="text-3xl font-bold text-purple-600">{couponAnalytics.total_saves || 0}</div>
+                        <div className="text-sm text-gray-600">Saves</div>
+                      </div>
+                      <div className="bg-green-50 p-4 rounded-lg text-center">
+                        <div className="text-3xl font-bold text-green-600">{couponAnalytics.total_redemptions || 0}</div>
+                        <div className="text-sm text-gray-600">Redemptions</div>
+                      </div>
+                      <div className="bg-orange-50 p-4 rounded-lg text-center">
+                        <div className="text-3xl font-bold text-orange-600">{couponAnalytics.unique_customers || 0}</div>
+                        <div className="text-sm text-gray-600">Customers</div>
+                      </div>
+                    </div>
+
+                    {/* Financial Impact */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                      <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-lg border border-green-200">
+                        <h4 className="font-semibold text-gray-800 mb-2">Revenue Impact</h4>
+                        <div className="text-3xl font-bold text-green-600 mb-1">
+                          ${(couponAnalytics.estimated_revenue_generated || 0).toFixed(2)}
+                        </div>
+                        <p className="text-sm text-gray-600">Estimated revenue generated</p>
+                      </div>
+                      <div className="bg-gradient-to-br from-red-50 to-rose-50 p-6 rounded-lg border border-red-200">
+                        <h4 className="font-semibold text-gray-800 mb-2">Discount Given</h4>
+                        <div className="text-3xl font-bold text-red-600 mb-1">
+                          ${(couponAnalytics.total_discount_given || 0).toFixed(2)}
+                        </div>
+                        <p className="text-sm text-gray-600">Total discounts applied</p>
+                      </div>
+                    </div>
+
+                    {/* Engagement Rates */}
+                    <div className="bg-gray-50 p-6 rounded-lg mb-6">
+                      <h4 className="font-semibold text-gray-800 mb-4">Engagement Metrics</h4>
+                      <div className="space-y-3">
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-gray-600">View to Save Rate</span>
+                            <span className="font-medium">{(couponAnalytics.view_to_save_rate || 0).toFixed(1)}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-purple-500 rounded-full h-2 transition-all"
+                              style={{ width: `${Math.min(couponAnalytics.view_to_save_rate || 0, 100)}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-gray-600">Save to Redemption Rate</span>
+                            <span className="font-medium">{(couponAnalytics.save_to_redemption_rate || 0).toFixed(1)}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-green-500 rounded-full h-2 transition-all"
+                              style={{ width: `${Math.min(couponAnalytics.save_to_redemption_rate || 0, 100)}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* ROI */}
+                    <div className={`p-6 rounded-lg border-2 ${
+                      (couponAnalytics.roi_percentage || 0) > 0
+                        ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-300'
+                        : 'bg-gradient-to-br from-yellow-50 to-amber-50 border-yellow-300'
+                    }`}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold text-gray-800 mb-1">Return on Investment (ROI)</h4>
+                          <p className="text-sm text-gray-600">Based on last 30 days</p>
+                        </div>
+                        <div className="text-right">
+                          <div className={`text-4xl font-bold ${
+                            (couponAnalytics.roi_percentage || 0) > 0 ? 'text-green-600' : 'text-yellow-600'
+                          }`}>
+                            {(couponAnalytics.roi_percentage || 0).toFixed(1)}%
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading analytics...</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
