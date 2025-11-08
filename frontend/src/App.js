@@ -114,6 +114,7 @@ function App() {
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
   const [selectedVendorType, setSelectedVendorType] = useState('all'); // 'all', 'permanent', 'mobile'
   const [showNotificationPreferences, setShowNotificationPreferences] = useState(false);
+  const [activeView, setActiveView] = useState('restaurants'); // 'restaurants' or 'coupons'
   
   // OneSignal hook
   const { isEnabled: notificationsEnabled, isInitialized: notificationsInitialized, tagUser } = useNotifications();
