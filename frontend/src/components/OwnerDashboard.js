@@ -32,6 +32,13 @@ const OwnerDashboard = ({ user, token, onClose }) => {
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [couponAnalytics, setCouponAnalytics] = useState(null);
   const [showQRCode, setShowQRCode] = useState(false);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [profileData, setProfileData] = useState({
+    first_name: user?.first_name || '',
+    last_name: user?.last_name || '',
+    business_name: user?.business_name || '',
+    phone: user?.phone || ''
+  });
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || '/api';
 
