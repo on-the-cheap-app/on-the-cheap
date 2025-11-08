@@ -18,6 +18,7 @@ import NotificationPreferences from "./components/NotificationPreferences";
 import PWAInstallBanner from "./components/PWAInstallBanner";
 import PWAManualInstall from "./components/PWAManualInstall";
 import OfflineIndicator from "./components/OfflineIndicator";
+import CouponDiscovery from "./components/CouponDiscovery";
 import useNotifications from "./hooks/useNotifications";
 import { usePWA } from "./hooks/usePWA";
 import * as Analytics from './utils/analytics';
