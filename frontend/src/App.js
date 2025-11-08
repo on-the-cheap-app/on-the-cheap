@@ -567,6 +567,37 @@ function App() {
         </div>
       </div>
 
+      {/* Navigation Toggle */}
+      <div className="bg-white border-b">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex items-center justify-center space-x-2 py-3">
+            <button
+              onClick={() => setActiveView('restaurants')}
+              className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                activeView === 'restaurants'
+                  ? 'bg-orange-500 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              🍽️ Restaurants
+            </button>
+            <button
+              onClick={() => setActiveView('coupons')}
+              className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                activeView === 'coupons'
+                  ? 'bg-orange-500 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              🎟️ Digital Coupons
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content - Toggle between Restaurants and Coupons */}
+      {activeView === 'restaurants' ? (
+        <>
       {/* Search Section */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <Card className="mb-8">
