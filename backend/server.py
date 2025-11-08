@@ -3059,23 +3059,16 @@ async def get_saved_coupons(current_user: dict = Depends(get_current_regular_use
 
 @api_router.post("/coupons/{coupon_id}/view")
 async def track_coupon_view(coupon_id: str):
-    """Track when a coupon is viewed by a customer"""
+    """Track when a coupon is viewed"""
     try:
-        # Update view count
-        result = await db.coupons.update_one(
+        await db.coupons.update_one(
             {"id": coupon_id},
             {"$inc": {"views": 1}}
         )
-        
-        if result.matched_count == 0:
-            raise HTTPException(status_code=404, detail="Coupon not found")
-        
-        return {"success": True, "message": "View tracked"}
-    except HTTPException:
-        raise
+        return {"message": "View tracked"}
     except Exception as e:
         logger.error(f"Error tracking coupon view: {e}")
-        raise HTTPException(status_code=500, detail="Failed to track view")
+        return {"message": "View tracking failed"}
 
 @api_router.post("/coupons/{coupon_id}/save")
 async def track_coupon_save(coupon_id: str, current_user: Optional[dict] = Depends(get_current_user_optional)):
