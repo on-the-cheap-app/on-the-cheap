@@ -2877,7 +2877,7 @@ async def get_coupon_analytics(
         raise HTTPException(status_code=500, detail="Failed to get coupon analytics")
 
 @api_router.get("/coupons/{coupon_id}/analytics")
-async def get_coupon_analytics(coupon_id: str, days: int = Query(default=30), current_user: dict = Depends(get_current_user)):
+async def get_coupon_analytics_public(coupon_id: str, days: int = Query(default=30), current_user: dict = Depends(get_current_user)):
     """Get analytics for a coupon"""
     try:
         if current_user.get("user_type") != "owner":
