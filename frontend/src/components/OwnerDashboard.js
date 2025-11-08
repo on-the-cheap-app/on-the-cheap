@@ -17,6 +17,7 @@ import {
   TrendingUpIcon
 } from '@heroicons/react/24/outline';
 import CouponCreator from './CouponCreator';
+import RestaurantClaimModal from './RestaurantClaimModal';
 
 const OwnerDashboard = ({ user, token, onClose }) => {
   const [dashboardData, setDashboardData] = useState(null);
