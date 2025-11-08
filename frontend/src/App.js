@@ -1050,6 +1050,16 @@ function App() {
           </div>
         )}
       </div>
+      </>
+      ) : (
+        /* Coupons View */
+        <CouponDiscovery
+          userLocation={coordinates}
+          isAuthenticated={!!currentUser && userType === 'user'}
+          token={authToken}
+          onLoginRequired={() => setShowUserAuth(true)}
+        />
+      )}
 
       {/* User Authentication Modal */}
       {showUserAuth && (
