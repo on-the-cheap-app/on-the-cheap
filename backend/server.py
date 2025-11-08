@@ -1463,6 +1463,42 @@ async def get_current_user_info(current_user: dict = Depends(get_current_user)):
         "is_verified": current_user.get('is_verified', False)
     }
 
+@api_router.patch("/owners/profile")
+async def update_owner_profile(
+    profile_update: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update owner profile information"""
+    try:
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Owner access required")
+        
+        # Only allow updating specific fields
+        allowed_fields = ['first_name', 'last_name', 'business_name', 'phone']
+        update_data = {k: v for k, v in profile_update.items() if k in allowed_fields}
+        
+        if not update_data:
+            raise HTTPException(status_code=400, detail="No valid fields to update")
+        
+        # Update in database
+        update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
+        
+        result = await db.restaurant_owners.update_one(
+            {"id": current_user['id']},
+            {"$set": update_data}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Owner not found")
+        
+        return {"message": "Profile updated successfully", "updated_fields": list(update_data.keys())}
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating owner profile: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update profile")
+
 # =================== REGULAR USER AUTHENTICATION ===================
 
 @api_router.post("/users/register")
