@@ -111,9 +111,7 @@ const OwnerDashboard = ({ user, token, onClose }) => {
       e.stopPropagation();
     }
     
-    // TODO: Open restaurant claim modal
-    console.log('Opening restaurant claim modal');
-    alert('Restaurant claim modal coming soon! This will allow you to search for and claim existing restaurants in our database.');
+    setShowClaimModal(true);
   };
 
   const handleCreateCoupon = (restaurant = null) => {
