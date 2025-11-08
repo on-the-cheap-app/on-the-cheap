@@ -28,6 +28,10 @@ const OwnerDashboard = ({ user, token, onClose }) => {
   const [error, setError] = useState('');
   const [showCouponCreator, setShowCouponCreator] = useState(false);
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  const [showCouponAnalytics, setShowCouponAnalytics] = useState(false);
+  const [selectedCoupon, setSelectedCoupon] = useState(null);
+  const [couponAnalytics, setCouponAnalytics] = useState(null);
+  const [showQRCode, setShowQRCode] = useState(false);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || '/api';
 
