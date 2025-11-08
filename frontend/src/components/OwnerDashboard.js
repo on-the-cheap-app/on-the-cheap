@@ -771,6 +771,127 @@ const OwnerDashboard = ({ user, token, onClose }) => {
           </div>
         </div>
 
+            {/* Profile Tab */}
+            {activeTab === 'profile' && (
+              <div>
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-semibold text-gray-800">My Profile</h3>
+                  {!editingProfile && (
+                    <button
+                      onClick={() => setEditingProfile(true)}
+                      className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                    >
+                      Edit Profile
+                    </button>
+                  )}
+                </div>
+
+                <div className="bg-white rounded-lg shadow border p-6">
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          First Name
+                        </label>
+                        {editingProfile ? (
+                          <input
+                            type="text"
+                            value={profileData.first_name}
+                            onChange={(e) => setProfileData(prev => ({...prev, first_name: e.target.value}))}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          />
+                        ) : (
+                          <p className="text-gray-900">{user?.first_name || 'Not set'}</p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Last Name
+                        </label>
+                        {editingProfile ? (
+                          <input
+                            type="text"
+                            value={profileData.last_name}
+                            onChange={(e) => setProfileData(prev => ({...prev, last_name: e.target.value}))}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          />
+                        ) : (
+                          <p className="text-gray-900">{user?.last_name || 'Not set'}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Business Name
+                      </label>
+                      {editingProfile ? (
+                        <input
+                          type="text"
+                          value={profileData.business_name}
+                          onChange={(e) => setProfileData(prev => ({...prev, business_name: e.target.value}))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        />
+                      ) : (
+                        <p className="text-gray-900">{user?.business_name || 'Not set'}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Email
+                      </label>
+                      <p className="text-gray-900">{user?.email}</p>
+                      <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Phone
+                      </label>
+                      {editingProfile ? (
+                        <input
+                          type="tel"
+                          value={profileData.phone}
+                          onChange={(e) => setProfileData(prev => ({...prev, phone: e.target.value}))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          placeholder="(555) 123-4567"
+                        />
+                      ) : (
+                        <p className="text-gray-900">{user?.phone || 'Not set'}</p>
+                      )}
+                    </div>
+
+                    {editingProfile && (
+                      <div className="flex space-x-3 pt-4">
+                        <button
+                          onClick={handleUpdateProfile}
+                          className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                        >
+                          Save Changes
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditingProfile(false);
+                            setProfileData({
+                              first_name: user?.first_name || '',
+                              last_name: user?.last_name || '',
+                              business_name: user?.business_name || '',
+                              phone: user?.phone || ''
+                            });
+                          }}
+                          className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
         {/* Coupon Creator Modal */}
         {showCouponCreator && selectedRestaurant && (
           <CouponCreator
