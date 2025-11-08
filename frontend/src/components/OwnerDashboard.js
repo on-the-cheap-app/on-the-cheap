@@ -580,15 +580,47 @@ const OwnerDashboard = ({ user, token, onClose }) => {
                             </div>
                           </div>
 
-                          <div className="mt-4 flex space-x-2">
-                            <button className="flex-1 px-3 py-2 bg-blue-100 text-blue-700 text-sm rounded hover:bg-blue-200 transition-colors">
-                              <ChartBarIcon className="w-4 h-4 inline mr-1" />
-                              Analytics
-                            </button>
-                            <button className="flex-1 px-3 py-2 bg-orange-100 text-orange-700 text-sm rounded hover:bg-orange-200 transition-colors">
-                              <QrCodeIcon className="w-4 h-4 inline mr-1" />
-                              QR Code
-                            </button>
+                          <div className="mt-4 space-y-2">
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => handleViewAnalytics(coupon)}
+                                className="flex-1 px-3 py-2 bg-blue-100 text-blue-700 text-sm rounded hover:bg-blue-200 transition-colors"
+                              >
+                                <ChartBarIcon className="w-4 h-4 inline mr-1" />
+                                Analytics
+                              </button>
+                              <button
+                                onClick={() => handleViewQRCode(coupon)}
+                                className="flex-1 px-3 py-2 bg-orange-100 text-orange-700 text-sm rounded hover:bg-orange-200 transition-colors"
+                              >
+                                <QrCodeIcon className="w-4 h-4 inline mr-1" />
+                                QR Code
+                              </button>
+                            </div>
+                            
+                            <div className="flex space-x-2">
+                              {coupon.status === 'active' ? (
+                                <button
+                                  onClick={() => handleCouponStatusUpdate(coupon.id, 'paused')}
+                                  className="flex-1 px-3 py-2 bg-yellow-100 text-yellow-700 text-sm rounded hover:bg-yellow-200 transition-colors"
+                                >
+                                  Pause
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleCouponStatusUpdate(coupon.id, 'active')}
+                                  className="flex-1 px-3 py-2 bg-green-100 text-green-700 text-sm rounded hover:bg-green-200 transition-colors"
+                                >
+                                  Activate
+                                </button>
+                              )}
+                              <button
+                                onClick={() => handleDeleteCoupon(coupon.id)}
+                                className="flex-1 px-3 py-2 bg-red-100 text-red-700 text-sm rounded hover:bg-red-200 transition-colors"
+                              >
+                                Delete
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
