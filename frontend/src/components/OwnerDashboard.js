@@ -123,6 +123,79 @@ const OwnerDashboard = ({ user, token, onClose }) => {
     setSelectedRestaurant(null);
   };
 
+  const handleCouponStatusUpdate = async (couponId, newStatus) => {
+    try {
+      const response = await fetch(`${backendUrl}/coupons/${couponId}/status?status=${newStatus}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        // Update local state
+        setCoupons(prev => prev.map(c =>
+          c.id === couponId ? { ...c, status: newStatus } : c
+        ));
+      } else {
+        alert('Failed to update coupon status');
+      }
+    } catch (error) {
+      console.error('Error updating coupon status:', error);
+      alert('Network error while updating coupon');
+    }
+  };
+
+  const handleDeleteCoupon = async (couponId) => {
+    if (!window.confirm('Are you sure you want to delete this coupon? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${backendUrl}/coupons/${couponId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        // Remove from local state
+        setCoupons(prev => prev.filter(c => c.id !== couponId));
+      } else {
+        alert('Failed to delete coupon');
+      }
+    } catch (error) {
+      console.error('Error deleting coupon:', error);
+      alert('Network error while deleting coupon');
+    }
+  };
+
+  const handleViewAnalytics = async (coupon) => {
+    try {
+      setSelectedCoupon(coupon);
+      setShowCouponAnalytics(true);
+      
+      const response = await fetch(`${backendUrl}/coupons/${coupon.id}/analytics?days=30`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCouponAnalytics(data);
+      }
+    } catch (error) {
+      console.error('Error loading analytics:', error);
+    }
+  };
+
+  const handleViewQRCode = (coupon) => {
+    setSelectedCoupon(coupon);
+    setShowQRCode(true);
+  };
+
   if (loading) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
