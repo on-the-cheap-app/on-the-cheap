@@ -40,6 +40,7 @@ const OwnerDashboard = ({ user, token, onClose }) => {
     business_name: user?.business_name || '',
     phone: user?.phone || ''
   });
+  const [showClaimModal, setShowClaimModal] = useState(false);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || '/api';
 
