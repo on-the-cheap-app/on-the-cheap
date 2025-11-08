@@ -2876,6 +2876,187 @@ async def get_coupon_analytics(
         logger.error(f"Error getting coupon analytics: {e}")
         raise HTTPException(status_code=500, detail="Failed to get coupon analytics")
 
+@api_router.get("/coupons/{coupon_id}/analytics")
+async def get_coupon_analytics(coupon_id: str, days: int = Query(default=30), current_user: dict = Depends(get_current_user)):
+    """Get analytics for a coupon"""
+    try:
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Owner access required")
+        
+        coupon_service = get_coupon_service(db)
+        analytics = await coupon_service.get_coupon_analytics(coupon_id, days)
+        return analytics
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting coupon analytics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get analytics")
+
+@api_router.get("/coupons/{coupon_id}")
+async def get_coupon_detail(coupon_id: str):
+    """Get detailed information about a specific coupon"""
+    try:
+        coupon_service = get_coupon_service(db)
+        coupon_doc = await db.coupons.find_one({"id": coupon_id})
+        
+        if not coupon_doc:
+            raise HTTPException(status_code=404, detail="Coupon not found")
+        
+        # Get restaurant info
+        restaurant = await db.restaurants.find_one({"id": coupon_doc["restaurant_id"]})
+        if restaurant:
+            coupon_doc["restaurant"] = {
+                "name": restaurant["name"],
+                "address": restaurant["address"],
+                "cuisine_type": restaurant.get("cuisine_type", []),
+                "photos": restaurant.get("photos", [])
+            }
+        
+        return Coupon(**coupon_doc)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting coupon detail: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get coupon")
+
+@api_router.patch("/coupons/{coupon_id}/status")
+async def update_coupon_status(coupon_id: str, status: str, current_user: dict = Depends(get_current_user)):
+    """Update coupon status (active, paused, expired)"""
+    try:
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Owner access required")
+        
+        # Verify ownership
+        coupon = await db.coupons.find_one({"id": coupon_id})
+        if not coupon:
+            raise HTTPException(status_code=404, detail="Coupon not found")
+        
+        if coupon["owner_id"] != current_user["user_id"]:
+            raise HTTPException(status_code=403, detail="Not authorized to modify this coupon")
+        
+        # Update status
+        await db.coupons.update_one(
+            {"id": coupon_id},
+            {"$set": {"status": status, "updated_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        return {"message": f"Coupon status updated to {status}"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating coupon status: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update coupon status")
+
+@api_router.delete("/coupons/{coupon_id}")
+async def delete_coupon(coupon_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a coupon"""
+    try:
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Owner access required")
+        
+        # Verify ownership
+        coupon = await db.coupons.find_one({"id": coupon_id})
+        if not coupon:
+            raise HTTPException(status_code=404, detail="Coupon not found")
+        
+        if coupon["owner_id"] != current_user["user_id"]:
+            raise HTTPException(status_code=403, detail="Not authorized to delete this coupon")
+        
+        # Delete coupon
+        await db.coupons.delete_one({"id": coupon_id})
+        
+        return {"message": "Coupon deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting coupon: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete coupon")
+
+# Customer coupon endpoints
+@api_router.post("/users/coupons/{coupon_id}/save")
+async def save_coupon(coupon_id: str, current_user: dict = Depends(get_current_regular_user)):
+    """Save a coupon to user's saved coupons"""
+    try:
+        # Verify coupon exists
+        coupon = await db.coupons.find_one({"id": coupon_id})
+        if not coupon:
+            raise HTTPException(status_code=404, detail="Coupon not found")
+        
+        # Add to saved coupons
+        user = await db.users.find_one({"id": current_user["id"]})
+        saved_coupons = user.get("saved_coupon_ids", [])
+        
+        if coupon_id in saved_coupons:
+            return {"message": "Coupon already saved"}
+        
+        await db.users.update_one(
+            {"id": current_user["id"]},
+            {"$push": {"saved_coupon_ids": coupon_id}}
+        )
+        
+        # Increment coupon saves count
+        await db.coupons.update_one(
+            {"id": coupon_id},
+            {"$inc": {"saves": 1}}
+        )
+        
+        return {"message": "Coupon saved successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error saving coupon: {e}")
+        raise HTTPException(status_code=500, detail="Failed to save coupon")
+
+@api_router.delete("/users/coupons/{coupon_id}/save")
+async def unsave_coupon(coupon_id: str, current_user: dict = Depends(get_current_regular_user)):
+    """Remove a coupon from user's saved coupons"""
+    try:
+        await db.users.update_one(
+            {"id": current_user["id"]},
+            {"$pull": {"saved_coupon_ids": coupon_id}}
+        )
+        
+        # Decrement coupon saves count
+        await db.coupons.update_one(
+            {"id": coupon_id},
+            {"$inc": {"saves": -1}}
+        )
+        
+        return {"message": "Coupon removed from saved"}
+    except Exception as e:
+        logger.error(f"Error unsaving coupon: {e}")
+        raise HTTPException(status_code=500, detail="Failed to unsave coupon")
+
+@api_router.get("/users/coupons/saved")
+async def get_saved_coupons(current_user: dict = Depends(get_current_regular_user)):
+    """Get user's saved coupons"""
+    try:
+        user = await db.users.find_one({"id": current_user["id"]})
+        saved_coupon_ids = user.get("saved_coupon_ids", [])
+        
+        if not saved_coupon_ids:
+            return {"coupons": [], "total": 0}
+        
+        # Get coupons with restaurant info
+        coupons = await db.coupons.find({"id": {"$in": saved_coupon_ids}}).to_list(length=None)
+        
+        enriched_coupons = []
+        for coupon in coupons:
+            restaurant = await db.restaurants.find_one({"id": coupon["restaurant_id"]})
+            if restaurant:
+                coupon["restaurant"] = {
+                    "name": restaurant["name"],
+                    "address": restaurant["address"],
+                    "cuisine_type": restaurant.get("cuisine_type", []),
+                    "photos": restaurant.get("photos", [])
+                }
+            enriched_coupons.append(coupon)
+        
+        return {"coupons": enriched_coupons, "total": len(enriched_coupons)}
+    except Exception as e:
+        logger.error(f"Error getting saved coupons: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get saved coupons")
+
 @api_router.post("/coupons/{coupon_id}/view")
 async def track_coupon_view(coupon_id: str):
     """Track when a coupon is viewed by a customer"""
