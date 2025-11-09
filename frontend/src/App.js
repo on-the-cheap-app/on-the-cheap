@@ -25,7 +25,8 @@ import * as Analytics from './utils/analytics';
 
 // Get backend URL from environment variables
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
-const API = BACKEND_URL || '/api';
+// Ensure API always has /api suffix for backend routes
+const API = BACKEND_URL ? `${BACKEND_URL}/api` : '/api';
 
 // Debug logging
 console.log('🔍 App.js Debug - BACKEND_URL:', BACKEND_URL);
