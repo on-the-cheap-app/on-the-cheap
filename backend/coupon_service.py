@@ -252,12 +252,15 @@ class CouponService:
     def _generate_qr_code(self, coupon_id: str, redemption_code: str) -> str:
         """Generate QR code for coupon redemption"""
         
+        # Get frontend URL from environment variable
+        frontend_url = os.environ.get('FRONTEND_URL', 'https://foodspecials.preview.emergentagent.com')
+        
         # QR code contains redemption URL and data
         qr_data = {
             "type": "coupon_redemption",
             "coupon_id": coupon_id,
             "code": redemption_code,
-            "url": f"https://foodspecials.preview.emergentagent.com/redeem/{coupon_id}"
+            "url": f"{frontend_url}/redeem/{coupon_id}"
         }
         
         qr = qrcode.QRCode(
