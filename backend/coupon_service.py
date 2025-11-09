@@ -15,6 +15,8 @@ import io
 import base64
 import uuid
 import os
+import random
+import string
 from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Optional, Any
 from pydantic import BaseModel, Field, validator
