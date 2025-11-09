@@ -32,8 +32,8 @@ console.log('🔍 App.js Debug - BACKEND_URL:', BACKEND_URL);
 console.log('🔍 App.js Debug - API:', API);
 console.log('🔍 App.js Debug - process.env.REACT_APP_BACKEND_URL:', process.env.REACT_APP_BACKEND_URL);
 
-// App link for sharing (update this when you have a production domain)
-const APP_LINK = "https://on-the-cheap.app"; // Placeholder - update with your actual domain
+// App link for sharing - uses current domain or fallback
+const APP_LINK = process.env.REACT_APP_FRONTEND_URL || window.location.origin;
 
 // Helper functions for sharing and rides
 const generateShareMessage = (restaurant) => {
