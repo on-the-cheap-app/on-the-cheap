@@ -1178,7 +1178,7 @@ async def get_special_types():
 
 @api_router.post("/geocode/forward", response_model=GeocodeResponse)
 async def forward_geocode(request: GeocodeRequest):
-    """Convert address to coordinates using Google Geocoding API with caching"""
+    """Convert address to coordinates using Google Geocoding API with free fallback"""
     global cache_service
     
     # Try cache first
@@ -1196,6 +1196,7 @@ async def forward_geocode(request: GeocodeRequest):
             cache_service.stats["cost_saved"] += 0.005  # Estimated cost per geocoding call
             return GeocodeResponse(**cached_data)
     
+    # Try Google Maps API first
     try:
         # Track API usage
         if cache_service:
@@ -1240,13 +1241,72 @@ async def forward_geocode(request: GeocodeRequest):
         return GeocodeResponse(**response_data)
         
     except (gmaps_exceptions.ApiError, gmaps_exceptions.TransportError, gmaps_exceptions.Timeout) as e:
-        logging.error(f"Google Maps API error: {e}")
-        raise handle_geocoding_error(e)
+        logger.warning(f"Google Maps API error: {e}, falling back to Nominatim")
+        # Fall back to free Nominatim geocoding
+        pass
+    except HTTPException as e:
+        if e.status_code != 404:
+            raise
+        # Fall back to free Nominatim for 404
+        pass
+    except Exception as e:
+        logger.error(f"Unexpected error in Google geocoding: {e}")
+        # Fall back to free service
+        pass
+    
+    # Fallback: Use free Nominatim (OpenStreetMap) geocoding
+    try:
+        import httpx
+        logger.info(f"Using Nominatim fallback for address: {request.address}")
+        
+        async with httpx.AsyncClient() as client:
+            params = {
+                "q": request.address,
+                "format": "json",
+                "limit": 1,
+                "addressdetails": 1
+            }
+            if request.region:
+                params["countrycodes"] = request.region.lower()
+            
+            response = await client.get(
+                "https://nominatim.openstreetmap.org/search",
+                params=params,
+                headers={"User-Agent": "OnTheCheap/1.0"}
+            )
+            
+            if response.status_code != 200:
+                raise HTTPException(status_code=500, detail="Geocoding service unavailable")
+            
+            results = response.json()
+            
+            if not results:
+                raise HTTPException(status_code=404, detail="Address not found")
+            
+            result = results[0]
+            
+            # Convert Nominatim format to our format
+            response_data = {
+                "formatted_address": result.get("display_name", request.address),
+                "latitude": float(result["lat"]),
+                "longitude": float(result["lon"]),
+                "place_id": result.get("place_id", "nominatim_" + result["osm_id"]),
+                "address_components": [],  # Nominatim doesn't provide this in same format
+                "geometry_type": "APPROXIMATE"
+            }
+            
+            # Cache the fallback result
+            if cache_service:
+                await cache_service.set(CacheType.GEOCODING, response_data, ttl=86400, **cache_params)
+            
+            logger.info(f"Successfully geocoded using Nominatim: {response_data['formatted_address']}")
+            return GeocodeResponse(**response_data)
+            
     except HTTPException:
         raise
     except Exception as e:
-        logging.error(f"Unexpected error in forward geocoding: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        logger.error(f"Nominatim geocoding also failed: {e}")
+        raise HTTPException(status_code=500, detail="All geocoding services failed")
 
 @api_router.post("/geocode/reverse", response_model=List[GeocodeResponse])
 async def reverse_geocode(request: ReverseGeocodeRequest):
