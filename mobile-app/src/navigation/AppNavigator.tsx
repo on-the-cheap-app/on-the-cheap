@@ -71,6 +71,14 @@ const TabNavigator = () => {
         }}
       />
       <Tab.Screen 
+        name="Coupons" 
+        component={CouponsScreen}
+        options={{
+          title: '🎟️ Digital Coupons',
+          headerStyle: { backgroundColor: colors.primary },
+        }}
+      />
+      <Tab.Screen 
         name="Map" 
         component={MapScreen}
         options={{
