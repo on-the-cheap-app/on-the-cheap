@@ -16,7 +16,9 @@ const RestaurantClaimModal = ({ onClose, token, onSuccess }) => {
   const [success, setSuccess] = useState('');
   const [coordinates, setCoordinates] = useState(null);
 
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || '/api';
+  const backendUrl = process.env.REACT_APP_BACKEND_URL 
+    ? `${process.env.REACT_APP_BACKEND_URL}/api` 
+    : '/api';
 
   const handleLocationSearch = async () => {
     if (!searchLocation.trim()) {
