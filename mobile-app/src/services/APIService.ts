@@ -5,6 +5,8 @@ import { Restaurant, SearchParams, AuthResponse, User, Coupon, CouponCreateData 
 class APIService {
   private api: AxiosInstance;
   private baseURL = process.env.REACT_APP_BACKEND_URL || '/api';
+  private authCache: { isAuthenticated: boolean; timestamp: number } | null = null;
+  private readonly AUTH_CACHE_DURATION = 5000; // 5 seconds cache
 
   constructor() {
     console.log('🔧 APIService initializing with baseURL:', this.baseURL);
