@@ -120,6 +120,34 @@ class MobileCouponTester:
             self.test_data["owner_token"] = owner_token
             self.test_data["owner"] = owner_auth
             
+            # First, get available restaurants for this owner
+            headers = {"Authorization": f"Bearer {owner_token}"}
+            restaurants_response = await self.client.get(f"{BACKEND_URL}/owners/restaurants", headers=headers)
+            
+            if restaurants_response.status_code != 200:
+                await self.log_result(test_name, False, "Could not get owner restaurants")
+                return
+            
+            restaurants_data = restaurants_response.json()
+            restaurants = restaurants_data.get("restaurants", [])
+            
+            if not restaurants:
+                # Try to use a general restaurant ID from the database
+                # For testing purposes, we'll use one of the existing restaurants
+                general_restaurants_response = await self.client.get(f"{BACKEND_URL}/restaurants/search?latitude=37.7749&longitude=-122.4194&limit=1")
+                if general_restaurants_response.status_code == 200:
+                    general_data = general_restaurants_response.json()
+                    if general_data.get("restaurants"):
+                        restaurant_id = general_data["restaurants"][0]["id"]
+                    else:
+                        await self.log_result(test_name, False, "No restaurants available for coupon creation")
+                        return
+                else:
+                    await self.log_result(test_name, False, "No restaurants available for coupon creation")
+                    return
+            else:
+                restaurant_id = restaurants[0]["id"]
+            
             # Create a coupon using the correct format
             coupon_data = {
                 "title": "Test Mobile Coupon",
@@ -129,14 +157,11 @@ class MobileCouponTester:
                 "valid_from": datetime.now(timezone.utc).isoformat(),
                 "valid_until": datetime(2024, 12, 31, tzinfo=timezone.utc).isoformat(),
                 "max_redemptions": 100,
-                "terms_conditions": "Valid for dine-in only. Cannot be combined with other offers.",
-                "restaurant_name": owner_data["business_name"],
-                "restaurant_address": "123 Test Street, San Francisco, CA 94102",
-                "restaurant_phone": "+1-555-0199"
+                "terms_conditions": "Valid for dine-in only. Cannot be combined with other offers."
             }
             
-            headers = {"Authorization": f"Bearer {owner_token}"}
-            coupon_response = await self.client.post(f"{BACKEND_URL}/owners/coupons", json=coupon_data, headers=headers)
+            # Add restaurant_id as query parameter
+            coupon_response = await self.client.post(f"{BACKEND_URL}/owners/coupons?restaurant_id={restaurant_id}", json=coupon_data, headers=headers)
             
             if coupon_response.status_code == 200:
                 coupon_result = coupon_response.json()
