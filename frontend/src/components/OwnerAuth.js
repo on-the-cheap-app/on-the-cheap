@@ -19,7 +19,9 @@ const OwnerAuth = ({ onClose, onAuthSuccess }) => {
     business_type: 'restaurant'
   });
 
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || '/api';
+  const backendUrl = process.env.REACT_APP_BACKEND_URL 
+    ? `${process.env.REACT_APP_BACKEND_URL}/api` 
+    : '/api';
 
   // Debug logging
   console.log('🔍 OwnerAuth Debug - backendUrl:', backendUrl);
