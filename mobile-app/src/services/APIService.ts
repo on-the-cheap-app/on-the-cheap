@@ -101,6 +101,9 @@ class APIService {
       await AsyncStorage.setItem('auth_token', access_token);
       await AsyncStorage.setItem('user_data', JSON.stringify(user));
       
+      // Clear auth cache after successful login
+      this.clearAuthCache();
+      
       return response.data;
     } catch (error) {
       console.error('API Error - Login:', error);
@@ -120,6 +123,9 @@ class APIService {
       const { access_token, user } = response.data;
       await AsyncStorage.setItem('auth_token', access_token);
       await AsyncStorage.setItem('user_data', JSON.stringify(user));
+      
+      // Clear auth cache after successful registration
+      this.clearAuthCache();
       
       return response.data;
     } catch (error) {
