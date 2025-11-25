@@ -26,8 +26,8 @@ import { Textarea } from "./components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
 import { Alert, AlertDescription } from "./components/ui/alert";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = BACKEND_URL || '/api';
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
+const API = BACKEND_URL ? `${BACKEND_URL}/api` : '/api';
 
 const OwnerPortal = () => {
   const [user, setUser] = useState(null);
