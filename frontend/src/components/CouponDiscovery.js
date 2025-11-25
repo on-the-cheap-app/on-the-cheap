@@ -25,7 +25,9 @@ const CouponDiscovery = ({ userLocation, isAuthenticated, token, onLoginRequired
   const [savedCoupons, setSavedCoupons] = useState(new Set());
   const [showRedeemModal, setShowRedeemModal] = useState(false);
 
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || '/api';
+  const backendUrl = process.env.REACT_APP_BACKEND_URL 
+    ? `${process.env.REACT_APP_BACKEND_URL}/api` 
+    : '/api';
 
   useEffect(() => {
     if (userLocation) {
