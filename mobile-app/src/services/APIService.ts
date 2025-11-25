@@ -246,6 +246,150 @@ class APIService {
       return false;
     }
   }
+
+  // =================== COUPON SERVICES ===================
+
+  // Get coupons near a location (for customers)
+  async getNearbyCoupons(latitude: number, longitude: number, radius: number = 16094) {
+    try {
+      const response = await this.api.get('/coupons/near', {
+        params: { latitude, longitude, radius }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('API Error - Get Nearby Coupons:', error);
+      throw error;
+    }
+  }
+
+  // Get a single coupon by ID
+  async getCouponDetails(couponId: string) {
+    try {
+      const response = await this.api.get(`/coupons/${couponId}`);
+      return response.data;
+    } catch (error) {
+      console.error('API Error - Get Coupon Details:', error);
+      throw error;
+    }
+  }
+
+  // Save a coupon (add to user's saved coupons)
+  async saveCoupon(couponId: string) {
+    try {
+      const response = await this.api.post(`/users/coupons/${couponId}/save`);
+      return response.data;
+    } catch (error) {
+      console.error('API Error - Save Coupon:', error);
+      throw error;
+    }
+  }
+
+  // Remove a coupon from saved
+  async removeSavedCoupon(couponId: string) {
+    try {
+      const response = await this.api.delete(`/users/coupons/${couponId}/save`);
+      return response.data;
+    } catch (error) {
+      console.error('API Error - Remove Saved Coupon:', error);
+      throw error;
+    }
+  }
+
+  // Get user's saved coupons
+  async getSavedCoupons() {
+    try {
+      const response = await this.api.get('/users/coupons/saved');
+      return response.data;
+    } catch (error) {
+      console.error('API Error - Get Saved Coupons:', error);
+      throw error;
+    }
+  }
+
+  // Track coupon view (analytics)
+  async trackCouponView(couponId: string) {
+    try {
+      const response = await this.api.post(`/coupons/${couponId}/view`);
+      return response.data;
+    } catch (error) {
+      console.error('API Error - Track Coupon View:', error);
+      // Don't throw error for analytics tracking
+      return null;
+    }
+  }
+
+  // Redeem a coupon
+  async redeemCoupon(couponId: string, orderTotal?: number) {
+    try {
+      const response = await this.api.post(`/coupons/${couponId}/redeem`, {
+        order_total: orderTotal
+      });
+      return response.data;
+    } catch (error) {
+      console.error('API Error - Redeem Coupon:', error);
+      throw error;
+    }
+  }
+
+  // =================== OWNER COUPON SERVICES ===================
+
+  // Create a coupon (owner only)
+  async createCoupon(restaurantId: string, couponData: any) {
+    try {
+      const response = await this.api.post(`/owners/coupons?restaurant_id=${restaurantId}`, couponData);
+      return response.data;
+    } catch (error) {
+      console.error('API Error - Create Coupon:', error);
+      throw error;
+    }
+  }
+
+  // Get owner's coupons
+  async getOwnerCoupons(restaurantId?: string) {
+    try {
+      const params = restaurantId ? { restaurant_id: restaurantId } : {};
+      const response = await this.api.get('/owners/coupons', { params });
+      return response.data;
+    } catch (error) {
+      console.error('API Error - Get Owner Coupons:', error);
+      throw error;
+    }
+  }
+
+  // Update coupon status (pause/activate)
+  async updateCouponStatus(couponId: string, status: string) {
+    try {
+      const response = await this.api.patch(`/coupons/${couponId}/status`, { status });
+      return response.data;
+    } catch (error) {
+      console.error('API Error - Update Coupon Status:', error);
+      throw error;
+    }
+  }
+
+  // Delete a coupon
+  async deleteCoupon(couponId: string) {
+    try {
+      const response = await this.api.delete(`/coupons/${couponId}`);
+      return response.data;
+    } catch (error) {
+      console.error('API Error - Delete Coupon:', error);
+      throw error;
+    }
+  }
+
+  // Get coupon analytics
+  async getCouponAnalytics(couponId: string, days: number = 30) {
+    try {
+      const response = await this.api.get(`/coupons/${couponId}/analytics`, {
+        params: { days }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('API Error - Get Coupon Analytics:', error);
+      throw error;
+    }
+  }
 }
 
 export default new APIService();
