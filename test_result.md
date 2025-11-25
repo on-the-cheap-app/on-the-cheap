@@ -518,8 +518,10 @@ metadata:
         comment: "❌ CRITICAL ISSUES IDENTIFIED: Comprehensive testing of Mobile App Digital Coupon System backend integration reveals multiple critical issues preventing proper functionality. TESTING RESULTS (5/9 tests passed - 55.6% success rate): ✅ User authentication and saved coupons retrieval working correctly, ✅ Error handling for invalid coupon IDs working properly, ✅ Track coupon view endpoint accepts requests successfully, ❌ MAJOR ISSUE 1: Get Nearby Coupons API (/api/coupons/near) returns 500 error due to MongoDB geospatial index mismatch. The coupon service expects a 2dsphere index on GeoJSON Point format but restaurants collection has location stored as {latitude, longitude} with 2d index. This prevents location-based coupon discovery which is core mobile app functionality, ❌ MAJOR ISSUE 2: Coupon creation via owner endpoints has validation issues - CouponCreate model validation fails even with correct data format, preventing test coupon creation, ❌ MAJOR ISSUE 3: No existing coupons in database (0 coupons found) means coupon details, save/remove coupon functionality cannot be tested with real data. CRITICAL FIXES NEEDED: 1) Fix geospatial index compatibility between coupon service and restaurants collection, 2) Resolve coupon creation validation issues in CouponCreate model, 3) Create sample coupons for testing or fix coupon creation workflow. The mobile app coupon system cannot function properly without these backend fixes."
 
 test_plan:
-  current_focus: []
-  stuck_tasks: []
+  current_focus:
+    - "Mobile App Digital Coupon System Backend Integration"
+  stuck_tasks:
+    - "Mobile App Digital Coupon System Backend Integration"
   test_all: false
   test_priority: "high_first"
 
