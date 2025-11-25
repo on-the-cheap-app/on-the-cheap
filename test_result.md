@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Fix restaurant photo display issue in web app and continue development with either Owner Dashboard or Mobile App fixes as user prefers."
+user_problem_statement: "Integrate Digital Coupon System into React Native mobile app for both customers (discovery, save, redeem) and restaurant owners (create, manage coupons)."
 
 backend:
   - task: "Owner Registration API"
