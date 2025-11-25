@@ -23,7 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
 import { Alert, AlertDescription } from "./components/ui/alert";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
-const API = BACKEND_URL || '/api';
+const API = BACKEND_URL ? `${BACKEND_URL}/api` : '/api';
 
 const UserAuth = ({ onClose, onUserLogin, currentFavorites = [], onFavoritesUpdate, onShowNotificationPreferences }) => {
   const [user, setUser] = useState(null);
