@@ -301,15 +301,24 @@ class CouponService:
     async def get_active_coupons_by_location(self, latitude: float, longitude: float, radius_miles: float = 10) -> List[Dict]:
         """Get active coupons near a location"""
         
-        # First get restaurants in the area
-        restaurants_in_area = await self.restaurants_collection.find({
-            "location": {
-                "$near": {
-                    "$geometry": {"type": "Point", "coordinates": [longitude, latitude]},
-                    "$maxDistance": radius_miles * 1609.34  # Convert miles to meters
-                }
-            }
-        }).to_list(length=100)
+        # Get all restaurants and filter by distance manually
+        # (since location format is {latitude, longitude} not GeoJSON)
+        all_restaurants = await self.restaurants_collection.find({}).to_list(length=None)
+        
+        # Calculate distance and filter
+        restaurants_in_area = []
+        radius_meters = radius_miles * 1609.34
+        
+        for restaurant in all_restaurants:
+            location = restaurant.get("location", {})
+            rest_lat = location.get("latitude", 0)
+            rest_lon = location.get("longitude", 0)
+            
+            # Calculate distance using Haversine formula
+            distance = self._calculate_distance(latitude, longitude, rest_lat, rest_lon)
+            
+            if distance <= radius_meters:
+                restaurants_in_area.append(restaurant)
         
         restaurant_ids = [r["id"] for r in restaurants_in_area]
         
