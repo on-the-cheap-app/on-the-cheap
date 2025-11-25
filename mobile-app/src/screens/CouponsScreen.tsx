@@ -41,7 +41,7 @@ const CouponsScreen = ({ navigation }: any) => {
   useEffect(() => {
     checkAuthentication();
     getCurrentLocation();
-  }, []);
+  }, []); // Only run once on mount
 
   useEffect(() => {
     if (viewMode === 'saved' && isAuthenticated) {
@@ -49,7 +49,7 @@ const CouponsScreen = ({ navigation }: any) => {
     } else if (viewMode === 'discover' && location) {
       searchNearbyCoupons(location.latitude, location.longitude);
     }
-  }, [viewMode]);
+  }, [viewMode]); // Only run when viewMode changes
 
   const checkAuthentication = async () => {
     const authenticated = await APIService.isAuthenticated();
