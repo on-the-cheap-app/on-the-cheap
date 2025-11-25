@@ -157,6 +157,8 @@ class MobileCouponTester:
                 "valid_from": datetime.now(timezone.utc).isoformat(),
                 "valid_until": datetime(2024, 12, 31, tzinfo=timezone.utc).isoformat(),
                 "max_redemptions": 100,
+                "max_per_customer": 1,
+                "target_audience": "all_customers",
                 "terms_conditions": "Valid for dine-in only. Cannot be combined with other offers."
             }
             
