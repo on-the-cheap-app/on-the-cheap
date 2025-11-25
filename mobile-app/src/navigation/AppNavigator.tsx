@@ -133,6 +133,13 @@ const AppNavigator = () => {
         }}
       />
       <Stack.Screen 
+        name="CouponDetail" 
+        component={CouponDetailScreen}
+        options={{
+          title: 'Coupon Details',
+        }}
+      />
+      <Stack.Screen 
         name="Login" 
         component={LoginScreen}
         options={{
