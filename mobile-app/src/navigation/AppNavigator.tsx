@@ -42,6 +42,9 @@ const TabNavigator = () => {
             case 'Home':
               iconName = focused ? 'silverware-fork-knife' : 'silverware-fork-knife';
               break;
+            case 'Coupons':
+              iconName = focused ? 'ticket-percent' : 'ticket-percent-outline';
+              break;
             case 'Map':
               iconName = focused ? 'map' : 'map-outline';
               break;
