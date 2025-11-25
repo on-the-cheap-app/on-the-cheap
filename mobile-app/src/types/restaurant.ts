@@ -73,3 +73,104 @@ export interface AuthResponse {
   user_type: string;
   user: User;
 }
+
+// Coupon Types
+export enum CouponType {
+  PERCENTAGE = 'percentage',
+  FIXED_AMOUNT = 'fixed_amount',
+  BOGO = 'bogo',
+  FREE_ITEM = 'free_item',
+  COMBO_DEAL = 'combo_deal',
+}
+
+export enum CouponStatus {
+  ACTIVE = 'active',
+  PAUSED = 'paused',
+  EXPIRED = 'expired',
+  DRAFT = 'draft',
+}
+
+export interface Coupon {
+  id: string;
+  restaurant_id: string;
+  owner_id: string;
+  title: string;
+  description: string;
+  coupon_type: CouponType;
+  
+  // Discount details
+  discount_percentage?: number;
+  discount_amount?: number;
+  free_item?: string;
+  combo_price?: number;
+  
+  // Validity and limits
+  valid_from: string;
+  valid_until: string;
+  max_redemptions?: number;
+  max_per_customer: number;
+  minimum_purchase?: number;
+  
+  // Usage tracking
+  total_redemptions: number;
+  total_revenue_impact: number;
+  unique_customers: number;
+  
+  // Targeting
+  target_audience: string;
+  days_of_week: string[];
+  time_restrictions?: {
+    start: string;
+    end: string;
+  };
+  
+  // Marketing
+  terms_conditions?: string;
+  promotional_message?: string;
+  
+  // QR Code and redemption
+  qr_code?: string;
+  redemption_code: string;
+  
+  // Metadata
+  status: CouponStatus;
+  created_at: string;
+  updated_at: string;
+  
+  // Analytics
+  views: number;
+  saves: number;
+  click_rate: number;
+  conversion_rate: number;
+  
+  // Restaurant info (for enriched coupons)
+  restaurant?: {
+    name: string;
+    address: string;
+    cuisine_type: string[];
+    photos: Photo[];
+  };
+}
+
+export interface CouponCreateData {
+  title: string;
+  description: string;
+  coupon_type: CouponType;
+  discount_percentage?: number;
+  discount_amount?: number;
+  free_item?: string;
+  combo_price?: number;
+  valid_from: string;
+  valid_until: string;
+  max_redemptions?: number;
+  max_per_customer: number;
+  minimum_purchase?: number;
+  target_audience: string;
+  days_of_week: string[];
+  time_restrictions?: {
+    start: string;
+    end: string;
+  };
+  terms_conditions?: string;
+  promotional_message?: string;
+}
