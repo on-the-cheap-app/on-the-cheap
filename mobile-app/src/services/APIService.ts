@@ -219,34 +219,53 @@ class APIService {
   async logout() {
     try {
       await AsyncStorage.multiRemove(['auth_token', 'user_data']);
+      // Clear auth cache on logout
+      this.authCache = null;
       console.log('User logged out successfully');
     } catch (error) {
       console.error('Error logging out:', error);
     }
   }
 
-  // Check if user is authenticated with server validation
+  // Check if user is authenticated with server validation and caching
   async isAuthenticated(): Promise<boolean> {
     try {
+      // Check cache first to avoid repeated server calls
+      const now = Date.now();
+      if (this.authCache && (now - this.authCache.timestamp) < this.AUTH_CACHE_DURATION) {
+        console.log('✅ Using cached authentication status');
+        return this.authCache.isAuthenticated;
+      }
+
       const token = await AsyncStorage.getItem('auth_token');
       if (!token) {
+        this.authCache = { isAuthenticated: false, timestamp: now };
         return false;
       }
 
       // Validate token with server
       try {
         const response = await this.api.get('/users/me');
-        return response.status === 200;
+        const isAuth = response.status === 200;
+        // Cache the result
+        this.authCache = { isAuthenticated: isAuth, timestamp: now };
+        return isAuth;
       } catch (error) {
         // Token is invalid, clear it
         await AsyncStorage.removeItem('auth_token');
         await AsyncStorage.removeItem('user_data');
+        this.authCache = { isAuthenticated: false, timestamp: now };
         return false;
       }
     } catch (error) {
       console.error('Error checking authentication:', error);
       return false;
     }
+  }
+
+  // Clear authentication cache (call after login/logout)
+  clearAuthCache() {
+    this.authCache = null;
   }
 
   // =================== COUPON SERVICES ===================
