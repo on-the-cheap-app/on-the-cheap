@@ -33,12 +33,26 @@ const ProfileScreen = ({ navigation }: any) => {
     checkNotificationPermission();
   }, []);
 
-  // Add focus effect to refresh auth state when screen becomes active
+  // Refresh user data when screen gains focus (but not auth state - it's cached)
   useFocusEffect(
     React.useCallback(() => {
-      checkAuthAndLoadUser();
-    }, [])
+      // Only refresh if already authenticated (avoid auth loop)
+      if (isAuthenticated) {
+        refreshUserData();
+      }
+    }, [isAuthenticated])
   );
+
+  const refreshUserData = async () => {
+    try {
+      if (isAuthenticated) {
+        const userData = await APIService.getCurrentUser();
+        setUser(userData);
+      }
+    } catch (error) {
+      console.error('Error refreshing user data:', error);
+    }
+  };
 
   const checkAuthAndLoadUser = async () => {
     try {
