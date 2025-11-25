@@ -90,29 +90,42 @@ class MobileCouponTester:
                 "business_type": "restaurant"
             }
             
+            # Register owner
             owner_response = await self.client.post(f"{BACKEND_URL}/owners/register", json=owner_data)
             
             if owner_response.status_code != 200:
                 await self.log_result(test_name, False, "Could not create test owner")
                 return
             
-            owner_auth = owner_response.json()
+            # Login to get access token
+            login_data = {
+                "email": owner_data["email"],
+                "password": owner_data["password"]
+            }
+            
+            login_response = await self.client.post(f"{BACKEND_URL}/owners/login", json=login_data)
+            
+            if login_response.status_code != 200:
+                await self.log_result(test_name, False, "Could not login test owner")
+                return
+            
+            owner_auth = login_response.json()
             owner_token = owner_auth.get("access_token")
             
             if not owner_token:
-                await self.log_result(test_name, False, "No access token in owner registration response")
+                await self.log_result(test_name, False, "No access token in owner login response")
                 return
             
             # Store owner data
             self.test_data["owner_token"] = owner_token
             self.test_data["owner"] = owner_auth
             
-            # Create a coupon
+            # Create a coupon using the correct format
             coupon_data = {
                 "title": "Test Mobile Coupon",
                 "description": "50% off appetizers for mobile app testing",
-                "discount_type": "percentage",
-                "discount_value": 50,
+                "coupon_type": "percentage",
+                "discount_percentage": 50,
                 "valid_from": datetime.now(timezone.utc).isoformat(),
                 "valid_until": datetime(2024, 12, 31, tzinfo=timezone.utc).isoformat(),
                 "max_redemptions": 100,
