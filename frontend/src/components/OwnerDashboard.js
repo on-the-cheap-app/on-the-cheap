@@ -42,7 +42,9 @@ const OwnerDashboard = ({ user, token, onClose }) => {
   });
   const [showClaimModal, setShowClaimModal] = useState(false);
 
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || '/api';
+  const backendUrl = process.env.REACT_APP_BACKEND_URL 
+    ? `${process.env.REACT_APP_BACKEND_URL}/api` 
+    : '/api';
 
   useEffect(() => {
     if (user && token) {
