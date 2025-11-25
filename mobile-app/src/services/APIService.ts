@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Restaurant, SearchParams, AuthResponse, User } from '../types/restaurant';
+import { Restaurant, SearchParams, AuthResponse, User, Coupon, CouponCreateData } from '../types/restaurant';
 
 class APIService {
   private api: AxiosInstance;
