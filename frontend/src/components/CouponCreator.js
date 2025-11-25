@@ -38,7 +38,9 @@ const CouponCreator = ({ restaurant, onClose, onSuccess, token }) => {
     promotional_message: ''
   });
 
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || '/api';
+  const backendUrl = process.env.REACT_APP_BACKEND_URL 
+    ? `${process.env.REACT_APP_BACKEND_URL}/api` 
+    : '/api';
 
   const couponTypes = [
     {
