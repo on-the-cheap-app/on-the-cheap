@@ -90,7 +90,7 @@ class MobileCouponTester:
         test_name = "Test Owner and Coupon Setup"
         
         try:
-            # Create test owner
+            # Create test owner using correct auth endpoint
             unique_id = str(uuid.uuid4())[:8]
             owner_data = {
                 "first_name": "Test",
@@ -102,18 +102,20 @@ class MobileCouponTester:
                 "business_type": "restaurant"
             }
             
-            # Register owner
-            owner_response = await self.client.post(f"{BACKEND_URL}/owners/register", json=owner_data)
+            # Register owner using auth endpoint
+            owner_response = await self.client.post(f"{BACKEND_URL}/auth/register", json=owner_data)
             
             if owner_response.status_code != 200:
-                await self.log_result(test_name, False, "Could not create test owner")
+                await self.log_result(test_name, False, 
+                    f"Could not create test owner: {owner_response.status_code} - {owner_response.text}")
                 return False
             
             owner_auth = owner_response.json()
             owner_token = owner_auth.get("access_token")
             
             if not owner_token:
-                await self.log_result(test_name, False, "No owner token received")
+                await self.log_result(test_name, False, 
+                    f"No owner token received. Response: {owner_auth}")
                 return False
             
             # Get a restaurant to associate with coupon
