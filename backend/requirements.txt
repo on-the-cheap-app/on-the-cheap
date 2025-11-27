@@ -32,3 +32,4 @@ psutil>=5.9.0
 aioredis>=2.0.1
 qrcode>=7.4.2
 Pillow>=10.0.0
+emergentintegrations
