@@ -146,8 +146,22 @@ const UserAuth = ({ onClose, onUserLogin, currentFavorites = [], onFavoritesUpda
       });
       
     } catch (error) {
-      Analytics.trackError(error.response?.data?.detail || 'Authentication failed', isLogin ? 'user_login' : 'user_registration');
-      setError(error.response?.data?.detail || 'Authentication failed');
+      // Enhanced error handling with specific messages
+      let errorMessage = 'Authentication failed';
+      
+      if (error.response) {
+        // Server responded with error status
+        errorMessage = error.response.data?.detail || error.response.data?.message || errorMessage;
+      } else if (error.request) {
+        // Request made but no response received
+        errorMessage = 'Network error. Please check your connection and try again.';
+      } else {
+        // Something else happened
+        errorMessage = error.message || errorMessage;
+      }
+      
+      Analytics.trackError(errorMessage, isLogin ? 'user_login' : 'user_registration');
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
