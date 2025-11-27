@@ -3213,12 +3213,17 @@ subscription_service = SubscriptionService(
 
 @api_router.get("/owners/subscription/status")
 async def get_subscription_status(
-    owner: dict = Depends(get_current_owner)
+    current_user: dict = Depends(get_current_user)
 ):
     """Get owner's current subscription status and analytics"""
     try:
-        analytics = await subscription_service.get_subscription_analytics(owner["id"])
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Owner access required")
+            
+        analytics = await subscription_service.get_subscription_analytics(current_user["id"])
         return analytics
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting subscription status: {e}")
         raise HTTPException(status_code=500, detail="Failed to get subscription status")
@@ -3227,7 +3232,7 @@ async def get_subscription_status(
 async def create_subscription_checkout(
     price_id: str,
     origin_url: str,
-    owner: dict = Depends(get_current_owner)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Create Stripe checkout session for subscription
@@ -3237,18 +3242,23 @@ async def create_subscription_checkout(
         origin_url: Frontend origin URL for building success/cancel URLs
     """
     try:
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Owner access required")
+            
         success_url = f"{origin_url}/owner/billing?session_id={{CHECKOUT_SESSION_ID}}"
         cancel_url = f"{origin_url}/owner/pricing"
         
         result = await subscription_service.create_subscription_checkout(
-            owner_id=owner["id"],
+            owner_id=current_user["id"],
             price_id=price_id,
             success_url=success_url,
             cancel_url=cancel_url,
-            metadata={"owner_email": owner["email"]}
+            metadata={"owner_email": current_user["email"]}
         )
         
         return result
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating checkout: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -3256,10 +3266,13 @@ async def create_subscription_checkout(
 @api_router.get("/owners/subscription/checkout/{session_id}/status")
 async def check_subscription_checkout_status(
     session_id: str,
-    owner: dict = Depends(get_current_owner)
+    current_user: dict = Depends(get_current_user)
 ):
     """Check the status of a checkout session"""
     try:
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Owner access required")
+            
         status = await subscription_service.check_checkout_status(session_id)
         
         # If payment succeeded, handle subscription activation
@@ -3269,7 +3282,7 @@ async def check_subscription_checkout_status(
             
             # Update subscription based on Stripe data
             # This is a simplified version - webhook will handle the full update
-            logger.info(f"Checkout session {session_id} completed for owner {owner['id']}")
+            logger.info(f"Checkout session {session_id} completed for owner {current_user['id']}")
         
         return {
             "status": status.status,
@@ -3277,6 +3290,8 @@ async def check_subscription_checkout_status(
             "amount_total": status.amount_total / 100,  # Convert from cents
             "currency": status.currency
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error checking checkout status: {e}")
         raise HTTPException(status_code=500, detail="Failed to check checkout status")
@@ -3284,15 +3299,20 @@ async def check_subscription_checkout_status(
 @api_router.post("/owners/subscription/cancel")
 async def cancel_subscription(
     immediate: bool = False,
-    owner: dict = Depends(get_current_owner)
+    current_user: dict = Depends(get_current_user)
 ):
     """Cancel owner's subscription"""
     try:
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Owner access required")
+            
         result = await subscription_service.cancel_subscription(
-            owner_id=owner["id"],
+            owner_id=current_user["id"],
             immediate=immediate
         )
         return result
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error canceling subscription: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -3300,18 +3320,23 @@ async def cancel_subscription(
 @api_router.get("/owners/features/check/{feature}")
 async def check_feature_access(
     feature: str,
-    owner: dict = Depends(get_current_owner)
+    current_user: dict = Depends(get_current_user)
 ):
     """Check if owner has access to a specific feature"""
     try:
-        has_access = await subscription_service.check_feature_access(owner["id"], feature)
-        tier = await subscription_service.get_owner_tier(owner["id"])
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Owner access required")
+            
+        has_access = await subscription_service.check_feature_access(current_user["id"], feature)
+        tier = await subscription_service.get_owner_tier(current_user["id"])
         
         return {
             "has_access": has_access,
             "current_tier": tier,
             "feature": feature
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error checking feature access: {e}")
         raise HTTPException(status_code=500, detail=str(e))
