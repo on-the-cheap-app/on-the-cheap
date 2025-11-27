@@ -16,14 +16,34 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.onthecheap.mobile"
+      "bundleIdentifier": "com.onthecheap.mobile",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "On-the-Cheap needs your location to find restaurant deals and coupons near you.",
+        "NSLocationAlwaysUsageDescription": "On-the-Cheap needs your location to send notifications about nearby deals.",
+        "NSCameraUsageDescription": "On-the-Cheap needs camera access to scan QR codes for coupon redemption.",
+        "NSPhotoLibraryUsageDescription": "On-the-Cheap needs photo library access to share deals with friends."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#f97316"
       },
-      "package": "com.onthecheap.mobile"
+      "package": "com.onthecheap.mobile",
+      "versionCode": 1,
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyATKZW4Qr-szr9IekHIW_zSCXNIdhIL22I"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -35,9 +55,23 @@
           "fonts": ["./assets/fonts/MaterialCommunityIcons.ttf"]
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow On-the-Cheap to use your location to find nearby restaurant deals."
+        }
+      ]
     ],
-    "sdkVersion": "53.0.0"
+    "sdkVersion": "53.0.0",
+    "description": "Find the best restaurant specials and digital coupons near you!",
+    "primaryColor": "#f97316",
+    "privacy": "public",
+    "extra": {
+      "eas": {
+        "projectId": "onthecheap-mobile-app"
+      }
+    }
   },
   "name": "OnTheCheapMobile",
   "displayName": "On-the-Cheap"
