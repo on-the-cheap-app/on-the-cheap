@@ -1151,6 +1151,20 @@ const OwnerDashboard = ({ user, token, onClose }) => {
             </div>
           </div>
         )}
+
+        {/* Pricing Tab */}
+        {activeTab === 'pricing' && (
+          <div>
+            <OwnerPricing />
+          </div>
+        )}
+
+        {/* Billing Tab */}
+        {activeTab === 'billing' && (
+          <div>
+            <OwnerBilling />
+          </div>
+        )}
       </div>
     </div>
   );
