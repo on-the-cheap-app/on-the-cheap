@@ -3198,6 +3198,169 @@ async def get_current_user_optional(authorization: Optional[HTTPAuthorizationCre
     except:
         return None
 
+# ====================================================================================
+# SUBSCRIPTION MANAGEMENT ENDPOINTS
+# ====================================================================================
+
+from subscription_service import SubscriptionService, SubscriptionTier, FeatureLimits
+
+# Initialize subscription service
+subscription_service = SubscriptionService(
+    db_client=db,
+    stripe_api_key=os.environ.get('STRIPE_SECRET_KEY', 'sk_test_emergent'),
+    webhook_url=f"{os.environ.get('FRONTEND_URL', 'http://localhost:8001')}/api/webhook/stripe"
+)
+
+@api_router.get("/owners/subscription/status")
+async def get_subscription_status(
+    owner: dict = Depends(get_current_owner)
+):
+    """Get owner's current subscription status and analytics"""
+    try:
+        analytics = await subscription_service.get_subscription_analytics(owner["id"])
+        return analytics
+    except Exception as e:
+        logger.error(f"Error getting subscription status: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get subscription status")
+
+@api_router.post("/owners/subscription/checkout")
+async def create_subscription_checkout(
+    price_id: str,
+    origin_url: str,
+    owner: dict = Depends(get_current_owner)
+):
+    """
+    Create Stripe checkout session for subscription
+    
+    Args:
+        price_id: Stripe price ID for the subscription plan
+        origin_url: Frontend origin URL for building success/cancel URLs
+    """
+    try:
+        success_url = f"{origin_url}/owner/billing?session_id={{CHECKOUT_SESSION_ID}}"
+        cancel_url = f"{origin_url}/owner/pricing"
+        
+        result = await subscription_service.create_subscription_checkout(
+            owner_id=owner["id"],
+            price_id=price_id,
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata={"owner_email": owner["email"]}
+        )
+        
+        return result
+    except Exception as e:
+        logger.error(f"Error creating checkout: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/owners/subscription/checkout/{session_id}/status")
+async def check_subscription_checkout_status(
+    session_id: str,
+    owner: dict = Depends(get_current_owner)
+):
+    """Check the status of a checkout session"""
+    try:
+        status = await subscription_service.check_checkout_status(session_id)
+        
+        # If payment succeeded, handle subscription activation
+        if status.payment_status == "paid":
+            # Extract metadata to determine tier and billing period
+            metadata = status.metadata
+            
+            # Update subscription based on Stripe data
+            # This is a simplified version - webhook will handle the full update
+            logger.info(f"Checkout session {session_id} completed for owner {owner['id']}")
+        
+        return {
+            "status": status.status,
+            "payment_status": status.payment_status,
+            "amount_total": status.amount_total / 100,  # Convert from cents
+            "currency": status.currency
+        }
+    except Exception as e:
+        logger.error(f"Error checking checkout status: {e}")
+        raise HTTPException(status_code=500, detail="Failed to check checkout status")
+
+@api_router.post("/owners/subscription/cancel")
+async def cancel_subscription(
+    immediate: bool = False,
+    owner: dict = Depends(get_current_owner)
+):
+    """Cancel owner's subscription"""
+    try:
+        result = await subscription_service.cancel_subscription(
+            owner_id=owner["id"],
+            immediate=immediate
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Error canceling subscription: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/owners/features/check/{feature}")
+async def check_feature_access(
+    feature: str,
+    owner: dict = Depends(get_current_owner)
+):
+    """Check if owner has access to a specific feature"""
+    try:
+        has_access = await subscription_service.check_feature_access(owner["id"], feature)
+        tier = await subscription_service.get_owner_tier(owner["id"])
+        
+        return {
+            "has_access": has_access,
+            "current_tier": tier,
+            "feature": feature
+        }
+    except Exception as e:
+        logger.error(f"Error checking feature access: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/webhook/stripe")
+async def stripe_webhook(request: Request):
+    """Handle Stripe webhook events"""
+    try:
+        body = await request.body()
+        signature = request.headers.get("Stripe-Signature")
+        
+        # Handle webhook using emergentintegrations
+        webhook_response = await subscription_service.stripe_checkout.handle_webhook(
+            body,
+            signature
+        )
+        
+        event_type = webhook_response.event_type
+        session_id = webhook_response.session_id
+        payment_status = webhook_response.payment_status
+        metadata = webhook_response.metadata
+        
+        logger.info(f"Stripe webhook received: {event_type}, session: {session_id}, status: {payment_status}")
+        
+        # Handle subscription events
+        if event_type == "checkout.session.completed" and payment_status == "paid":
+            # Extract subscription info from metadata or Stripe
+            owner_id = metadata.get("owner_id")
+            if owner_id:
+                # For now, mark as successful - full implementation would extract tier info
+                logger.info(f"Subscription payment successful for owner {owner_id}")
+                
+                # Update transaction status
+                await subscription_service.transactions.update_one(
+                    {"transaction_id": session_id},
+                    {
+                        "$set": {
+                            "status": "succeeded",
+                            "payment_status": payment_status,
+                            "updated_at": datetime.now(timezone.utc)
+                        }
+                    }
+                )
+        
+        return {"status": "success"}
+    except Exception as e:
+        logger.error(f"Stripe webhook error: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
 # Include the router in the main app
 app.include_router(api_router)
 
