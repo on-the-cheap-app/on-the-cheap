@@ -33,27 +33,6 @@ const OwnerBilling = () => {
     }
   };
 
-  const checkCheckoutStatus = async (sessionId) => {
-    try {
-      const token = localStorage.getItem('owner_token');
-      const response = await axios.get(
-        `${API}/owners/subscription/checkout/${sessionId}/status`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      if (response.data.payment_status === 'paid') {
-        // Show success message
-        alert('🎉 Subscription activated! Your trial has started.');
-        // Reload subscription status
-        await loadSubscriptionStatus();
-        // Remove session_id from URL
-        navigate('/owner/billing', { replace: true });
-      }
-    } catch (error) {
-      console.error('Error checking checkout status:', error);
-    }
-  };
-
   const handleCancelSubscription = async (immediate = false) => {
     const confirmMessage = immediate
       ? 'Are you sure you want to cancel immediately? You will lose access to paid features right away and be downgraded to the free plan.'
