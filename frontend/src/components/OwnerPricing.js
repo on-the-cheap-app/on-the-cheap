@@ -28,6 +28,33 @@ const OwnerPricing = () => {
     }
   };
 
+  const handleSubscribe = async (plan) => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('owner_token');
+      if (!token) {
+        alert('Please log in to subscribe');
+        return;
+      }
+
+      const response = await axios.post(
+        `${API}/owners/subscription/create-checkout-session`,
+        { tier: plan },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = response.data.url;
+      }
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      alert('Failed to start subscription. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="w-full px-4 sm:px-6">{/* Added padding back for better spacing */}
       {/* Header */}
