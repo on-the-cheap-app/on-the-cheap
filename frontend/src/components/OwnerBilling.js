@@ -10,13 +10,7 @@ const OwnerBilling = () => {
 
   useEffect(() => {
     loadSubscriptionStatus();
-    
-    // Check for successful checkout session
-    const sessionId = searchParams.get('session_id');
-    if (sessionId) {
-      checkCheckoutStatus(sessionId);
-    }
-  }, [searchParams]);
+  }, []);
 
   const loadSubscriptionStatus = async () => {
     try {
