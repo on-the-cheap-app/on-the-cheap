@@ -246,9 +246,9 @@ const OwnerDashboard = ({ user, token, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-6 flex justify-between items-center">
+        <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-6 flex justify-between items-center flex-shrink-0">
           <div>
             <h2 className="text-2xl font-bold">Restaurant Owner Dashboard</h2>
             <p className="text-orange-100">Welcome back, {user?.first_name || 'Owner'}!</p>
@@ -274,7 +274,7 @@ const OwnerDashboard = ({ user, token, onClose }) => {
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row h-full">
+        <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
           {/* Sidebar Navigation */}
           <div className="bg-gray-50 p-4 md:w-64 border-r">
             <nav className="space-y-2">
