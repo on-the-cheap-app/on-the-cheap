@@ -66,6 +66,11 @@
     "sdkVersion": "53.0.0",
     "description": "Find the best restaurant specials and digital coupons near you!",
     "primaryColor": "#f97316",
-    "privacy": "public"
+    "privacy": "public",
+    "extra": {
+      "eas": {
+        "projectId": "61d70fb4-0220-4f8b-a1dc-b9861b8e5aad"
+      }
+    }
   }
 }
