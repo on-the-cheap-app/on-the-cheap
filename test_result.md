@@ -688,8 +688,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Mobile App Digital Coupons Integration"
-  stuck_tasks: []
+    - "Custom Subscribe Buttons in Pricing Page"
+  stuck_tasks:
+    - "Custom Subscribe Buttons in Pricing Page"
   test_all: false
   test_priority: "high_first"
 
