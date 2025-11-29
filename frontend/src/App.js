@@ -476,6 +476,8 @@ function App() {
     
     if (type === 'owner') {
       setShowOwnerDashboard(true);
+      // Store owner-specific token for OwnerBilling and other components
+      localStorage.setItem('owner_token', token);
     }
     
     // Store in localStorage for persistence
