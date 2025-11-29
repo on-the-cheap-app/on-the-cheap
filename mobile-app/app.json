@@ -66,11 +66,6 @@
     "sdkVersion": "53.0.0",
     "description": "Find the best restaurant specials and digital coupons near you!",
     "primaryColor": "#f97316",
-    "privacy": "public",
-    "extra": {
-      "eas": {
-        "projectId": "onthecheap-mobile-app"
-      }
-    }
+    "privacy": "public"
   }
 }
