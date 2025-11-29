@@ -157,12 +157,142 @@ const OwnerPricing = () => {
           14-day free trial on all paid plans. No credit card required until trial ends.
         </p>
         
-        {/* Embedded Stripe Pricing Table */}
-        <div className="stripe-pricing-table-container">
-          <stripe-pricing-table 
-            pricing-table-id="prctbl_1SYBXi047XGR3G7TsMDvxF4N"
-            publishable-key="pk_live_51SYAoi047XGR3G7TJMKQbnegkq4TOVz92pt3BcDd7KpKvLySHuOeLkeClGiXQm6jOCvScFMDP6BGTG9yxc4kZjpf00kiQsm6gg">
-          </stripe-pricing-table>
+        {/* Custom Subscription Cards */}
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {/* Starter Plan - Free */}
+          <div className="bg-white rounded-lg shadow-lg border-2 border-gray-200 p-8 flex flex-col">
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Starter</h3>
+            <div className="mb-4">
+              <span className="text-4xl font-bold">$0</span>
+              <span className="text-gray-600">/month</span>
+            </div>
+            <p className="text-gray-600 mb-6">Perfect for getting started</p>
+            <ul className="mb-8 space-y-3 flex-grow">
+              <li className="flex items-start">
+                <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                </svg>
+                <span>1 restaurant location</span>
+              </li>
+              <li className="flex items-start">
+                <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                </svg>
+                <span>Up to 5 specials per month</span>
+              </li>
+              <li className="flex items-start">
+                <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                </svg>
+                <span>Basic analytics</span>
+              </li>
+            </ul>
+            <button 
+              disabled
+              className="w-full py-3 px-6 rounded-lg bg-gray-200 text-gray-500 font-semibold cursor-not-allowed"
+            >
+              Current Plan
+            </button>
+          </div>
+
+          {/* Pro Plan */}
+          <div className="bg-white rounded-lg shadow-xl border-4 border-orange-500 p-8 flex flex-col relative transform scale-105">
+            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-orange-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
+              POPULAR
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Pro</h3>
+            <div className="mb-4">
+              <span className="text-4xl font-bold">$99</span>
+              <span className="text-gray-600">/month</span>
+            </div>
+            <p className="text-gray-600 mb-6">For growing restaurants</p>
+            <ul className="mb-8 space-y-3 flex-grow">
+              <li className="flex items-start">
+                <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                </svg>
+                <span>Up to 3 locations</span>
+              </li>
+              <li className="flex items-start">
+                <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                </svg>
+                <span>Unlimited specials</span>
+              </li>
+              <li className="flex items-start">
+                <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                </svg>
+                <span>Advanced analytics</span>
+              </li>
+              <li className="flex items-start">
+                <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                </svg>
+                <span>Priority support</span>
+              </li>
+              <li className="flex items-start">
+                <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                </svg>
+                <span>Digital coupons</span>
+              </li>
+            </ul>
+            <button 
+              onClick={() => handleSubscribe('pro')}
+              className="w-full py-3 px-6 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-semibold transition-colors"
+            >
+              Start 14-Day Free Trial
+            </button>
+          </div>
+
+          {/* Enterprise Plan */}
+          <div className="bg-white rounded-lg shadow-lg border-2 border-gray-200 p-8 flex flex-col">
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Enterprise</h3>
+            <div className="mb-4">
+              <span className="text-4xl font-bold">$299</span>
+              <span className="text-gray-600">/month</span>
+            </div>
+            <p className="text-gray-600 mb-6">For restaurant chains</p>
+            <ul className="mb-8 space-y-3 flex-grow">
+              <li className="flex items-start">
+                <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                </svg>
+                <span>Unlimited locations</span>
+              </li>
+              <li className="flex items-start">
+                <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                </svg>
+                <span>Unlimited specials</span>
+              </li>
+              <li className="flex items-start">
+                <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                </svg>
+                <span>White-label solution</span>
+              </li>
+              <li className="flex items-start">
+                <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                </svg>
+                <span>Dedicated account manager</span>
+              </li>
+              <li className="flex items-start">
+                <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                </svg>
+                <span>Custom integrations</span>
+              </li>
+            </ul>
+            <button 
+              onClick={() => handleSubscribe('enterprise')}
+              className="w-full py-3 px-6 rounded-lg bg-gray-900 hover:bg-gray-800 text-white font-semibold transition-colors"
+            >
+              Start 14-Day Free Trial
+            </button>
+          </div>
         </div>
       </div>
 
