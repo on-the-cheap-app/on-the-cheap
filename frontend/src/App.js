@@ -1112,12 +1112,29 @@ function App() {
             <p className="text-gray-600 text-sm">
               Discover the best restaurant specials and save money on great food!
             </p>
+            <div className="mt-4 flex justify-center space-x-4 text-sm">
+              <button
+                onClick={() => setShowPrivacyPolicy(true)}
+                className="text-orange-500 hover:text-orange-600 hover:underline"
+              >
+                Privacy Policy
+              </button>
+              <span className="text-gray-400">|</span>
+              <a href="mailto:support@onthecheapapp.com" className="text-orange-500 hover:text-orange-600 hover:underline">
+                Contact Us
+              </a>
+            </div>
             <div className="mt-4 text-xs text-gray-500">
-              © 2024 On-the-Cheap. Find deals, save money, eat well.
+              © 2025 On-the-Cheap. Find deals, save money, eat well.
             </div>
           </div>
         </div>
       </footer>
+
+      {/* Privacy Policy Modal */}
+      {showPrivacyPolicy && (
+        <PrivacyPolicyModal onClose={() => setShowPrivacyPolicy(false)} />
+      )}
     </div>
   );
 }
