@@ -276,7 +276,7 @@ const OwnerDashboard = ({ user, token, onClose }) => {
 
         <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
           {/* Sidebar Navigation */}
-          <div className="bg-gray-50 p-4 md:w-64 border-r">
+          <div className="bg-gray-50 p-4 md:w-64 border-r flex-shrink-0 overflow-y-auto">
             <nav className="space-y-2">
               <button
                 onClick={() => setActiveTab('dashboard')}
