@@ -42,7 +42,7 @@ const OwnerPricing = () => {
   };
 
   return (
-    <div className="w-full">{/* Removed max-w and padding to work better in modal */}
+    <div className="w-full px-4 sm:px-6">{/* Added padding back for better spacing */}
       {/* Header */}
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
