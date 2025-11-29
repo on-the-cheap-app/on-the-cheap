@@ -111,6 +111,7 @@ function App() {
   // Owner dashboard state
   const [showOwnerAuth, setShowOwnerAuth] = useState(false);
   const [showOwnerDashboard, setShowOwnerDashboard] = useState(false);
+  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
 
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
   const [selectedVendorType, setSelectedVendorType] = useState('all'); // 'all', 'permanent', 'mobile'
