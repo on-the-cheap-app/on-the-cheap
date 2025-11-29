@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useSearchParams, useNavigate } from 'react-router-dom';
 
 const API = (process.env.REACT_APP_BACKEND_URL || '') + '/api';
 
@@ -8,8 +7,6 @@ const OwnerBilling = () => {
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [canceling, setCanceling] = useState(false);
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
 
   useEffect(() => {
     loadSubscriptionStatus();
