@@ -83,7 +83,8 @@ const OwnerBilling = () => {
   };
 
   const handleUpgrade = () => {
-    navigate('/owner/pricing');
+    // User can switch to pricing tab manually in the dashboard
+    alert('Please go to the "Pricing & Plans" tab to upgrade your subscription.');
   };
 
   if (loading) {
