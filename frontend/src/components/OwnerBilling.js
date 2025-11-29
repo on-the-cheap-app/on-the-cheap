@@ -28,9 +28,6 @@ const OwnerBilling = () => {
       setSubscription(response.data);
     } catch (error) {
       console.error('Error loading subscription:', error);
-      if (error.response?.status === 401) {
-        navigate('/owner');
-      }
     } finally {
       setLoading(false);
     }
