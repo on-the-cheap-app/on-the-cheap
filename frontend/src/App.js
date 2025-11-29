@@ -11,6 +11,7 @@ import OwnerPortal from "./OwnerPortal";
 import UserAuth from "./UserAuth";
 import OwnerAuth from './components/OwnerAuth';
 import OwnerDashboard from './components/OwnerDashboard';
+import PrivacyPolicyModal from './components/PrivacyPolicyModal';
 import AddressInput from "./components/AddressInput";
 
 import RestaurantMap from "./components/RestaurantMap";
