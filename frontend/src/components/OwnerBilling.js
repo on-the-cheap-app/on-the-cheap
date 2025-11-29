@@ -16,7 +16,8 @@ const OwnerBilling = () => {
     try {
       const token = localStorage.getItem('owner_token');
       if (!token) {
-        navigate('/owner');
+        console.error('No owner token found');
+        setLoading(false);
         return;
       }
 
