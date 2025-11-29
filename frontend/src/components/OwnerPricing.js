@@ -9,19 +9,6 @@ const OwnerPricing = () => {
 
   useEffect(() => {
     loadSubscriptionStatus();
-    
-    // Load Stripe pricing table script
-    const script = document.createElement('script');
-    script.src = 'https://js.stripe.com/v3/pricing-table.js';
-    script.async = true;
-    document.body.appendChild(script);
-
-    return () => {
-      // Cleanup script on unmount
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
-    };
   }, []);
 
   const loadSubscriptionStatus = async () => {
