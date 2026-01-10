@@ -9,7 +9,7 @@ import json
 import uuid
 
 class FavoritesFixTester:
-    def __init__(self, base_url="https://codefixing.preview.emergentagent.com"):
+    def __init__(self, base_url="https://eatdeals-mobile.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.session = requests.Session()

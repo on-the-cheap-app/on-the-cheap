@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from typing import Dict, Any, Optional
 
 # Backend URL from frontend environment
-BACKEND_URL = "https://codefixing.preview.emergentagent.com/api"
+BACKEND_URL = "https://eatdeals-mobile.preview.emergentagent.com/api"
 
 class MobileCouponTester:
     def __init__(self):
