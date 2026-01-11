@@ -3250,20 +3250,28 @@ async def create_subscription_checkout(
     
     Args:
         tier: Subscription tier (pro or enterprise)
+        billing: Billing period (monthly or annual)
     """
     try:
         if current_user.get("user_type") != "owner":
             raise HTTPException(status_code=403, detail="Owner access required")
         
         tier = request.tier.lower()
-        if tier not in STRIPE_PRICE_IDS:
+        billing = request.billing.lower()
+        
+        if tier not in ["pro", "enterprise"]:
             raise HTTPException(status_code=400, detail=f"Invalid subscription tier: {tier}")
         
-        price_id = STRIPE_PRICE_IDS.get(tier)
+        if billing not in ["monthly", "annual"]:
+            raise HTTPException(status_code=400, detail=f"Invalid billing period: {billing}")
+        
+        price_key = f"{tier}_{billing}"
+        price_id = STRIPE_PRICE_IDS.get(price_key)
+        
         if not price_id:
             raise HTTPException(
                 status_code=500, 
-                detail=f"Stripe price not configured for {tier} tier. Please contact support."
+                detail=f"Stripe price not configured for {tier} {billing}. Please contact support."
             )
         
         origin_url = os.environ.get("FRONTEND_URL", "https://www.onthecheapapp.com")
@@ -3275,7 +3283,7 @@ async def create_subscription_checkout(
             price_id=price_id,
             success_url=success_url,
             cancel_url=cancel_url,
-            metadata={"owner_email": current_user["email"], "tier": tier}
+            metadata={"owner_email": current_user["email"], "tier": tier, "billing": billing}
         )
         
         return result
