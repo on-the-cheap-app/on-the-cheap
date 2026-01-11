@@ -168,9 +168,23 @@ const OwnerPricing = () => {
         <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
           Start Your Free Trial Today
         </h2>
-        <p className="text-center text-gray-600 mb-8">
+        <p className="text-center text-gray-600 mb-4">
           14-day free trial on all paid plans. No credit card required until trial ends.
         </p>
+        
+        {/* Billing Toggle */}
+        <div className="flex justify-center items-center mb-8">
+          <span className={`mr-3 text-sm font-medium ${billingPeriod === 'monthly' ? 'text-gray-900' : 'text-gray-500'}`}>Monthly</span>
+          <button
+            onClick={() => setBillingPeriod(billingPeriod === 'monthly' ? 'annual' : 'monthly')}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${billingPeriod === 'annual' ? 'bg-orange-500' : 'bg-gray-300'}`}
+          >
+            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${billingPeriod === 'annual' ? 'translate-x-6' : 'translate-x-1'}`} />
+          </button>
+          <span className={`ml-3 text-sm font-medium ${billingPeriod === 'annual' ? 'text-gray-900' : 'text-gray-500'}`}>
+            Annual <span className="text-green-600 font-semibold">(Save 17%)</span>
+          </span>
+        </div>
         
         {/* Custom Subscription Cards */}
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
