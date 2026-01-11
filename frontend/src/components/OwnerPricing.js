@@ -231,8 +231,9 @@ const OwnerPricing = () => {
             </div>
             <h3 className="text-2xl font-bold text-gray-900 mb-2">Pro</h3>
             <div className="mb-4">
-              <span className="text-4xl font-bold">$99</span>
-              <span className="text-gray-600">/month</span>
+              <span className="text-4xl font-bold">${billingPeriod === 'monthly' ? '99' : '990'}</span>
+              <span className="text-gray-600">/{billingPeriod === 'monthly' ? 'month' : 'year'}</span>
+              {billingPeriod === 'annual' && <div className="text-sm text-green-600">$82.50/month</div>}
             </div>
             <p className="text-gray-600 mb-6">For growing restaurants</p>
             <ul className="mb-8 space-y-3 flex-grow">
