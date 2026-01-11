@@ -38,7 +38,7 @@ const OwnerPricing = () => {
       }
 
       const response = await axios.post(
-        `${API}/owners/subscription/create-checkout-session`,
+        `${API}/owners/subscription/checkout`,
         { tier: plan },
         { headers: { Authorization: `Bearer ${token}` } }
       );
