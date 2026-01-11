@@ -174,29 +174,31 @@ class SubscriptionService:
         Returns:
             Dict with checkout URL and session ID
         """
+        import stripe
+        
         if metadata is None:
             metadata = {}
         
         metadata["owner_id"] = owner_id
         metadata["type"] = "subscription"
         
-        # Create checkout session (Stripe handles trial automatically based on price configuration)
-        from emergentintegrations.payments.stripe.checkout import CheckoutSessionRequest
+        # Use Stripe directly for subscription mode
+        stripe.api_key = self.stripe_checkout.api_key
         
-        checkout_request = CheckoutSessionRequest(
-            stripe_price_id=price_id,
-            quantity=1,
+        session = stripe.checkout.Session.create(
+            mode='subscription',
+            line_items=[{
+                'price': price_id,
+                'quantity': 1,
+            }],
             success_url=success_url,
             cancel_url=cancel_url,
-            metadata=metadata,
-            payment_methods=["card"]
+            metadata=metadata
         )
-        
-        session = await self.stripe_checkout.create_checkout_session(checkout_request)
         
         # Create pending transaction record
         await self.transactions.insert_one({
-            "transaction_id": session.session_id,
+            "transaction_id": session.id,
             "owner_id": owner_id,
             "subscription_id": None,  # Will be updated after webhook
             "amount": 0.0,  # Will be updated from webhook
@@ -209,11 +211,11 @@ class SubscriptionService:
             "updated_at": datetime.now(timezone.utc)
         })
         
-        logger.info(f"Created subscription checkout for owner {owner_id}, session {session.session_id}")
+        logger.info(f"Created subscription checkout for owner {owner_id}, session {session.id}")
         
         return {
             "url": session.url,
-            "session_id": session.session_id
+            "session_id": session.id
         }
     
     async def check_checkout_status(self, session_id: str) -> CheckoutStatusResponse:
