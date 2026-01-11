@@ -40,7 +40,7 @@ const OwnerPricing = () => {
 
       const response = await axios.post(
         `${API}/owners/subscription/checkout`,
-        { tier: plan },
+        { tier: plan, billing: billingPeriod },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
