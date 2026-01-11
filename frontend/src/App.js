@@ -125,6 +125,9 @@ function App() {
   // PWA hook
   const { cacheRestaurantData, getCachedRestaurantData, isOnline } = usePWA();
 
+  // Check if we're on the privacy policy page
+  const isPrivacyPage = window.location.pathname === '/privacy';
+
   useEffect(() => {
     // Initialize analytics
     Analytics.trackSessionStart();
