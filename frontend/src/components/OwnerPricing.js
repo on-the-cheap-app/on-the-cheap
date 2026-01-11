@@ -6,6 +6,7 @@ const API = (process.env.REACT_APP_BACKEND_URL || '') + '/api';
 const OwnerPricing = () => {
   const [currentTier, setCurrentTier] = useState('free');
   const [loading, setLoading] = useState(true);
+  const [billingPeriod, setBillingPeriod] = useState('monthly');
 
   useEffect(() => {
     loadSubscriptionStatus();
