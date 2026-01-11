@@ -3228,23 +3228,42 @@ async def get_subscription_status(
         logger.error(f"Error getting subscription status: {e}")
         raise HTTPException(status_code=500, detail="Failed to get subscription status")
 
+class SubscriptionCheckoutRequest(BaseModel):
+    tier: str
+
+# Stripe Price IDs - configure these in your Stripe dashboard
+STRIPE_PRICE_IDS = {
+    "pro": os.environ.get("STRIPE_PRO_PRICE_ID", ""),
+    "enterprise": os.environ.get("STRIPE_ENTERPRISE_PRICE_ID", "")
+}
+
 @api_router.post("/owners/subscription/checkout")
 async def create_subscription_checkout(
-    price_id: str,
-    origin_url: str,
+    request: SubscriptionCheckoutRequest,
     current_user: dict = Depends(get_current_user)
 ):
     """
     Create Stripe checkout session for subscription
     
     Args:
-        price_id: Stripe price ID for the subscription plan
-        origin_url: Frontend origin URL for building success/cancel URLs
+        tier: Subscription tier (pro or enterprise)
     """
     try:
         if current_user.get("user_type") != "owner":
             raise HTTPException(status_code=403, detail="Owner access required")
-            
+        
+        tier = request.tier.lower()
+        if tier not in STRIPE_PRICE_IDS:
+            raise HTTPException(status_code=400, detail=f"Invalid subscription tier: {tier}")
+        
+        price_id = STRIPE_PRICE_IDS.get(tier)
+        if not price_id:
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Stripe price not configured for {tier} tier. Please contact support."
+            )
+        
+        origin_url = os.environ.get("FRONTEND_URL", "https://www.onthecheapapp.com")
         success_url = f"{origin_url}/owner/billing?session_id={{CHECKOUT_SESSION_ID}}"
         cancel_url = f"{origin_url}/owner/pricing"
         
@@ -3253,7 +3272,7 @@ async def create_subscription_checkout(
             price_id=price_id,
             success_url=success_url,
             cancel_url=cancel_url,
-            metadata={"owner_email": current_user["email"]}
+            metadata={"owner_email": current_user["email"], "tier": tier}
         )
         
         return result
