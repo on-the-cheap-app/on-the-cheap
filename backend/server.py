@@ -3230,11 +3230,14 @@ async def get_subscription_status(
 
 class SubscriptionCheckoutRequest(BaseModel):
     tier: str
+    billing: str = "monthly"  # "monthly" or "annual"
 
 # Stripe Price IDs - configure these in your Stripe dashboard
 STRIPE_PRICE_IDS = {
-    "pro": os.environ.get("STRIPE_PRO_PRICE_ID", ""),
-    "enterprise": os.environ.get("STRIPE_ENTERPRISE_PRICE_ID", "")
+    "pro_monthly": os.environ.get("STRIPE_PRO_MONTHLY_PRICE_ID", ""),
+    "pro_annual": os.environ.get("STRIPE_PRO_ANNUAL_PRICE_ID", ""),
+    "enterprise_monthly": os.environ.get("STRIPE_ENTERPRISE_MONTHLY_PRICE_ID", ""),
+    "enterprise_annual": os.environ.get("STRIPE_ENTERPRISE_ANNUAL_PRICE_ID", "")
 }
 
 @api_router.post("/owners/subscription/checkout")
