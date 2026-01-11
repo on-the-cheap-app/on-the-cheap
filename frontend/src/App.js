@@ -509,6 +509,103 @@ function App() {
   //   return <OwnerPortal />;
   // }
 
+  // If on privacy page, show standalone privacy policy
+  if (isPrivacyPage) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm">
+          <div className="max-w-4xl mx-auto px-4 py-6">
+            <a href="/" className="text-orange-500 hover:text-orange-600 flex items-center mb-4">
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back to Home
+            </a>
+            <h1 className="text-3xl font-bold text-gray-900">Privacy Policy</h1>
+            <p className="text-gray-600 mt-2">Last updated: January 11, 2026</p>
+          </div>
+        </div>
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="bg-white rounded-lg shadow-md p-8 space-y-8">
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Introduction</h2>
+              <p className="text-gray-700 leading-relaxed">
+                Welcome to On the Cheap ("we," "our," or "us"). We respect your privacy and are committed to protecting your personal data. 
+                This privacy policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application 
+                and website (collectively, the "Service").
+              </p>
+            </section>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">2. Information We Collect</h2>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-4">2.1 Personal Information</h3>
+              <p className="text-gray-700 leading-relaxed mb-3">We may collect personal information that you provide to us, including:</p>
+              <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
+                <li>Name and email address (for account creation)</li>
+                <li>Location data (to show nearby restaurant specials)</li>
+                <li>Payment information (processed securely through Stripe)</li>
+                <li>Restaurant preferences and favorites</li>
+              </ul>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-4">2.2 Usage Information</h3>
+              <p className="text-gray-700 leading-relaxed mb-3">We automatically collect certain information when you use our Service:</p>
+              <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
+                <li>Device information (type, operating system, unique identifiers)</li>
+                <li>Log data (IP address, browser type, pages visited)</li>
+                <li>Location information (with your permission)</li>
+              </ul>
+            </section>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">3. How We Use Your Information</h2>
+              <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
+                <li>Provide, maintain, and improve our Service</li>
+                <li>Show you relevant restaurant specials and coupons near you</li>
+                <li>Process payments and subscription transactions</li>
+                <li>Send you notifications about specials you've saved</li>
+                <li>Respond to your comments and customer service requests</li>
+              </ul>
+            </section>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">4. Information Sharing</h2>
+              <p className="text-gray-700 leading-relaxed mb-3">We do not sell your personal information. We may share your information only:</p>
+              <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
+                <li><strong>With Service Providers:</strong> Third-party services (Stripe for payments, cloud hosting)</li>
+                <li><strong>Legal Requirements:</strong> If required by law or to protect our rights</li>
+              </ul>
+            </section>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">5. Data Security</h2>
+              <p className="text-gray-700 leading-relaxed">
+                We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, 
+                alteration, disclosure, or destruction. This includes encryption of sensitive data and secure servers.
+              </p>
+            </section>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">6. Your Rights</h2>
+              <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
+                <li><strong>Access:</strong> Request a copy of the personal information we hold about you</li>
+                <li><strong>Correction:</strong> Update or correct inaccurate information</li>
+                <li><strong>Deletion:</strong> Request deletion of your account and personal data</li>
+                <li><strong>Location:</strong> Disable location services through your device settings</li>
+              </ul>
+            </section>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">7. Children's Privacy</h2>
+              <p className="text-gray-700 leading-relaxed">
+                Our Service is not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13.
+              </p>
+            </section>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">8. Contact Us</h2>
+              <p className="text-gray-700 leading-relaxed mb-4">If you have questions about this privacy policy, please contact us:</p>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="text-gray-700"><strong>On the Cheap</strong></p>
+                <p className="text-gray-700">Email: privacy@onthecheapapp.com</p>
+                <p className="text-gray-700">Website: https://www.onthecheapapp.com</p>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50">
       {/* PWA Components */}
