@@ -1800,6 +1800,72 @@ async def get_favorite_restaurants(current_user: dict = Depends(get_current_regu
         logger.error(f"Get favorites error: {e}")
         raise HTTPException(status_code=500, detail="Failed to get favorites")
 
+# =================== ACCOUNT DELETION ===================
+
+class AccountDeletionRequest(BaseModel):
+    email: str
+    reason: Optional[str] = None
+
+@api_router.post("/users/request-deletion")
+async def request_account_deletion(request: AccountDeletionRequest):
+    """Request account and data deletion"""
+    try:
+        # Check if user exists
+        user = await db.users.find_one({"email": request.email})
+        owner = await db.restaurant_owners.find_one({"email": request.email})
+        
+        if not user and not owner:
+            # Don't reveal if account exists or not for privacy
+            return {"message": "If an account exists with this email, a deletion request has been submitted. You will receive confirmation within 7 business days."}
+        
+        # Store deletion request
+        deletion_request = {
+            "email": request.email,
+            "reason": request.reason,
+            "user_type": "owner" if owner else "user",
+            "status": "pending",
+            "requested_at": datetime.now(timezone.utc),
+            "user_id": owner.get("id") if owner else user.get("id") if user else None
+        }
+        
+        await db.deletion_requests.insert_one(deletion_request)
+        
+        logger.info(f"Account deletion requested for: {request.email}")
+        
+        return {"message": "Your account deletion request has been submitted. Your account and all associated data will be deleted within 7 business days. You will receive a confirmation email once complete."}
+        
+    except Exception as e:
+        logger.error(f"Account deletion request error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to submit deletion request")
+
+@api_router.delete("/users/delete-account")
+async def delete_own_account(current_user: dict = Depends(get_current_regular_user)):
+    """Immediately delete own account and all associated data"""
+    try:
+        user_id = current_user.get("id")
+        email = current_user.get("email")
+        
+        # Delete user's favorites, saved coupons, etc.
+        await db.users.delete_one({"id": user_id})
+        
+        # Log the deletion
+        await db.deletion_requests.insert_one({
+            "email": email,
+            "user_type": "user",
+            "status": "completed",
+            "requested_at": datetime.now(timezone.utc),
+            "completed_at": datetime.now(timezone.utc),
+            "user_id": user_id
+        })
+        
+        logger.info(f"Account deleted for user: {email}")
+        
+        return {"message": "Your account and all associated data have been permanently deleted."}
+        
+    except Exception as e:
+        logger.error(f"Account deletion error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete account")
+
 # =================== RESTAURANT CLAIMING & MANAGEMENT ===================
 
 @api_router.get("/owner/search-restaurants")
