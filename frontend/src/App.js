@@ -607,6 +607,122 @@ function App() {
     );
   }
 
+  // Delete Account Page
+  if (isDeleteAccountPage) {
+    const [deleteEmail, setDeleteEmail] = React.useState('');
+    const [deleteReason, setDeleteReason] = React.useState('');
+    const [deleteSubmitted, setDeleteSubmitted] = React.useState(false);
+    const [deleteLoading, setDeleteLoading] = React.useState(false);
+    const [deleteError, setDeleteError] = React.useState('');
+
+    const handleDeleteRequest = async (e) => {
+      e.preventDefault();
+      setDeleteLoading(true);
+      setDeleteError('');
+      
+      try {
+        const response = await axios.post(`${API}/users/request-deletion`, {
+          email: deleteEmail,
+          reason: deleteReason
+        });
+        setDeleteSubmitted(true);
+      } catch (error) {
+        setDeleteError('Failed to submit request. Please try again or contact support@onthecheapapp.com');
+      }
+      setDeleteLoading(false);
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm">
+          <div className="max-w-2xl mx-auto px-4 py-6">
+            <a href="/" className="text-orange-500 hover:text-orange-600 flex items-center mb-4">
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back to Home
+            </a>
+            <h1 className="text-3xl font-bold text-gray-900">Delete Your Account</h1>
+            <p className="text-gray-600 mt-2">Request deletion of your account and all associated data</p>
+          </div>
+        </div>
+        <div className="max-w-2xl mx-auto px-4 py-8">
+          <div className="bg-white rounded-lg shadow-md p-8">
+            {deleteSubmitted ? (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Request Submitted</h2>
+                <p className="text-gray-600">
+                  Your account deletion request has been received. Your account and all associated data will be deleted within 7 business days. You will receive a confirmation email once complete.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                  <h3 className="font-semibold text-yellow-800 mb-2">⚠️ Warning</h3>
+                  <p className="text-yellow-700 text-sm">
+                    This action is permanent and cannot be undone. All your data including favorites, saved restaurants, and account information will be permanently deleted.
+                  </p>
+                </div>
+                
+                <form onSubmit={handleDeleteRequest} className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email Address *
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={deleteEmail}
+                      onChange={(e) => setDeleteEmail(e.target.value)}
+                      placeholder="Enter your account email"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Reason for leaving (optional)
+                    </label>
+                    <textarea
+                      value={deleteReason}
+                      onChange={(e) => setDeleteReason(e.target.value)}
+                      placeholder="Help us improve by sharing why you're leaving"
+                      rows={3}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    />
+                  </div>
+                  
+                  {deleteError && (
+                    <div className="bg-red-50 text-red-700 p-3 rounded-lg text-sm">
+                      {deleteError}
+                    </div>
+                  )}
+                  
+                  <button
+                    type="submit"
+                    disabled={deleteLoading}
+                    className="w-full py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {deleteLoading ? 'Submitting...' : 'Request Account Deletion'}
+                  </button>
+                </form>
+                
+                <div className="mt-6 pt-6 border-t">
+                  <p className="text-sm text-gray-600">
+                    Questions? Contact us at <a href="mailto:support@onthecheapapp.com" className="text-orange-500 hover:underline">support@onthecheapapp.com</a>
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50">
       {/* PWA Components */}
