@@ -57,7 +57,7 @@ const OwnerPricing = () => {
   };
 
   return (
-    <div className="w-full px-4 sm:px-6">{/* Added padding back for better spacing */}
+    <div className="w-full px-4 sm:px-6 pb-8" style={{maxHeight: '100%', overflowY: 'auto'}}>
       {/* Header */}
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
