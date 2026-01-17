@@ -1154,7 +1154,7 @@ const OwnerDashboard = ({ user, token, onClose }) => {
 
         {/* Pricing Tab */}
         {activeTab === 'pricing' && (
-          <div className="h-full overflow-y-auto">
+          <div style={{height: '100%', overflow: 'auto'}}>
             <OwnerPricing />
           </div>
         )}
