@@ -81,9 +81,23 @@ const getRideUrls = (restaurant) => {
   };
 };
 
-const openShareLink = (url, platform) => {
-  // For mobile apps, try to open the native app first, then fallback to web
+const openShareLink = async (url, platform, message) => {
+  // For SMS on desktop, try Web Share API first (works better with Google Messages)
   if (platform === 'sms') {
+    // Check if Web Share API is available and we're on desktop
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    
+    if (!isMobile && navigator.share) {
+      try {
+        await navigator.share({ text: message });
+        return;
+      } catch (err) {
+        // User cancelled or share failed, fall through to URL method
+        if (err.name === 'AbortError') return;
+      }
+    }
+    
+    // Fallback to sms: URL
     window.location.href = url;
   } else {
     window.open(url, '_blank', 'noopener,noreferrer');
@@ -94,7 +108,8 @@ const openShareLink = (url, platform) => {
 const handleShare = (restaurant, platform) => {
   Analytics.trackRestaurantShare(restaurant, platform);
   const shareUrls = getShareUrls(restaurant);
-  openShareLink(shareUrls[platform], platform);
+  const message = generateShareMessage(restaurant);
+  openShareLink(shareUrls[platform], platform, message);
 };
 
 // Analytics-enabled ride function  
