@@ -50,11 +50,11 @@ const getShareUrls = (restaurant) => {
   const message = generateShareMessage(restaurant);
   const encodedMessage = encodeURIComponent(message);
   
-  // Detect if mobile device and use appropriate SMS format
-  const isAndroid = /android/i.test(navigator.userAgent);
-  const smsUrl = isAndroid 
-    ? `sms:?body=${encodedMessage}` 
-    : `sms:&body=${encodedMessage}`;
+  // iOS uses &body=, Android uses ?body=
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const smsUrl = isIOS 
+    ? `sms:&body=${encodedMessage}` 
+    : `sms:?body=${encodedMessage}`;
   
   return {
     sms: smsUrl,
