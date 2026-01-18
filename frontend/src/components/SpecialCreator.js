@@ -1,36 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   XMarkIcon,
-  PhotoIcon,
   CalendarDaysIcon,
   ClockIcon,
-  TagIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline';
 
 const SpecialCreator = ({ token, restaurants, onClose, onSpecialCreated, editingSpecial = null }) => {
+  const today = new Date().toISOString().split('T')[0];
+  const nextMonth = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
   const [formData, setFormData] = useState({
     restaurant_id: editingSpecial?.restaurant_id || (restaurants.length === 1 ? restaurants[0].id : ''),
-    name: editingSpecial?.name || '',
+    title: editingSpecial?.title || '',
     description: editingSpecial?.description || '',
-    special_type: editingSpecial?.special_type || 'daily',
-    discount_type: editingSpecial?.discount_type || 'percentage',
-    discount_value: editingSpecial?.discount_value || '',
+    special_type: editingSpecial?.special_type || 'daily_special',
+    price: editingSpecial?.price || '',
     original_price: editingSpecial?.original_price || '',
-    start_date: editingSpecial?.start_date || new Date().toISOString().split('T')[0],
-    end_date: editingSpecial?.end_date || '',
-    start_time: editingSpecial?.start_time || '11:00',
-    end_time: editingSpecial?.end_time || '23:00',
-    days_of_week: editingSpecial?.days_of_week || ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
-    is_recurring: editingSpecial?.is_recurring ?? true,
-    terms: editingSpecial?.terms || '',
+    discount_percentage: editingSpecial?.discount_percentage || '',
+    days_available: editingSpecial?.days_available || ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
+    time_start: editingSpecial?.time_start || '11:00',
+    time_end: editingSpecial?.time_end || '21:00',
+    valid_from: editingSpecial?.valid_from?.split('T')[0] || today,
+    valid_until: editingSpecial?.valid_until?.split('T')[0] || nextMonth,
     max_redemptions: editingSpecial?.max_redemptions || '',
-    image_url: editingSpecial?.image_url || ''
+    terms_conditions: editingSpecial?.terms_conditions || ''
   });
   
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(editingSpecial?.image_url || '');
-  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -39,12 +35,12 @@ const SpecialCreator = ({ token, restaurants, onClose, onSpecialCreated, editing
     : '/api';
 
   const specialTypes = [
-    { value: 'daily', label: 'Daily Special', icon: '🍽️' },
+    { value: 'daily_special', label: 'Daily Special', icon: '🍽️' },
     { value: 'happy_hour', label: 'Happy Hour', icon: '🍻' },
-    { value: 'lunch', label: 'Lunch Special', icon: '☀️' },
-    { value: 'dinner', label: 'Dinner Special', icon: '🌙' },
-    { value: 'weekend', label: 'Weekend Special', icon: '🎉' },
-    { value: 'limited_time', label: 'Limited Time Offer', icon: '⏰' }
+    { value: 'lunch_special', label: 'Lunch Special', icon: '☀️' },
+    { value: 'dinner_special', label: 'Dinner Special', icon: '🌙' },
+    { value: 'discount', label: 'Discount', icon: '💰' },
+    { value: 'bogo', label: 'Buy One Get One', icon: '🎁' }
   ];
 
   const daysOfWeek = [
@@ -59,67 +55,29 @@ const SpecialCreator = ({ token, restaurants, onClose, onSpecialCreated, editing
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    if (type === 'checkbox' && name === 'days_of_week') {
+    if (type === 'checkbox' && name === 'day_checkbox') {
       const day = value;
       setFormData(prev => ({
         ...prev,
-        days_of_week: checked 
-          ? [...prev.days_of_week, day]
-          : prev.days_of_week.filter(d => d !== day)
+        days_available: checked 
+          ? [...prev.days_available, day]
+          : prev.days_available.filter(d => d !== day)
       }));
     } else {
       setFormData(prev => ({
         ...prev,
-        [name]: type === 'checkbox' ? checked : value
+        [name]: value
       }));
     }
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setError('Image must be less than 5MB');
-        return;
-      }
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const uploadImage = async () => {
-    if (!imageFile) return formData.image_url;
-    
-    setUploading(true);
-    try {
-      const uploadFormData = new FormData();
-      uploadFormData.append('file', imageFile);
-      
-      const response = await fetch(`${backendUrl}/upload/image`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: uploadFormData
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to upload image');
-      }
-      
-      const data = await response.json();
-      return data.url;
-    } catch (err) {
-      console.error('Image upload error:', err);
-      // If upload fails, continue without image
-      return '';
-    } finally {
-      setUploading(false);
-    }
+  const toggleDay = (day) => {
+    setFormData(prev => ({
+      ...prev,
+      days_available: prev.days_available.includes(day)
+        ? prev.days_available.filter(d => d !== day)
+        : [...prev.days_available, day]
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -132,25 +90,31 @@ const SpecialCreator = ({ token, restaurants, onClose, onSpecialCreated, editing
       if (!formData.restaurant_id) {
         throw new Error('Please select a restaurant');
       }
-      if (!formData.name.trim()) {
-        throw new Error('Please enter a special name');
+      if (!formData.title.trim()) {
+        throw new Error('Please enter a special title');
       }
       if (!formData.description.trim()) {
         throw new Error('Please enter a description');
       }
-
-      // Upload image if selected
-      let imageUrl = formData.image_url;
-      if (imageFile) {
-        imageUrl = await uploadImage();
+      if (formData.days_available.length === 0) {
+        throw new Error('Please select at least one day');
       }
 
       const specialData = {
-        ...formData,
-        image_url: imageUrl,
-        discount_value: formData.discount_value ? parseFloat(formData.discount_value) : null,
+        restaurant_id: formData.restaurant_id,
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        special_type: formData.special_type,
+        price: formData.price ? parseFloat(formData.price) : null,
         original_price: formData.original_price ? parseFloat(formData.original_price) : null,
-        max_redemptions: formData.max_redemptions ? parseInt(formData.max_redemptions) : null
+        discount_percentage: formData.discount_percentage ? parseInt(formData.discount_percentage) : null,
+        days_available: formData.days_available,
+        time_start: formData.time_start,
+        time_end: formData.time_end,
+        valid_from: formData.valid_from,
+        valid_until: formData.valid_until,
+        max_redemptions: formData.max_redemptions ? parseInt(formData.max_redemptions) : null,
+        terms_conditions: formData.terms_conditions || null
       };
 
       const url = editingSpecial 
@@ -184,10 +148,10 @@ const SpecialCreator = ({ token, restaurants, onClose, onSpecialCreated, editing
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-4 flex justify-between items-center flex-shrink-0">
+        <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-4 flex justify-between items-center flex-shrink-0 rounded-t-lg">
           <div className="flex items-center">
             <SparklesIcon className="w-6 h-6 mr-2" />
             <h2 className="text-xl font-bold">
@@ -228,18 +192,19 @@ const SpecialCreator = ({ token, restaurants, onClose, onSpecialCreated, editing
             </div>
           )}
 
-          {/* Special Name */}
+          {/* Special Title */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Special Name *
+              Special Title *
             </label>
             <input
               type="text"
-              name="name"
-              value={formData.name}
+              name="title"
+              value={formData.title}
               onChange={handleInputChange}
               placeholder="e.g., Half-Price Wings Wednesday"
               className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+              maxLength={100}
               required
             />
           </div>
@@ -253,16 +218,18 @@ const SpecialCreator = ({ token, restaurants, onClose, onSpecialCreated, editing
               name="description"
               value={formData.description}
               onChange={handleInputChange}
-              placeholder="Describe your special offer..."
+              placeholder="Describe your special offer in detail..."
               rows={3}
               className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+              maxLength={500}
               required
             />
+            <p className="text-xs text-gray-500 mt-1">{formData.description.length}/500 characters</p>
           </div>
 
           {/* Special Type */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Special Type
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -271,7 +238,7 @@ const SpecialCreator = ({ token, restaurants, onClose, onSpecialCreated, editing
                   key={type.value}
                   type="button"
                   onClick={() => setFormData(prev => ({ ...prev, special_type: type.value }))}
-                  className={`p-2 border rounded-lg text-sm flex items-center justify-center ${
+                  className={`p-2 border rounded-lg text-sm flex items-center justify-center transition-colors ${
                     formData.special_type === type.value
                       ? 'border-orange-500 bg-orange-50 text-orange-700'
                       : 'border-gray-300 hover:border-gray-400'
@@ -284,209 +251,193 @@ const SpecialCreator = ({ token, restaurants, onClose, onSpecialCreated, editing
             </div>
           </div>
 
-          {/* Discount */}
+          {/* Pricing */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Pricing (optional)
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Special Price</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2 text-gray-500">$</span>
+                  <input
+                    type="number"
+                    name="price"
+                    value={formData.price}
+                    onChange={handleInputChange}
+                    placeholder="9.99"
+                    step="0.01"
+                    min="0"
+                    className="w-full p-2 pl-7 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Original Price</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2 text-gray-500">$</span>
+                  <input
+                    type="number"
+                    name="original_price"
+                    value={formData.original_price}
+                    onChange={handleInputChange}
+                    placeholder="19.99"
+                    step="0.01"
+                    min="0"
+                    className="w-full p-2 pl-7 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Discount %</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    name="discount_percentage"
+                    value={formData.discount_percentage}
+                    onChange={handleInputChange}
+                    placeholder="50"
+                    min="0"
+                    max="100"
+                    className="w-full p-2 pr-7 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                  />
+                  <span className="absolute right-3 top-2 text-gray-500">%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Days Available */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <CalendarDaysIcon className="w-4 h-4 inline mr-1" />
+              Days Available *
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {daysOfWeek.map(day => (
+                <button
+                  key={day.value}
+                  type="button"
+                  onClick={() => toggleDay(day.value)}
+                  className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                    formData.days_available.includes(day.value)
+                      ? 'bg-orange-500 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {day.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Time Range */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <ClockIcon className="w-4 h-4 inline mr-1" />
+              Time Range *
+            </label>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Start Time</label>
+                <input
+                  type="time"
+                  name="time_start"
+                  value={formData.time_start}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">End Time</label>
+                <input
+                  type="time"
+                  name="time_end"
+                  value={formData.time_end}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Valid Date Range */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <CalendarDaysIcon className="w-4 h-4 inline mr-1" />
+              Valid Period *
+            </label>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">From</label>
+                <input
+                  type="date"
+                  name="valid_from"
+                  value={formData.valid_from}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Until</label>
+                <input
+                  type="date"
+                  name="valid_until"
+                  value={formData.valid_until}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Terms & Max Redemptions */}
           <div className="mb-4 grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Discount Type
-              </label>
-              <select
-                name="discount_type"
-                value={formData.discount_type}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-              >
-                <option value="percentage">Percentage Off</option>
-                <option value="fixed">Fixed Amount Off</option>
-                <option value="bogo">Buy One Get One</option>
-                <option value="price">Special Price</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {formData.discount_type === 'percentage' ? 'Discount %' : 
-                 formData.discount_type === 'bogo' ? 'BOGO Details' : 'Amount ($)'}
+                Max Redemptions
               </label>
               <input
-                type={formData.discount_type === 'bogo' ? 'text' : 'number'}
-                name="discount_value"
-                value={formData.discount_value}
+                type="number"
+                name="max_redemptions"
+                value={formData.max_redemptions}
                 onChange={handleInputChange}
-                placeholder={formData.discount_type === 'percentage' ? '50' : 
-                             formData.discount_type === 'bogo' ? 'Free' : '5.00'}
+                placeholder="Unlimited"
+                min="1"
                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+              />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Terms & Conditions
+              </label>
+              <input
+                type="text"
+                name="terms_conditions"
+                value={formData.terms_conditions}
+                onChange={handleInputChange}
+                placeholder="e.g., Dine-in only, Limit 2 per table"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                maxLength={1000}
               />
             </div>
           </div>
 
-          {/* Schedule */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <CalendarDaysIcon className="w-4 h-4 inline mr-1" />
-              Schedule
-            </label>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="flex items-center mb-3">
-                <input
-                  type="checkbox"
-                  name="is_recurring"
-                  checked={formData.is_recurring}
-                  onChange={handleInputChange}
-                  className="mr-2"
-                />
-                <span className="text-sm text-gray-700">Recurring special</span>
-              </div>
-
-              {formData.is_recurring ? (
-                <div>
-                  <p className="text-sm text-gray-600 mb-2">Active on:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {daysOfWeek.map(day => (
-                      <label key={day.value} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          name="days_of_week"
-                          value={day.value}
-                          checked={formData.days_of_week.includes(day.value)}
-                          onChange={handleInputChange}
-                          className="mr-1"
-                        />
-                        <span className="text-sm">{day.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">Start Date</label>
-                    <input
-                      type="date"
-                      name="start_date"
-                      value={formData.start_date}
-                      onChange={handleInputChange}
-                      className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">End Date</label>
-                    <input
-                      type="date"
-                      name="end_date"
-                      value={formData.end_date}
-                      onChange={handleInputChange}
-                      className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4 mt-3">
-                <div>
-                  <label className="block text-xs text-gray-600 mb-1">
-                    <ClockIcon className="w-3 h-3 inline mr-1" />
-                    Start Time
-                  </label>
-                  <input
-                    type="time"
-                    name="start_time"
-                    value={formData.start_time}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-600 mb-1">
-                    <ClockIcon className="w-3 h-3 inline mr-1" />
-                    End Time
-                  </label>
-                  <input
-                    type="time"
-                    name="end_time"
-                    value={formData.end_time}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Image Upload */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              <PhotoIcon className="w-4 h-4 inline mr-1" />
-              Special Image (optional)
-            </label>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-orange-400 transition-colors">
-              {imagePreview ? (
-                <div className="relative">
-                  <img 
-                    src={imagePreview} 
-                    alt="Preview" 
-                    className="max-h-40 mx-auto rounded-lg"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setImageFile(null);
-                      setImagePreview('');
-                      setFormData(prev => ({ ...prev, image_url: '' }));
-                    }}
-                    className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
-                  >
-                    <XMarkIcon className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <label className="cursor-pointer">
-                  <PhotoIcon className="w-12 h-12 mx-auto text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-600">Click to upload image</p>
-                  <p className="text-xs text-gray-400">PNG, JPG up to 5MB</p>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                  />
-                </label>
-              )}
-            </div>
-          </div>
-
-          {/* Terms & Conditions */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Terms & Conditions (optional)
-            </label>
-            <input
-              type="text"
-              name="terms"
-              value={formData.terms}
-              onChange={handleInputChange}
-              placeholder="e.g., Dine-in only, Limit 2 per table"
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-            />
-          </div>
-
-          {/* Max Redemptions */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Maximum Redemptions (optional)
-            </label>
-            <input
-              type="number"
-              name="max_redemptions"
-              value={formData.max_redemptions}
-              onChange={handleInputChange}
-              placeholder="Leave empty for unlimited"
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-            />
+          {/* Info Box */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <p className="text-sm text-blue-800">
+              <strong>Note:</strong> Your special will be submitted for approval. Once approved, it will be visible to customers searching in your area.
+            </p>
           </div>
         </form>
 
         {/* Footer */}
-        <div className="border-t p-4 bg-gray-50 flex justify-end gap-3 flex-shrink-0">
+        <div className="border-t p-4 bg-gray-50 flex justify-end gap-3 flex-shrink-0 rounded-b-lg">
           <button
             type="button"
             onClick={onClose}
@@ -496,10 +447,10 @@ const SpecialCreator = ({ token, restaurants, onClose, onSpecialCreated, editing
           </button>
           <button
             onClick={handleSubmit}
-            disabled={saving || uploading}
+            disabled={saving}
             className="px-6 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 disabled:opacity-50"
           >
-            {saving ? 'Saving...' : uploading ? 'Uploading...' : editingSpecial ? 'Update Special' : 'Create Special'}
+            {saving ? 'Saving...' : editingSpecial ? 'Update Special' : 'Create Special'}
           </button>
         </div>
       </div>
