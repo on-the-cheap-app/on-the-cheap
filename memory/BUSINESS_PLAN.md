@@ -527,7 +527,7 @@ Simultaneously, consumers increasingly seek **convenience, value, and informed d
 | Resource | URL |
 |----------|-----|
 | Production Website | https://www.onthecheapapp.com |
-| Preview Environment | https://eatdeals-mobile.preview.emergentagent.com |
+| Preview Environment | https://eatsaver.preview.emergentagent.com |
 | Privacy Policy | https://www.onthecheapapp.com/privacy |
 | Account Deletion | https://www.onthecheapapp.com/delete-account |
 | Google Play | Coming February 2026 |

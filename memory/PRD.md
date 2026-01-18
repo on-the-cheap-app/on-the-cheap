@@ -47,7 +47,7 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 
 ## Key URLs
 - Production: https://www.onthecheapapp.com
-- Preview: https://eatdeals-mobile.preview.emergentagent.com
+- Preview: https://eatsaver.preview.emergentagent.com
 - Privacy Policy: https://www.onthecheapapp.com/privacy
 - Account Deletion: https://www.onthecheapapp.com/delete-account
 

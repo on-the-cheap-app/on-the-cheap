@@ -256,7 +256,7 @@ class CouponService:
         """Generate QR code for coupon redemption"""
         
         # Get frontend URL from environment variable
-        frontend_url = os.environ.get('FRONTEND_URL', 'https://eatdeals-mobile.preview.emergentagent.com')
+        frontend_url = os.environ.get('FRONTEND_URL', 'https://eatsaver.preview.emergentagent.com')
         
         # QR code contains redemption URL and data
         qr_data = {
