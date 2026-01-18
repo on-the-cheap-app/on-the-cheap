@@ -921,6 +921,7 @@ function App() {
                   <SelectContent>
                     <SelectItem value="all">All Venues</SelectItem>
                     <SelectItem value="permanent">Restaurants Only</SelectItem>
+                    <SelectItem value="bar">🍺 Bars</SelectItem>
                     <SelectItem value="mobile">🚛 Food Trucks & Pop-ups</SelectItem>
                   </SelectContent>
                 </Select>
