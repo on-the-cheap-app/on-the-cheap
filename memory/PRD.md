@@ -5,29 +5,39 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 
 ## Current Status (January 17, 2026)
 
+### Web App - PRODUCTION LIVE ✅
+- ✅ Customer experience working (search, favorites, share)
+- ✅ Owner login and dashboard
+- ✅ **Stripe subscription checkout WORKING**
+- ✅ Pricing modal scrolling fixed
+- ✅ Privacy Policy page: `/privacy`
+- ✅ Account Deletion page: `/delete-account`
+- ✅ WhatsApp share working
+- ⚠️ SMS share on desktop (low priority)
+
 ### Mobile App (Android)
 - ✅ Core features working: Near Me, Search, Filters, Restaurant Details, Login, Favorites
-- ✅ Share with Friends (Text/WhatsApp) - minor SMS formatting issue on Android
+- ✅ WhatsApp share working
+- ⚠️ SMS share formatting issue (fix ready, waiting for build)
 - ✅ AAB uploaded to Google Play
 - ✅ Internal testing complete
 - ✅ Closed testing live
 - ⏳ Waiting 14 days for production access (need 12 testers opted-in)
 
-### Web App
-- ✅ Privacy Policy page: `/privacy`
-- ✅ Account Deletion page: `/delete-account`
-- ✅ Stripe subscription checkout (working on preview)
-- ⏳ Production deployment blocked - escalated to Emergent senior support
+## Test Accounts
+- **Customer:** sfurtwengler@gmail.com / DrFurt138!
+- **Owner:** demo@onthecheapapp.com / Demo123!
+- **Expo:** onthecheapapp@gmail.com / DrFurt138!
 
 ## Pending Items
 
-### Blocked
-- Production web deployment (Emergent Support investigating)
-- Production Play Store release (14-day closed testing requirement)
+### Waiting On
+- Google Play: 14-day closed testing period (need 12 testers)
+- EAS builds reset: Feb 1, 2026
 
-### Known Issues
-- SMS share puts message in "To:" field instead of body on Android (minor)
-- Free EAS build quota exhausted until Feb 1, 2026
+### Known Issues (Low Priority)
+- SMS share on desktop web app
+- SMS share on mobile app (fix ready for next build)
 
 ## Future Tasks (Backlog)
 - P1: Apple App Store submission (iOS)
@@ -40,10 +50,6 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 - Preview: https://eatdeals-mobile.preview.emergentagent.com
 - Privacy Policy: https://www.onthecheapapp.com/privacy
 - Account Deletion: https://www.onthecheapapp.com/delete-account
-
-## Test Credentials
-- User: sfurtwengler@gmail.com / DrFurt138!
-- Expo: onthecheapapp@gmail.com / DrFurt138!
 
 ## Technical Stack
 - Frontend: React (web), React Native/Expo (mobile)
