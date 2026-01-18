@@ -50,8 +50,13 @@ const getShareUrls = (restaurant) => {
   const message = generateShareMessage(restaurant);
   const encodedMessage = encodeURIComponent(message);
   
-  // iOS uses &body=, Android uses ?body=
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  // SMS URL format varies by platform
+  // iOS: sms:&body=  |  Android: sms:?body=  |  Desktop: sms:?body= (but often unreliable)
+  const userAgent = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+  const isMac = /Macintosh/.test(userAgent) && !isIOS;
+  
+  // For Mac desktop with Google Messages, use the Android format
   const smsUrl = isIOS 
     ? `sms:&body=${encodedMessage}` 
     : `sms:?body=${encodedMessage}`;
