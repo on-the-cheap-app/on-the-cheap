@@ -1,0 +1,562 @@
+ON-THE-CHEAP: COMPLETE BUSINESS PLAN
+A Strategic Blueprint for a Two-Sided Restaurant Deals Platform
+
+Version: 2.0
+Date: January 2026
+Status: Live in Production
+
+═══════════════════════════════════════════════════════════════════════════════
+
+EXECUTIVE SUMMARY
+
+THE OPPORTUNITY
+
+The food service and hospitality industry faces a persistent challenge: underutilized operational capacity, particularly during off-peak hours. Daily specials, happy hours, and time-sensitive discounts have proven effective at boosting sales, attracting new customers, and increasing visit frequency. Yet, most restaurants lack sophisticated tools to promote these offers in real-time to nearby, intent-driven consumers.
+
+Simultaneously, consumers increasingly seek convenience, value, and informed decision-making when dining out. They want real-time access to deals, ratings, and direct engagement with restaurants—without the friction of third-party aggregators.
+
+THE SOLUTION
+
+On-the-Cheap is a two-sided platform connecting local food service businesses with value-conscious consumers through:
+
+For Consumers: A free mobile app and web platform offering real-time, hyper-local restaurant deals, specials, and happy hours with GPS-enabled discovery
+
+For Restaurant Owners: A SaaS platform with tiered subscriptions providing promotional tools, customer analytics, and AI-powered business intelligence
+
+KEY DIFFERENTIATORS
+
+1. Holistic Value Proposition: Single-source solution for all deal types (daily specials, happy hours, events) across all meal periods
+
+2. Data-Driven Partnership: Actionable analytics transform the relationship from transactional to strategic
+
+3. AI-Powered Features: Dynamic pricing optimization and intelligent upselling (Enterprise tier)
+
+4. Direct Customer Relationships: Restaurants retain customer data, unlike third-party aggregators
+
+CURRENT STATUS
+
+• Web App: Live at www.onthecheapapp.com
+• Android App: In Google Play closed testing (production release Feb 2026)
+• iOS App: Planned Q1 2026
+• Payments: Stripe integration live and functional
+
+═══════════════════════════════════════════════════════════════════════════════
+
+MARKET ANALYSIS
+
+INDUSTRY PAIN POINTS
+
+Restaurant Challenges:
+
+Challenge                          Impact
+─────────────────────────────────────────────────────────────────────
+Underutilized seating capacity     30-50% empty tables during off-peak hours
+Third-party aggregator fees        15-30% commission per order
+Lost customer data                 No direct relationship or remarketing ability
+Ineffective marketing              Generic promotions with poor ROI tracking
+Food waste                         Unsold inventory during slow periods
+
+Consumer Frustrations:
+
+Frustration                        Opportunity
+─────────────────────────────────────────────────────────────────────
+Difficulty finding deals           Real-time, location-based discovery
+Fragmented information             Single app for all restaurant deals
+Lack of transparency               Ratings, reviews, and verified specials
+No direct engagement               In-app favorites, sharing, and notifications
+
+TARGET MARKET
+
+Primary Markets (Phase 1):
+• Geography: High-density urban areas with vibrant dining scenes
+• Initial Launch: Austin, TX metro area
+• Expansion Targets: Houston, Dallas, San Antonio, New Orleans
+
+Consumer Demographics:
+• Age: 25-45 years old
+• Behavior: Tech-savvy, value-conscious, frequent diners
+• Usage: 2-4 restaurant visits per week
+• Motivation: Discovery, savings, convenience
+
+Restaurant Demographics:
+• Type: Independent restaurants, local chains, food trucks, bars
+• Size: 1-10 locations
+• Pain Point: Need cost-effective marketing with measurable ROI
+
+MARKET SIZE
+
+Metric                             Value
+─────────────────────────────────────────────────────────────────────
+US Restaurant Industry             $997 billion (2024)
+Restaurants in US                  1 million+ establishments
+Digital Coupon Users               145 million Americans
+Mobile Dining App Users            60%+ of millennials
+
+═══════════════════════════════════════════════════════════════════════════════
+
+COMPETITIVE ANALYSIS
+
+DIRECT COMPETITORS
+
+Competitor      Focus                    Model                  Limitations
+─────────────────────────────────────────────────────────────────────────────
+Checkle         Happy hours, events      Free listings, ads     Niche focus, no analytics
+Eatigo          Time-based discounts     Commission per diner   No customer data for restaurants
+Groupon         Deep discounts           Revenue share          Attracts deal-seekers, not loyal customers
+Yelp Deals      Local business deals     Advertising            Not real-time, cluttered interface
+
+COMPETITIVE MATRIX
+
+Feature                    On-the-Cheap    Checkle    Eatigo    Groupon
+─────────────────────────────────────────────────────────────────────────────
+Real-time deals            ✓               Limited    ✓         ✗
+All deal types             ✓               ✗          ✗         Limited
+Restaurant analytics       ✓ Advanced      ✗          Basic     ✗
+Customer data ownership    ✓               ✗          ✗         ✗
+AI-powered features        ✓ Enterprise    ✗          ✗         ✗
+Freemium option            ✓               ✓          ✗         ✗
+Mobile app                 ✓               ✓          ✓         ✓
+
+OUR COMPETITIVE ADVANTAGES
+
+1. Holistic Platform: Cover all deal types, meal periods, and venue types
+2. Data Partnership: Restaurants own their customer data and insights
+3. Tiered Accessibility: Free tier removes adoption barriers
+4. AI Differentiation: Enterprise features competitors can't match
+5. Local Focus: Community-driven approach vs. national aggregators
+
+═══════════════════════════════════════════════════════════════════════════════
+
+BUSINESS MODEL
+
+REVENUE MODEL: FREEMIUM + TIERED SAAS
+
+Pricing Structure (Live):
+
+Tier              Monthly        Annual         Savings
+─────────────────────────────────────────────────────────────────────
+Starter           Free           Free           -
+Pro               $99/month      $990/year      17%
+Enterprise        $299/month     $2,990/year    17%
+
+All paid plans include a 14-day free trial
+
+FEATURE COMPARISON
+
+Feature                      Starter (Free)    Pro ($99/mo)    Enterprise ($299/mo)
+─────────────────────────────────────────────────────────────────────────────────────
+Restaurant listings          1 location        Up to 3         Unlimited
+Specials per month           5                 Unlimited       Unlimited
+Mobile app presence          ✓                 ✓               ✓
+Customer reviews             ✓                 ✓               ✓
+Basic analytics              ✗                 ✓               ✓
+Priority listing             ✗                 ✓               ✓
+Digital coupon creation      ✗                 ✓               ✓
+Advanced analytics           ✗                 ✗               ✓
+AI-driven upselling          ✗                 ✗               ✓
+Dynamic pricing tools        ✗                 ✗               ✓
+POS integration              ✗                 ✗               ✓
+Dedicated account manager    ✗                 ✗               ✓
+API access                   ✗                 ✗               ✓
+
+REVENUE STREAMS
+
+1. Primary: Monthly/annual SaaS subscriptions
+2. Secondary (Future): Transaction fees on in-app purchases/reservations
+3. Tertiary (Future): Premium placement and featured listings
+
+═══════════════════════════════════════════════════════════════════════════════
+
+FINANCIAL PROJECTIONS
+
+REVENUE MODEL ASSUMPTIONS
+
+Metric                              Conservative    Moderate    Aggressive
+─────────────────────────────────────────────────────────────────────────────
+Restaurants on platform (Year 1)    500             1,000       2,000
+Free tier %                         88%             88%         85%
+Pro conversion %                    10%             10%         12%
+Enterprise conversion %             2%              2%          3%
+Annual plan uptake                  20%             30%         40%
+
+YEAR 1-3 REVENUE PROJECTIONS
+
+Conservative Scenario (500 restaurants):
+
+Year    Restaurants    Pro Users    Enterprise    Monthly Revenue    Annual Revenue
+─────────────────────────────────────────────────────────────────────────────────────
+Y1      500            50           10            $7,940             $95,280
+Y2      1,000          100          20            $15,880            $190,560
+Y3      2,500          250          50            $39,700            $476,400
+
+Moderate Scenario (1,000 restaurants):
+
+Year    Restaurants    Pro Users    Enterprise    Monthly Revenue    Annual Revenue
+─────────────────────────────────────────────────────────────────────────────────────
+Y1      1,000          100          20            $15,880            $190,560
+Y2      3,000          300          60            $47,640            $571,680
+Y3      7,500          750          150           $119,100           $1,429,200
+
+Aggressive Scenario (2,000 restaurants):
+
+Year    Restaurants    Pro Users    Enterprise    Monthly Revenue    Annual Revenue
+─────────────────────────────────────────────────────────────────────────────────────
+Y1      2,000          240          60            $41,700            $500,400
+Y2      6,000          720          180           $125,100           $1,501,200
+Y3      15,000         1,800        450           $312,750           $3,753,000
+
+KEY FINANCIAL METRICS (TARGETS)
+
+Metric                      Year 1      Year 2      Year 3
+─────────────────────────────────────────────────────────────────────
+Customer Acquisition Cost   $150        $100        $75
+Lifetime Value (LTV)        $1,200      $1,500      $1,800
+LTV:CAC Ratio               8:1         15:1        24:1
+Monthly Churn Rate          5%          3%          2%
+Trial-to-Paid Conversion    15%         20%         25%
+Free-to-Paid Upgrade Rate   8%          12%         15%
+
+COST STRUCTURE (ESTIMATED MONTHLY)
+
+Category                    Year 1      Year 2      Year 3
+─────────────────────────────────────────────────────────────────────
+Platform hosting            $500        $1,500      $5,000
+Payment processing (3%)     $475        $1,430      $3,575
+Marketing & acquisition     $3,000      $10,000     $25,000
+Customer support            $2,000      $5,000      $15,000
+Development & maintenance   $5,000      $10,000     $20,000
+─────────────────────────────────────────────────────────────────────
+TOTAL MONTHLY COSTS         $10,975     $27,930     $68,575
+GROSS MARGIN                31%         51%         62%
+
+═══════════════════════════════════════════════════════════════════════════════
+
+MARKETING STRATEGY
+
+USER ACQUISITION (CONSUMERS)
+
+Digital Marketing Channels:
+
+Channel                Strategy                                    Budget
+─────────────────────────────────────────────────────────────────────────────
+Social Media           Instagram, TikTok food content, influencers 30%
+SEO/Content            "Best deals near me" keywords, local guides  20%
+App Store Optimization Keywords, screenshots, reviews               15%
+Paid Ads               Google Ads, Meta Ads (geo-targeted)          25%
+Partnerships           Local food bloggers, event sponsorships      10%
+
+Viral/Organic Growth Features:
+• Share with Friends: One-tap sharing to SMS/WhatsApp
+• Referral Program: Unlock premium features for referrals
+• Social Proof: Reviews, ratings, "trending" deals
+• Push Notifications: Real-time deal alerts
+
+RESTAURANT PARTNER ACQUISITION
+
+Onboarding Strategy:
+1. Freemium First: Zero-risk entry with Starter tier
+2. Local Sales Team: Direct outreach in target markets
+3. Success Stories: Case studies showing ROI
+4. Easy Migration: Simple onboarding, no technical expertise required
+
+Value Demonstration:
+
+Metric to Show              How We Prove It
+─────────────────────────────────────────────────────────────────────
+Increased foot traffic      Analytics dashboard
+New customer acquisition    First-time visitor tracking
+Deal redemption rates       Real-time reporting
+Revenue attribution         Before/after comparison
+
+Partnership Tiers:
+1. Self-Service: Starter & Pro tiers, online onboarding
+2. Assisted: Enterprise tier, dedicated account manager
+3. Strategic: Multi-location chains, custom integrations
+
+LAUNCH MARKETING PLAN
+
+Pre-Launch (4 weeks before):
+• Teaser social media campaign
+• Email list building
+• Local press outreach
+• Influencer partnerships secured
+
+Launch Week:
+• Press release distribution
+• Social media blitz
+• Launch party/event
+• Featured restaurant promotions
+
+Post-Launch (ongoing):
+• Weekly featured deals
+• User-generated content campaigns
+• Restaurant success spotlights
+• Continuous ASO optimization
+
+═══════════════════════════════════════════════════════════════════════════════
+
+PRODUCT ROADMAP
+
+CURRENT IMPLEMENTATION STATUS
+
+✓ LIVE (January 2026)
+
+Consumer Features:
+• Location-based restaurant search
+• Real-time deals and specials
+• Venue type filters (Restaurants, Bars, Food Trucks)
+• Distance radius filters
+• Favorites system
+• User accounts and profiles
+• Share via SMS, WhatsApp, native share
+• Uber/Lyft integration
+• Google Maps directions
+
+Restaurant Owner Features:
+• Owner dashboard
+• Restaurant profile management
+• Specials creation and management
+• Stripe subscription checkout (Pro & Enterprise)
+• Basic analytics
+
+Platform:
+• Web app (React)
+• Android app (React Native/Expo)
+• Backend API (FastAPI/Python)
+• MongoDB database
+• Stripe payments integration
+
+⏳ IN PROGRESS (Q1 2026)
+
+Feature                         Status          Target Date
+─────────────────────────────────────────────────────────────────────
+Google Play production release  Closed testing  Feb 2026
+iOS App Store submission        Development     Q1 2026
+PayPal payment option           Planned         Q1 2026
+Enhanced analytics dashboard    Planned         Q1 2026
+
+📋 PLANNED (Q2-Q4 2026)
+
+Feature                              Priority    Target
+─────────────────────────────────────────────────────────────────────
+AI-powered upselling recommendations P1          Q2 2026
+Dynamic pricing tools                P1          Q2 2026
+POS system integrations              P2          Q3 2026
+Reservation system                   P2          Q3 2026
+In-app ordering                      P2          Q4 2026
+Loyalty program                      P3          Q4 2026
+
+🔮 FUTURE VISION (2027+)
+
+• Multi-city expansion
+• White-label solutions for restaurant groups
+• API marketplace for third-party integrations
+• Machine learning for personalized recommendations
+• Voice assistant integration (Alexa, Google Assistant)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+TECHNICAL ARCHITECTURE
+
+TECHNOLOGY STACK
+
+Layer               Technology              Purpose
+─────────────────────────────────────────────────────────────────────
+Frontend (Web)      React, Tailwind CSS     Consumer and owner web apps
+Frontend (Mobile)   React Native, Expo      iOS and Android apps
+Backend             FastAPI (Python)        REST API, business logic
+Database            MongoDB                 User data, restaurants, deals
+Authentication      JWT tokens              Secure user sessions
+Payments            Stripe                  Subscription billing
+Hosting             Emergent Platform       Cloud infrastructure
+Analytics           Google Analytics 4      Usage tracking
+
+SYSTEM ARCHITECTURE
+
+                    ┌─────────────────┐     ┌─────────────────┐
+                    │    Web App      │     │   Mobile App    │
+                    │    (React)      │     │ (React Native)  │
+                    └────────┬────────┘     └────────┬────────┘
+                             │                       │
+                             └───────────┬───────────┘
+                                         │
+                                         ▼
+                             ┌───────────────────────┐
+                             │    FastAPI Backend    │
+                             │   (Python REST API)   │
+                             └───────────┬───────────┘
+                                         │
+                             ┌───────────┼───────────┐
+                             │           │           │
+                             ▼           ▼           ▼
+                        ┌─────────┐ ┌─────────┐ ┌─────────┐
+                        │ MongoDB │ │ Stripe  │ │ Google  │
+                        │   DB    │ │Payments │ │ Maps API│
+                        └─────────┘ └─────────┘ └─────────┘
+
+SECURITY & COMPLIANCE
+
+• Data Encryption: TLS 1.3 in transit, AES-256 at rest
+• Authentication: JWT with secure token rotation
+• PCI Compliance: Stripe handles all payment data
+• Privacy: GDPR-ready, account deletion available
+• Access Control: Role-based permissions (user, owner, admin)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+IMPLEMENTATION ROADMAP
+
+PHASE 1: FOUNDATION (Complete ✓)
+October 2025 - January 2026
+
+[✓] Core platform development
+[✓] Consumer web and mobile apps
+[✓] Restaurant owner dashboard
+[✓] Stripe payment integration
+[✓] Basic search and filtering
+[✓] User authentication system
+
+PHASE 2: LAUNCH (Current 🚀)
+January - February 2026
+
+[✓] Production web app live
+[ ] Google Play Store release
+[ ] iOS App Store submission
+[ ] Initial restaurant partner onboarding
+[ ] Marketing campaign launch
+
+PHASE 3: GROWTH (Q2 2026)
+March - June 2026
+
+[ ] PayPal integration
+[ ] Enhanced analytics for owners
+[ ] AI recommendation engine
+[ ] Dynamic pricing tools
+[ ] Second market expansion
+
+PHASE 4: SCALE (Q3-Q4 2026)
+July - December 2026
+
+[ ] POS integrations
+[ ] Reservation system
+[ ] Enterprise features completion
+[ ] Multi-market expansion
+[ ] Series A preparation
+
+═══════════════════════════════════════════════════════════════════════════════
+
+KEY PERFORMANCE INDICATORS (KPIs)
+
+CONSUMER METRICS
+
+KPI                         Target (Month 6)    Target (Year 1)
+─────────────────────────────────────────────────────────────────────
+Monthly Active Users (MAU)  5,000               25,000
+Daily Active Users (DAU)    1,000               5,000
+App Store Rating            4.5+ stars          4.7+ stars
+Deal Redemption Rate        15%                 25%
+User Retention (30-day)     30%                 45%
+
+RESTAURANT PARTNER METRICS
+
+KPI                         Target (Month 6)    Target (Year 1)
+─────────────────────────────────────────────────────────────────────
+Total Partners              200                 1,000
+Paid Subscribers            25                  120
+Monthly Churn               <5%                 <3%
+Trial Conversion            15%                 25%
+Net Promoter Score          40+                 50+
+
+FINANCIAL METRICS
+
+KPI                         Target (Month 6)    Target (Year 1)
+─────────────────────────────────────────────────────────────────────
+Monthly Recurring Revenue   $4,000              $16,000
+Annual Recurring Revenue    $48,000             $192,000
+Gross Margin                40%                 55%
+CAC Payback Period          6 months            4 months
+
+═══════════════════════════════════════════════════════════════════════════════
+
+RISK ANALYSIS
+
+KEY RISKS & MITIGATIONS
+
+Risk                    Likelihood    Impact    Mitigation
+─────────────────────────────────────────────────────────────────────────────
+Low restaurant adoption Medium        High      Freemium model, demonstrate ROI quickly
+Competitor response     Medium        Medium    Focus on data/AI differentiation
+User acquisition costs  High          Medium    Organic growth features, referrals
+Technical scalability   Low           High      Cloud-native architecture
+Economic downturn       Medium        Medium    Value proposition strengthens in recessions
+
+CONTINGENCY PLANS
+
+1. If restaurant adoption is slow: Double down on freemium, offer extended trials, local sales team
+
+2. If user growth stalls: Increase marketing spend, add viral features, partnership deals
+
+3. If churn is high: Improve onboarding, add more value to paid tiers, customer success focus
+
+═══════════════════════════════════════════════════════════════════════════════
+
+TEAM & OPERATIONS
+
+CURRENT TEAM
+
+Role                Status
+─────────────────────────────────────────────────────────────────────
+Founder/CEO         Active
+Development         Emergent Platform + AI assistance
+Design              Completed
+Marketing           In development
+
+HIRING PLAN (AS REVENUE GROWS)
+
+Role                        Trigger               Estimated Salary
+─────────────────────────────────────────────────────────────────────
+Customer Success Manager    50+ paid customers    $50-60K
+Sales Representative        100+ restaurants      $45-55K + commission
+Marketing Manager           $10K MRR              $55-70K
+Full-Stack Developer        $25K MRR              $80-100K
+
+═══════════════════════════════════════════════════════════════════════════════
+
+APPENDIX
+
+A. KEY URLS
+
+Resource                URL
+─────────────────────────────────────────────────────────────────────
+Production Website      https://www.onthecheapapp.com
+Preview Environment     https://eatdeals-mobile.preview.emergentagent.com
+Privacy Policy          https://www.onthecheapapp.com/privacy
+Account Deletion        https://www.onthecheapapp.com/delete-account
+Google Play             Coming February 2026
+Apple App Store         Coming Q1 2026
+
+B. TEST ACCOUNTS
+
+Type                Email                       Password
+─────────────────────────────────────────────────────────────────────
+Consumer            sfurtwengler@gmail.com      DrFurt138!
+Restaurant Owner    demo@onthecheapapp.com      Demo123!
+
+C. STRIPE CONFIGURATION
+
+Plan                Price ID
+─────────────────────────────────────────────────────────────────────
+Pro Monthly         price_1SYBLg047XGR3G7TsTNykIls
+Pro Annual          price_1SYBNm047XGR3G7TNucdAyVV
+Enterprise Monthly  price_1SYBTX047XGR3G7T1hkqX5hn
+Enterprise Annual   price_1SYBUK047XGR3G7TIwOAEJH8
+
+D. CONTACT INFORMATION
+
+Business:   info@onthecheapapp.com
+Support:    support@onthecheapapp.com
+Privacy:    privacy@onthecheapapp.com
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Document Version 2.0 | Last Updated: January 2026
