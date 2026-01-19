@@ -66,6 +66,11 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 ### January 19, 2026 - Session 2
 - **Customer-facing Specials with Images**: Updated restaurant search and detail views to show owner-created specials with images
 - **Special Preview on Restaurant Cards**: Added image thumbnails overlay on restaurant photos showing "Specials:" preview when specials have images
+- **Timezone Support for Specials**: 
+  - Added timezone selector in Owner Dashboard (My Restaurants tab)
+  - Supports all US timezones (Eastern, Central, Mountain, Pacific, Alaska, Hawaii, Arizona)
+  - Specials now filtered based on restaurant's local time, not server UTC time
+  - API endpoint: PATCH `/api/restaurants/{id}/timezone`
 - Backend merges specials from `owner_specials` collection with restaurant's built-in specials
 - Images display as 80x80 thumbnails alongside special details in restaurant view
 - Small 40x40 preview thumbnails shown on restaurant card photos
