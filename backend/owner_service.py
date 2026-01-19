@@ -387,6 +387,7 @@ class RestaurantOwnerService:
             "valid_until": special_data.get("valid_until", existing_special.get("valid_until")),
             "max_redemptions": special_data.get("max_redemptions"),
             "terms_conditions": special_data.get("terms_conditions"),
+            "image": special_data.get("image", existing_special.get("image")),  # Preserve or update image
             "updated_at": datetime.now(timezone.utc).isoformat(),
             # Auto-approve edits (no manual approval needed)
             "approval_status": SpecialApprovalStatus.APPROVED.value,
