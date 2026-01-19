@@ -2664,6 +2664,46 @@ async def get_owner_specials(restaurant_id: Optional[str] = None, current_user: 
         logger.error(f"Error getting specials: {e}")
         raise HTTPException(status_code=500, detail="Specials retrieval failed")
 
+@api_router.put("/owners/specials/{special_id}", response_model=OwnerSpecial)
+async def update_owner_special(special_id: str, special_data: OwnerSpecialCreate, current_user: dict = Depends(get_current_user)):
+    """Update an existing special"""
+    try:
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Owner access required")
+        
+        owner_service = get_owner_service(db)
+        updated_special = await owner_service.update_special(
+            special_id, 
+            current_user["id"], 
+            special_data.dict()
+        )
+        return updated_special
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating special: {e}")
+        raise HTTPException(status_code=500, detail="Special update failed")
+
+@api_router.delete("/owners/specials/{special_id}")
+async def delete_owner_special(special_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a special"""
+    try:
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Owner access required")
+        
+        owner_service = get_owner_service(db)
+        success = await owner_service.delete_special(special_id, current_user["id"])
+        
+        if success:
+            return {"message": "Special deleted successfully"}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to delete special")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting special: {e}")
+        raise HTTPException(status_code=500, detail="Special deletion failed")
+
 @api_router.get("/owners/restaurants")
 async def get_owner_restaurants(current_user: dict = Depends(get_current_user)):
     """Get all restaurants owned by the authenticated owner"""
