@@ -429,17 +429,45 @@ class RestaurantOwnerService:
         if not owner:
             raise HTTPException(status_code=404, detail="Owner not found")
         
+        owner_email = owner.get("email")
         restaurant_ids = owner.get("restaurant_ids", [])
-        if not restaurant_ids:
+        
+        # Build query to find restaurants by ID or by owner_email
+        query_conditions = []
+        if restaurant_ids:
+            query_conditions.append({"id": {"$in": restaurant_ids}})
+        if owner_email:
+            query_conditions.append({"owner_email": owner_email})
+        
+        if not query_conditions:
             return []
         
         restaurants_cursor = self.restaurants_collection.find(
-            {"id": {"$in": restaurant_ids}},
+            {"$or": query_conditions} if len(query_conditions) > 1 else query_conditions[0],
             {"_id": 0}  # Exclude MongoDB ObjectId
         )
         restaurants = await restaurants_cursor.to_list(length=None)
         
         return restaurants
+
+    async def link_restaurant_to_owner(self, owner_id: str, restaurant_id: str) -> bool:
+        """Link a restaurant to an owner by adding to their restaurant_ids"""
+        
+        # Update owner's restaurant_ids
+        result = await self.owners_collection.update_one(
+            {"id": owner_id},
+            {"$addToSet": {"restaurant_ids": restaurant_id}}
+        )
+        
+        # Also set owner_email on the restaurant
+        owner = await self.owners_collection.find_one({"id": owner_id}, {"_id": 0, "email": 1})
+        if owner:
+            await self.restaurants_collection.update_one(
+                {"id": restaurant_id},
+                {"$set": {"owner_email": owner.get("email"), "owner_id": owner_id}}
+            )
+        
+        return result.modified_count > 0 or result.matched_count > 0
 
 # =================== ADMIN FUNCTIONS ===================
 
