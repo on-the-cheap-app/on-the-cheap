@@ -1190,6 +1190,52 @@ async def create_restaurant(restaurant: Restaurant):
     result = await db.restaurants.insert_one(restaurant_dict)
     return {"id": restaurant.id, "message": "Restaurant created successfully"}
 
+@api_router.patch("/restaurants/{restaurant_id}/timezone")
+async def update_restaurant_timezone(
+    restaurant_id: str, 
+    timezone_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update a restaurant's timezone (owner only)"""
+    try:
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Owner access required")
+        
+        # Verify the owner has access to this restaurant
+        owner = await db.restaurant_owners.find_one({"id": current_user["id"]})
+        if not owner:
+            raise HTTPException(status_code=404, detail="Owner not found")
+        
+        # Check if restaurant belongs to owner (by ID or email)
+        restaurant = await db.restaurants.find_one({"id": restaurant_id})
+        if not restaurant:
+            raise HTTPException(status_code=404, detail="Restaurant not found")
+        
+        owner_restaurant_ids = owner.get("restaurant_ids", [])
+        if restaurant_id not in owner_restaurant_ids and restaurant.get("owner_email") != owner.get("email"):
+            raise HTTPException(status_code=403, detail="You don't have access to this restaurant")
+        
+        # Validate timezone
+        new_timezone = timezone_data.get("timezone", "America/Chicago")
+        try:
+            from zoneinfo import ZoneInfo
+            ZoneInfo(new_timezone)  # Validate timezone exists
+        except Exception:
+            raise HTTPException(status_code=400, detail=f"Invalid timezone: {new_timezone}")
+        
+        # Update the timezone
+        await db.restaurants.update_one(
+            {"id": restaurant_id},
+            {"$set": {"timezone": new_timezone}}
+        )
+        
+        return {"message": "Timezone updated successfully", "timezone": new_timezone}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating timezone: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update timezone")
+
 @api_router.post("/restaurants/{restaurant_id}/specials")
 async def add_special(restaurant_id: str, special: RestaurantSpecial):
     """Add a special to a restaurant"""
