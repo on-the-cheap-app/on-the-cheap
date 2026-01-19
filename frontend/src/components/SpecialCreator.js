@@ -156,7 +156,8 @@ const SpecialCreator = ({ token, restaurants, onClose, onSpecialCreated, editing
         valid_from: formData.valid_from,
         valid_until: formData.valid_until,
         max_redemptions: formData.max_redemptions ? parseInt(formData.max_redemptions) : null,
-        terms_conditions: formData.terms_conditions || null
+        terms_conditions: formData.terms_conditions || null,
+        image: formData.image || null  // Include base64 image data
       };
 
       const url = editingSpecial 
