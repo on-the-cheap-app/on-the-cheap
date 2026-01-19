@@ -169,6 +169,32 @@ const OwnerDashboard = ({ user, token, onClose }) => {
     }
   };
 
+  const handleTimezoneChange = async (restaurantId, newTimezone) => {
+    try {
+      const response = await fetch(`${backendUrl}/restaurants/${restaurantId}/timezone`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ timezone: newTimezone })
+      });
+
+      if (response.ok) {
+        // Update local state
+        setRestaurants(prev => prev.map(r => 
+          r.id === restaurantId ? { ...r, timezone: newTimezone } : r
+        ));
+      } else {
+        const errorData = await response.json();
+        alert(errorData.detail || 'Failed to update timezone');
+      }
+    } catch (error) {
+      console.error('Error updating timezone:', error);
+      alert('Network error while updating timezone');
+    }
+  };
+
   const handleClaimRestaurant = (e) => {
     // Prevent any default behavior and event propagation
     if (e) {
