@@ -14,13 +14,25 @@ import {
   GiftIcon,
   SparklesIcon,
   QrCodeIcon,
-  TrendingUpIcon
+  TrendingUpIcon,
+  GlobeAltIcon
 } from '@heroicons/react/24/outline';
 import CouponCreator from './CouponCreator';
 import RestaurantClaimModal from './RestaurantClaimModal';
 import OwnerPricing from './OwnerPricing';
 import OwnerBilling from './OwnerBilling';
 import SpecialCreator from './SpecialCreator';
+
+// Common US timezones
+const TIMEZONES = [
+  { value: 'America/New_York', label: 'Eastern Time (ET)' },
+  { value: 'America/Chicago', label: 'Central Time (CT)' },
+  { value: 'America/Denver', label: 'Mountain Time (MT)' },
+  { value: 'America/Phoenix', label: 'Arizona (no DST)' },
+  { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
+  { value: 'America/Anchorage', label: 'Alaska Time (AKT)' },
+  { value: 'Pacific/Honolulu', label: 'Hawaii Time (HT)' },
+];
 
 const OwnerDashboard = ({ user, token, onClose }) => {
   const [dashboardData, setDashboardData] = useState(null);
