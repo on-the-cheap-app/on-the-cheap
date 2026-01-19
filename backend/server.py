@@ -2672,10 +2672,12 @@ async def update_owner_special(special_id: str, special_data: OwnerSpecialCreate
             raise HTTPException(status_code=403, detail="Owner access required")
         
         owner_service = get_owner_service(db)
+        # Use exclude_unset=True to only include fields that were explicitly set
+        # This allows preserving existing values for fields not provided in the update
         updated_special = await owner_service.update_special(
             special_id, 
             current_user["id"], 
-            special_data.dict()
+            special_data.dict(exclude_unset=True)
         )
         return updated_special
     except HTTPException:
