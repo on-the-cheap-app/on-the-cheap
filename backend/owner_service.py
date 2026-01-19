@@ -357,6 +357,71 @@ class RestaurantOwnerService:
         
         return [OwnerSpecial(**special) for special in specials]
     
+    async def update_special(self, special_id: str, owner_id: str, special_data: dict) -> OwnerSpecial:
+        """Update an existing special"""
+        
+        # Verify the special exists and belongs to this owner
+        existing_special = await self.specials_collection.find_one({
+            "id": special_id,
+            "owner_id": owner_id
+        })
+        
+        if not existing_special:
+            raise HTTPException(status_code=404, detail="Special not found or you don't have permission to edit it")
+        
+        # Update the special
+        update_data = {
+            "title": special_data.get("title", existing_special.get("title")),
+            "description": special_data.get("description", existing_special.get("description")),
+            "special_type": special_data.get("special_type", existing_special.get("special_type")),
+            "price": special_data.get("price"),
+            "original_price": special_data.get("original_price"),
+            "discount_percentage": special_data.get("discount_percentage"),
+            "days_available": special_data.get("days_available", existing_special.get("days_available")),
+            "time_start": special_data.get("time_start", existing_special.get("time_start")),
+            "time_end": special_data.get("time_end", existing_special.get("time_end")),
+            "valid_from": special_data.get("valid_from", existing_special.get("valid_from")),
+            "valid_until": special_data.get("valid_until", existing_special.get("valid_until")),
+            "max_redemptions": special_data.get("max_redemptions"),
+            "terms_conditions": special_data.get("terms_conditions"),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            # Reset to pending approval when edited
+            "approval_status": SpecialApprovalStatus.PENDING.value,
+            "is_active": False
+        }
+        
+        await self.specials_collection.update_one(
+            {"id": special_id},
+            {"$set": update_data}
+        )
+        
+        # Get and return the updated special
+        updated_special = await self.specials_collection.find_one({"id": special_id})
+        logger.info(f"Special updated: {special_id} by owner: {owner_id}")
+        
+        return OwnerSpecial(**updated_special)
+    
+    async def delete_special(self, special_id: str, owner_id: str) -> bool:
+        """Delete a special"""
+        
+        # Verify the special exists and belongs to this owner
+        existing_special = await self.specials_collection.find_one({
+            "id": special_id,
+            "owner_id": owner_id
+        })
+        
+        if not existing_special:
+            raise HTTPException(status_code=404, detail="Special not found or you don't have permission to delete it")
+        
+        # Delete the special
+        result = await self.specials_collection.delete_one({"id": special_id})
+        
+        if result.deleted_count > 0:
+            logger.info(f"Special deleted: {special_id} by owner: {owner_id}")
+            return True
+        
+        return False
+    
     async def get_owner_restaurants(self, owner_id: str) -> List[Dict]:
         """Get all restaurants owned by this owner"""
         
