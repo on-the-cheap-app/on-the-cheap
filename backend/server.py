@@ -1146,11 +1146,12 @@ async def get_restaurant(restaurant_id: str):
         raise HTTPException(status_code=404, detail="Restaurant not found")
     
     restaurant = prepare_from_mongo(restaurant_raw)
+    restaurant_tz = restaurant.get('timezone', 'America/Chicago')
     
     # Filter only active specials that are currently running (from restaurant.specials array)
     active_specials = []
     for special in restaurant.get('specials', []):
-        if special.get('is_active', True) and is_special_active_now(special):
+        if special.get('is_active', True) and is_special_active_now(special, restaurant_tz):
             active_specials.append(special)
     
     # Also fetch owner-created specials from owner_specials collection
@@ -1163,7 +1164,7 @@ async def get_restaurant(restaurant_id: str):
     
     # Filter owner specials that are currently active
     for special in owner_specials:
-        if is_special_active_now(special):
+        if is_special_active_now(special, restaurant_tz):
             # Avoid duplicates by checking IDs
             if not any(s.get('id') == special.get('id') for s in active_specials):
                 active_specials.append(special)
