@@ -857,6 +857,34 @@ const OwnerDashboard = ({ user, token, onClose }) => {
                             </div>
                           </div>
                         )}
+
+                        {/* Valid Period */}
+                        <div className="mt-4 pt-4 border-t border-gray-100">
+                          <div className="flex flex-wrap items-center justify-between">
+                            <div className="text-sm text-gray-500">
+                              <span>Valid: {new Date(special.valid_from).toLocaleDateString()} - {new Date(special.valid_until).toLocaleDateString()}</span>
+                              {special.discount_percentage && (
+                                <span className="ml-4 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                                  {special.discount_percentage}% OFF
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex space-x-2 mt-2 sm:mt-0">
+                              <button
+                                onClick={() => handleEditSpecial(special)}
+                                className="px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded hover:bg-blue-200 transition-colors"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteSpecial(special.id)}
+                                className="px-3 py-1 bg-red-100 text-red-700 text-sm rounded hover:bg-red-200 transition-colors"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
