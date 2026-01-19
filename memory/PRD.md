@@ -55,6 +55,24 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 - SMS share on mobile app (fix ready for next build)
 
 ## Future Tasks (Backlog)
+- P1: Apple App Store submission (iOS build needed)
+- P1: PayPal integration for owner subscriptions
+- P2: Map View for mobile app
+- P2: Admin approval workflow (if needed later)
+- P2: AI-driven upselling suggestions for owners
+
+## Recent Changes
+
+### January 19, 2026 - Session 2
+- **Customer-facing Specials with Images**: Updated restaurant search and detail views to show owner-created specials with images
+- Backend merges specials from `owner_specials` collection with restaurant's built-in specials
+- Images display as 80x80 thumbnails alongside special details
+
+### January 19, 2026 - Session 1
+- **Create/Manage Specials Feature**: Full CRUD for owner specials with form, scheduling, pricing
+- **Image Upload for Specials**: Base64 image upload (max 1MB), preview, display in dashboard
+- **Auto-approval**: Specials go live immediately without manual approval
+- **Test restaurant linked**: Demo Bistro & Bar linked to demo owner account
 - P1: Apple App Store submission (iOS)
 - P1: PayPal integration
 - P2: Map View for mobile app
