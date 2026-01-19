@@ -967,6 +967,24 @@ async def search_restaurants(
                             active_specials.append(special)
                     restaurant['specials'] = active_specials
                 
+                # Also fetch owner-created specials from owner_specials collection
+                owner_specials_cursor = db.owner_specials.find({
+                    "restaurant_id": restaurant.get('id'),
+                    "is_active": True,
+                    "approval_status": "approved"
+                }, {"_id": 0})
+                owner_specials = await owner_specials_cursor.to_list(length=None)
+                
+                # Add owner specials that are currently active
+                for special in owner_specials:
+                    if is_special_active_now(special):
+                        # Apply special_type filter if specified
+                        if special_type and special.get('special_type') != special_type:
+                            continue
+                        # Avoid duplicates by checking IDs
+                        if not any(s.get('id') == special.get('id') for s in restaurant['specials']):
+                            restaurant['specials'].append(special)
+                
                 # Include restaurants with active specials (or all if no special_type filter)
                 if restaurant['specials'] or not special_type:
                     all_restaurants.append(restaurant)
