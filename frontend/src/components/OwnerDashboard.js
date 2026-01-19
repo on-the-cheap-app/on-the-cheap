@@ -20,6 +20,7 @@ import CouponCreator from './CouponCreator';
 import RestaurantClaimModal from './RestaurantClaimModal';
 import OwnerPricing from './OwnerPricing';
 import OwnerBilling from './OwnerBilling';
+import SpecialCreator from './SpecialCreator';
 
 const OwnerDashboard = ({ user, token, onClose }) => {
   const [dashboardData, setDashboardData] = useState(null);
