@@ -896,9 +896,23 @@ def get_fallback_photos(restaurant_name: str, venue_types: List[str], is_mobile_
         'is_fallback': True
     }]
 
-def is_special_active_now(special_data: dict) -> bool:
-    """Check if special is currently active based on time and day"""
-    now = datetime.now()
+def is_special_active_now(special_data: dict, restaurant_timezone: str = None) -> bool:
+    """Check if special is currently active based on time and day in the restaurant's timezone"""
+    try:
+        from zoneinfo import ZoneInfo
+    except ImportError:
+        from backports.zoneinfo import ZoneInfo
+    
+    # Default to America/Chicago (Central Time) if no timezone specified
+    tz_name = restaurant_timezone or special_data.get('timezone') or 'America/Chicago'
+    
+    try:
+        tz = ZoneInfo(tz_name)
+        now = datetime.now(tz)
+    except Exception:
+        # Fallback to UTC if timezone is invalid
+        now = datetime.now(timezone.utc)
+    
     current_day = now.strftime("%A").lower()
     current_time = now.time()
     
