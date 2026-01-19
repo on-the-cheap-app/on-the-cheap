@@ -106,9 +106,55 @@ const OwnerDashboard = ({ user, token, onClose }) => {
   };
 
   const handleCreateSpecial = (restaurantId = null) => {
-    // TODO: Open special creation modal
-    console.log('Create special for restaurant:', restaurantId);
-    alert('Special creation modal coming soon! Restaurant ID: ' + (restaurantId || 'No restaurant selected'));
+    if (restaurants.length === 0) {
+      alert('You need to have at least one restaurant to create specials. Please claim a restaurant first!');
+      return;
+    }
+    setEditingSpecial(null);
+    setShowSpecialCreator(true);
+  };
+
+  const handleEditSpecial = (special) => {
+    setEditingSpecial(special);
+    setShowSpecialCreator(true);
+  };
+
+  const handleSpecialCreated = (savedSpecial) => {
+    if (editingSpecial) {
+      // Update existing special in list
+      setSpecials(prev => prev.map(s => s.id === savedSpecial.id ? savedSpecial : s));
+    } else {
+      // Add new special to list
+      setSpecials(prev => [savedSpecial, ...prev]);
+    }
+    // Reload dashboard stats
+    loadDashboardData();
+  };
+
+  const handleDeleteSpecial = async (specialId) => {
+    if (!window.confirm('Are you sure you want to delete this special? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${backendUrl}/owners/specials/${specialId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        setSpecials(prev => prev.filter(s => s.id !== specialId));
+        loadDashboardData();
+      } else {
+        const errorData = await response.json();
+        alert(errorData.detail || 'Failed to delete special');
+      }
+    } catch (error) {
+      console.error('Error deleting special:', error);
+      alert('Network error while deleting special');
+    }
   };
 
   const handleClaimRestaurant = (e) => {
