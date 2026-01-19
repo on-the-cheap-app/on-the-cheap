@@ -634,7 +634,7 @@ const OwnerDashboard = ({ user, token, onClose }) => {
                     <GiftIcon className="w-16 h-16 text-orange-400 mx-auto mb-4" />
                     <h4 className="text-lg font-medium text-gray-800 mb-2">Start Driving Foot Traffic!</h4>
                     <p className="text-gray-600 mb-4 max-w-md mx-auto">
-                      Create irresistible digital coupons that customers can't resist. 
+                      Create irresistible digital coupons that customers cannot resist. 
                       Get QR codes, track redemptions, and watch your revenue grow!
                     </p>
                     {restaurants.length === 0 ? (
