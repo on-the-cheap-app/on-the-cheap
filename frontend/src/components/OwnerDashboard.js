@@ -807,17 +807,30 @@ const OwnerDashboard = ({ user, token, onClose }) => {
                   <div className="space-y-4">
                     {specials.map((special) => (
                       <div key={special.id} className="bg-white rounded-lg shadow border p-6">
-                        <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <h4 className="font-semibold text-gray-800 text-lg">{special.title}</h4>
-                            <p className="text-gray-600">{special.description}</p>
-                          </div>
-                          <div className="flex items-center">
-                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                              special.approval_status === 'approved' 
-                                ? 'bg-green-100 text-green-800'
-                                : special.approval_status === 'pending'
-                                ? 'bg-yellow-100 text-yellow-800'
+                        <div className="flex gap-4">
+                          {/* Special Image */}
+                          {special.image && (
+                            <div className="flex-shrink-0">
+                              <img 
+                                src={special.image} 
+                                alt={special.title}
+                                className="w-32 h-32 object-cover rounded-lg"
+                              />
+                            </div>
+                          )}
+                          
+                          <div className="flex-1">
+                            <div className="flex justify-between items-start mb-4">
+                              <div>
+                                <h4 className="font-semibold text-gray-800 text-lg">{special.title}</h4>
+                                <p className="text-gray-600">{special.description}</p>
+                              </div>
+                              <div className="flex items-center">
+                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                  special.approval_status === 'approved' 
+                                    ? 'bg-green-100 text-green-800'
+                                    : special.approval_status === 'pending'
+                                    ? 'bg-yellow-100 text-yellow-800'
                                 : 'bg-red-100 text-red-800'
                             }`}>
                               {special.approval_status.charAt(0).toUpperCase() + special.approval_status.slice(1)}
