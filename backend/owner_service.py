@@ -433,7 +433,10 @@ class RestaurantOwnerService:
         if not restaurant_ids:
             return []
         
-        restaurants_cursor = self.restaurants_collection.find({"id": {"$in": restaurant_ids}})
+        restaurants_cursor = self.restaurants_collection.find(
+            {"id": {"$in": restaurant_ids}},
+            {"_id": 0}  # Exclude MongoDB ObjectId
+        )
         restaurants = await restaurants_cursor.to_list(length=None)
         
         return restaurants
