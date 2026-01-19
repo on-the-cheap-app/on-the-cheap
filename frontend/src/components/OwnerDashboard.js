@@ -44,6 +44,8 @@ const OwnerDashboard = ({ user, token, onClose }) => {
     phone: user?.phone || ''
   });
   const [showClaimModal, setShowClaimModal] = useState(false);
+  const [showSpecialCreator, setShowSpecialCreator] = useState(false);
+  const [editingSpecial, setEditingSpecial] = useState(null);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL 
     ? `${process.env.REACT_APP_BACKEND_URL}/api` 
