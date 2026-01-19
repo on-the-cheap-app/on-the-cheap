@@ -3003,7 +3003,9 @@ async def get_owner_coupons(restaurant_id: Optional[str] = None, current_user: d
             raise HTTPException(status_code=403, detail="Owner access required")
         
         coupon_service = get_coupon_service(db)
-        coupons = await coupon_service.get_owner_coupons(current_user["user_id"], restaurant_id)
+        # Use 'id' instead of 'user_id' to match the token payload
+        owner_id = current_user.get("id") or current_user.get("user_id")
+        coupons = await coupon_service.get_owner_coupons(owner_id, restaurant_id)
         return {"coupons": coupons}
     except HTTPException:
         raise
