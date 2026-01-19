@@ -94,6 +94,7 @@ class OwnerSpecialCreate(BaseModel):
     valid_until: str  # ISO date string
     max_redemptions: Optional[int] = Field(None, ge=1)
     terms_conditions: Optional[str] = Field(None, max_length=1000)
+    image: Optional[str] = Field(None, description="Base64 encoded image data")
 
 class OwnerSpecial(BaseModel):
     id: str
@@ -113,6 +114,7 @@ class OwnerSpecial(BaseModel):
     max_redemptions: Optional[int] = None
     current_redemptions: int = 0
     terms_conditions: Optional[str] = None
+    image: Optional[str] = None  # Base64 encoded image
     approval_status: SpecialApprovalStatus = SpecialApprovalStatus.PENDING
     is_active: bool = False
     admin_notes: Optional[str] = None
