@@ -1127,34 +1127,49 @@ function App() {
                             {restaurant.specials?.length > 0 ? (
                               restaurant.specials.map((special) => (
                                 <div key={special.id} className="bg-gradient-to-r from-orange-50 to-amber-50 p-3 rounded-lg">
-                                  <div className="flex justify-between items-start mb-2">
-                                    <h5 className="font-medium text-gray-900">{special.title}</h5>
-                                    <Badge className={getSpecialTypeBadgeColor(special.special_type)}>
-                                      {getSpecialTypeLabel(special.special_type)}
-                                    </Badge>
-                                  </div>
-                                  <p className="text-sm text-gray-700 mb-2">{special.description}</p>
-                                  <div className="flex items-center justify-between text-sm">
-                                    <div className="flex items-center text-green-600 font-medium">
-                                      <DollarSign className="w-4 h-4 mr-1" />
-                                      ${special.price}
-                                      {special.original_price && (
-                                        <span className="ml-2 text-gray-500 line-through">
-                                          ${special.original_price}
-                                        </span>
-                                      )}
+                                  <div className="flex gap-3">
+                                    {/* Special Image */}
+                                    {special.image && (
+                                      <div className="flex-shrink-0">
+                                        <img 
+                                          src={special.image} 
+                                          alt={special.title}
+                                          className="w-20 h-20 object-cover rounded-lg shadow-sm"
+                                        />
+                                      </div>
+                                    )}
+                                    
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex justify-between items-start mb-2">
+                                        <h5 className="font-medium text-gray-900">{special.title}</h5>
+                                        <Badge className={getSpecialTypeBadgeColor(special.special_type)}>
+                                          {getSpecialTypeLabel(special.special_type)}
+                                        </Badge>
+                                      </div>
+                                      <p className="text-sm text-gray-700 mb-2">{special.description}</p>
+                                      <div className="flex items-center justify-between text-sm">
+                                        <div className="flex items-center text-green-600 font-medium">
+                                          <DollarSign className="w-4 h-4 mr-1" />
+                                          ${special.price}
+                                          {special.original_price && (
+                                            <span className="ml-2 text-gray-500 line-through">
+                                              ${special.original_price}
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="flex items-center text-gray-600">
+                                          <Clock className="w-4 h-4 mr-1" />
+                                          {formatTime(special.time_start)} - {formatTime(special.time_end)}
+                                        </div>
+                                      </div>
+                                      <div className="mt-2">
+                                        <p className="text-xs text-gray-600">
+                                          Available: {special.days_available.map(day => 
+                                            day.charAt(0).toUpperCase() + day.slice(1)
+                                          ).join(', ')}
+                                        </p>
+                                      </div>
                                     </div>
-                                    <div className="flex items-center text-gray-600">
-                                      <Clock className="w-4 h-4 mr-1" />
-                                      {formatTime(special.time_start)} - {formatTime(special.time_end)}
-                                    </div>
-                                  </div>
-                                  <div className="mt-2">
-                                    <p className="text-xs text-gray-600">
-                                      Available: {special.days_available.map(day => 
-                                        day.charAt(0).toUpperCase() + day.slice(1)
-                                      ).join(', ')}
-                                    </p>
                                   </div>
                                 </div>
                               ))
