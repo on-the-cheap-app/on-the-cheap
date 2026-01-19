@@ -635,6 +635,26 @@ const OwnerDashboard = ({ user, token, onClose }) => {
                               ))}
                             </div>
                           )}
+                          
+                          {/* Timezone Selector */}
+                          <div className="mb-3">
+                            <label className="flex items-center text-xs text-gray-600 mb-1">
+                              <GlobeAltIcon className="w-3 h-3 mr-1" />
+                              Time Zone
+                            </label>
+                            <select
+                              value={restaurant.timezone || 'America/Chicago'}
+                              onChange={(e) => handleTimezoneChange(restaurant.id, e.target.value)}
+                              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                            >
+                              {TIMEZONES.map((tz) => (
+                                <option key={tz.value} value={tz.value}>
+                                  {tz.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          
                           <button
                             onClick={(e) => {
                               e.preventDefault();
