@@ -1,14 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   XMarkIcon,
   CalendarDaysIcon,
   ClockIcon,
-  SparklesIcon
+  SparklesIcon,
+  PhotoIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 
 const SpecialCreator = ({ token, restaurants, onClose, onSpecialCreated, editingSpecial = null }) => {
   const today = new Date().toISOString().split('T')[0];
   const nextMonth = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     restaurant_id: editingSpecial?.restaurant_id || (restaurants.length === 1 ? restaurants[0].id : ''),
@@ -24,11 +27,13 @@ const SpecialCreator = ({ token, restaurants, onClose, onSpecialCreated, editing
     valid_from: editingSpecial?.valid_from?.split('T')[0] || today,
     valid_until: editingSpecial?.valid_until?.split('T')[0] || nextMonth,
     max_redemptions: editingSpecial?.max_redemptions || '',
-    terms_conditions: editingSpecial?.terms_conditions || ''
+    terms_conditions: editingSpecial?.terms_conditions || '',
+    image: editingSpecial?.image || null
   });
   
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [imagePreview, setImagePreview] = useState(editingSpecial?.image || null);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL 
     ? `${process.env.REACT_APP_BACKEND_URL}/api` 
@@ -52,6 +57,43 @@ const SpecialCreator = ({ token, restaurants, onClose, onSpecialCreated, editing
     { value: 'saturday', label: 'Sat' },
     { value: 'sunday', label: 'Sun' }
   ];
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file (JPG, PNG, etc.)');
+      return;
+    }
+
+    // Validate file size (max 1MB for base64)
+    if (file.size > 1024 * 1024) {
+      setError('Image size must be less than 1MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result;
+      setImagePreview(base64String);
+      setFormData(prev => ({ ...prev, image: base64String }));
+      setError('');
+    };
+    reader.onerror = () => {
+      setError('Failed to read image file');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeImage = () => {
+    setImagePreview(null);
+    setFormData(prev => ({ ...prev, image: null }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
