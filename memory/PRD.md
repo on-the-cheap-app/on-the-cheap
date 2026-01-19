@@ -13,12 +13,18 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 - ✅ Privacy Policy page: `/privacy`
 - ✅ Account Deletion page: `/delete-account`
 - ✅ WhatsApp share working
-- ✅ **Create/Manage Specials feature (NEW - Jan 19, 2026)**
+- ✅ **Create/Manage Specials feature (Jan 19, 2026)**
   - Create new specials with full form (title, description, type, pricing, schedule)
   - Edit existing specials via modal
   - Delete specials
-  - View specials list with status badges (Pending/Approved)
+  - View specials list with status badges
+  - Auto-approval enabled (specials go live immediately)
   - Backend API endpoints: POST/GET/PUT/DELETE `/api/owners/specials`
+- ✅ **Image Upload for Specials (NEW - Jan 19, 2026)**
+  - Base64 image encoding (max 1MB)
+  - Upload via Choose Image button in modal
+  - Images displayed in specials list
+  - Edit preserves existing images
 - ⚠️ SMS share on desktop (low priority)
 
 ### Mobile App (Android)
@@ -32,9 +38,11 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 
 ## Test Accounts
 - **Customer:** sfurtwengler@gmail.com / DrFurt138!
-- **Owner:** demo@onthecheapapp.com / Demo123!
+- **Owner (Preview):** demo@onthecheapapp.com / Demo123!
+- **Owner (Production):** demo@onthecheapapp.com / TestPass123!
 - **Expo:** onthecheapapp@gmail.com / DrFurt138!
-- **Test Restaurant:** Demo Bistro & Bar (ID: 6f5c2507-dd5b-4db4-8da7-4a81e95e345f)
+- **Test Restaurant (Preview):** Demo Bistro & Bar (ID: 6f5c2507-dd5b-4db4-8da7-4a81e95e345f)
+- **Test Restaurant (Production):** Demo Bistro & Bar (Test) (ID: test-demo-bistro-prod-001)
 
 ## Pending Items
 
@@ -47,7 +55,6 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 - SMS share on mobile app (fix ready for next build)
 
 ## Future Tasks (Backlog)
-- P1: Image upload for specials
 - P1: Apple App Store submission (iOS)
 - P1: PayPal integration
 - P2: Map View for mobile app
