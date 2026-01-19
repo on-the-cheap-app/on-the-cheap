@@ -294,8 +294,8 @@ class RestaurantOwnerService:
             "max_redemptions": special_data.max_redemptions,
             "current_redemptions": 0,
             "terms_conditions": special_data.terms_conditions,
-            "approval_status": SpecialApprovalStatus.PENDING.value,
-            "is_active": False,
+            "approval_status": SpecialApprovalStatus.APPROVED.value,  # Auto-approve
+            "is_active": True,  # Auto-activate
             "admin_notes": None,
             "created_at": now,
             "updated_at": now
