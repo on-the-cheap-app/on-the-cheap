@@ -2720,6 +2720,31 @@ async def get_owner_restaurants(current_user: dict = Depends(get_current_user)):
         logger.error(f"Error getting restaurants: {e}")
         raise HTTPException(status_code=500, detail="Restaurants retrieval failed")
 
+@api_router.post("/owners/restaurants/{restaurant_id}/link")
+async def link_restaurant_to_owner(restaurant_id: str, current_user: dict = Depends(get_current_user)):
+    """Link a restaurant to the authenticated owner"""
+    try:
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Owner access required")
+        
+        # Verify restaurant exists
+        restaurant = await db.restaurants.find_one({"id": restaurant_id})
+        if not restaurant:
+            raise HTTPException(status_code=404, detail="Restaurant not found")
+        
+        owner_service = get_owner_service(db)
+        success = await owner_service.link_restaurant_to_owner(current_user["id"], restaurant_id)
+        
+        if success:
+            return {"message": "Restaurant linked successfully", "restaurant_id": restaurant_id}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to link restaurant")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error linking restaurant: {e}")
+        raise HTTPException(status_code=500, detail="Restaurant linking failed")
+
 # =================== ADMIN OWNER ENDPOINTS ===================
 
 @api_router.get("/admin/owners/claims")
