@@ -1050,7 +1050,7 @@ const OwnerDashboard = ({ user, token, onClose }) => {
               setShowSpecialCreator(false);
               setEditingSpecial(null);
             }}
-            onSuccess={handleSpecialCreated}
+            onSpecialCreated={handleSpecialCreated}
           />
         )}
 
