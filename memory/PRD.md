@@ -3,7 +3,7 @@
 ## Original Problem Statement
 A restaurant deals mobile app and web platform that helps users find restaurant specials, happy hours, and food deals near them.
 
-## Current Status (January 17, 2026)
+## Current Status (January 19, 2026)
 
 ### Web App - PRODUCTION LIVE ✅
 - ✅ Customer experience working (search, favorites, share)
@@ -13,6 +13,12 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 - ✅ Privacy Policy page: `/privacy`
 - ✅ Account Deletion page: `/delete-account`
 - ✅ WhatsApp share working
+- ✅ **Create/Manage Specials feature (NEW - Jan 19, 2026)**
+  - Create new specials with full form (title, description, type, pricing, schedule)
+  - Edit existing specials via modal
+  - Delete specials
+  - View specials list with status badges (Pending/Approved)
+  - Backend API endpoints: POST/GET/PUT/DELETE `/api/owners/specials`
 - ⚠️ SMS share on desktop (low priority)
 
 ### Mobile App (Android)
@@ -28,6 +34,7 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 - **Customer:** sfurtwengler@gmail.com / DrFurt138!
 - **Owner:** demo@onthecheapapp.com / Demo123!
 - **Expo:** onthecheapapp@gmail.com / DrFurt138!
+- **Test Restaurant:** Demo Bistro & Bar (ID: 6f5c2507-dd5b-4db4-8da7-4a81e95e345f)
 
 ## Pending Items
 
@@ -40,10 +47,12 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 - SMS share on mobile app (fix ready for next build)
 
 ## Future Tasks (Backlog)
+- P1: Image upload for specials
 - P1: Apple App Store submission (iOS)
 - P1: PayPal integration
+- P2: Map View for mobile app
 - P2: Owner Dashboard AI enhancements
-- P2: Admin Approval Workflow
+- P2: Admin Approval Workflow for specials
 
 ## Key URLs
 - Production: https://www.onthecheapapp.com
@@ -56,3 +65,11 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 - Backend: FastAPI (Python)
 - Database: MongoDB
 - Payments: Stripe
+
+## Recent Changes (Jan 19, 2026)
+### Create/Manage Specials Feature
+- **SpecialCreator.js**: Modal component for creating/editing specials
+- **OwnerDashboard.js**: Updated with Specials tab, CRUD handlers
+- **server.py**: Added PUT/DELETE endpoints for `/api/owners/specials`
+- **owner_service.py**: Added `update_special()` and `delete_special()` methods
+- **Tests**: `/app/tests/test_specials_crud.py` - 13 tests all passing
