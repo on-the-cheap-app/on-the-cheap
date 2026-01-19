@@ -1087,6 +1087,51 @@ function App() {
                             <span>{restaurant.photos.length}</span>
                           </div>
                         )}
+                        
+                        {/* Special Images Preview Overlay */}
+                        {restaurant.specials?.some(s => s.image) && (
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                            <div className="flex items-center gap-2">
+                              <span className="text-white text-xs font-medium">Specials:</span>
+                              <div className="flex gap-1 overflow-x-auto">
+                                {restaurant.specials.filter(s => s.image).slice(0, 3).map((special) => (
+                                  <div key={special.id} className="relative flex-shrink-0" title={special.title}>
+                                    <img 
+                                      src={special.image} 
+                                      alt={special.title}
+                                      className="w-10 h-10 rounded object-cover border-2 border-white shadow-sm"
+                                    />
+                                  </div>
+                                ))}
+                                {restaurant.specials.filter(s => s.image).length > 3 && (
+                                  <div className="w-10 h-10 rounded bg-white/20 border-2 border-white flex items-center justify-center text-white text-xs font-bold">
+                                    +{restaurant.specials.filter(s => s.image).length - 3}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Special Preview Banner (when no restaurant photo) */}
+                    {(!restaurant.photos || restaurant.photos.length === 0) && restaurant.specials?.some(s => s.image) && (
+                      <div className="bg-gradient-to-r from-orange-500 to-amber-500 p-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-white text-sm font-medium">🔥 Hot Specials:</span>
+                          <div className="flex gap-2 overflow-x-auto">
+                            {restaurant.specials.filter(s => s.image).slice(0, 4).map((special) => (
+                              <div key={special.id} className="relative flex-shrink-0" title={special.title}>
+                                <img 
+                                  src={special.image} 
+                                  alt={special.title}
+                                  className="w-12 h-12 rounded-lg object-cover border-2 border-white shadow-md"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     )}
                     
