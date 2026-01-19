@@ -65,8 +65,10 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 
 ### January 19, 2026 - Session 2
 - **Customer-facing Specials with Images**: Updated restaurant search and detail views to show owner-created specials with images
+- **Special Preview on Restaurant Cards**: Added image thumbnails overlay on restaurant photos showing "Specials:" preview when specials have images
 - Backend merges specials from `owner_specials` collection with restaurant's built-in specials
-- Images display as 80x80 thumbnails alongside special details
+- Images display as 80x80 thumbnails alongside special details in restaurant view
+- Small 40x40 preview thumbnails shown on restaurant card photos
 
 ### January 19, 2026 - Session 1
 - **Create/Manage Specials Feature**: Full CRUD for owner specials with form, scheduling, pricing
