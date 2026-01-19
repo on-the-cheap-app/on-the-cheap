@@ -372,6 +372,17 @@ class RestaurantOwnerService:
         if not existing_special:
             raise HTTPException(status_code=404, detail="Special not found or you don't have permission to edit it")
         
+        # Handle image field - preserve existing if not explicitly provided
+        # If image is None but was not in the original request, preserve existing
+        new_image = special_data.get("image")
+        if new_image is None and "image" not in special_data:
+            # Image field was not provided, preserve existing
+            new_image = existing_special.get("image")
+        elif new_image is None:
+            # Image was explicitly set to None (remove image)
+            new_image = None
+        # else: new_image has a value, use it
+        
         # Update the special
         update_data = {
             "title": special_data.get("title", existing_special.get("title")),
@@ -387,7 +398,7 @@ class RestaurantOwnerService:
             "valid_until": special_data.get("valid_until", existing_special.get("valid_until")),
             "max_redemptions": special_data.get("max_redemptions"),
             "terms_conditions": special_data.get("terms_conditions"),
-            "image": special_data.get("image", existing_special.get("image")),  # Preserve or update image
+            "image": new_image,  # Preserve or update image based on logic above
             "updated_at": datetime.now(timezone.utc).isoformat(),
             # Auto-approve edits (no manual approval needed)
             "approval_status": SpecialApprovalStatus.APPROVED.value,
