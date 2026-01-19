@@ -976,8 +976,9 @@ async def search_restaurants(
                 else:
                     # Filter out inactive specials and check if currently active
                     active_specials = []
+                    restaurant_tz = restaurant.get('timezone', 'America/Chicago')
                     for special in restaurant.get('specials', []):
-                        if special.get('is_active', True) and is_special_active_now(special):
+                        if special.get('is_active', True) and is_special_active_now(special, restaurant_tz):
                             active_specials.append(special)
                     restaurant['specials'] = active_specials
                 
@@ -991,7 +992,7 @@ async def search_restaurants(
                 
                 # Add owner specials that are currently active
                 for special in owner_specials:
-                    if is_special_active_now(special):
+                    if is_special_active_now(special, restaurant_tz):
                         # Apply special_type filter if specified
                         if special_type and special.get('special_type') != special_type:
                             continue
