@@ -385,9 +385,9 @@ class RestaurantOwnerService:
             "max_redemptions": special_data.get("max_redemptions"),
             "terms_conditions": special_data.get("terms_conditions"),
             "updated_at": datetime.now(timezone.utc).isoformat(),
-            # Reset to pending approval when edited
-            "approval_status": SpecialApprovalStatus.PENDING.value,
-            "is_active": False
+            # Auto-approve edits (no manual approval needed)
+            "approval_status": SpecialApprovalStatus.APPROVED.value,
+            "is_active": True
         }
         
         await self.specials_collection.update_one(
