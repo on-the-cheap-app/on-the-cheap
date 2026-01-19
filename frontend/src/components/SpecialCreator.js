@@ -269,6 +269,54 @@ const SpecialCreator = ({ token, restaurants, onClose, onSpecialCreated, editing
             <p className="text-xs text-gray-500 mt-1">{formData.description.length}/500 characters</p>
           </div>
 
+          {/* Image Upload */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <PhotoIcon className="w-4 h-4 inline mr-1" />
+              Special Image (optional)
+            </label>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-orange-400 transition-colors">
+              {imagePreview ? (
+                <div className="relative">
+                  <img 
+                    src={imagePreview} 
+                    alt="Special preview" 
+                    className="max-h-48 mx-auto rounded-lg object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                    title="Remove image"
+                  >
+                    <TrashIcon className="w-4 h-4" />
+                  </button>
+                  <p className="text-sm text-gray-500 mt-2">Click the trash icon to remove</p>
+                </div>
+              ) : (
+                <div>
+                  <PhotoIcon className="w-12 h-12 mx-auto text-gray-400 mb-2" />
+                  <p className="text-gray-600 mb-2">Upload an image for your special</p>
+                  <p className="text-xs text-gray-500 mb-3">JPG, PNG up to 1MB</p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="special-image-upload"
+                  />
+                  <label
+                    htmlFor="special-image-upload"
+                    className="inline-block px-4 py-2 bg-orange-500 text-white rounded-lg cursor-pointer hover:bg-orange-600 transition-colors"
+                  >
+                    Choose Image
+                  </label>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Special Type */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
