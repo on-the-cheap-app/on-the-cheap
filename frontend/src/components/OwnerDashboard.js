@@ -23,15 +23,59 @@ import OwnerPricing from './OwnerPricing';
 import OwnerBilling from './OwnerBilling';
 import SpecialCreator from './SpecialCreator';
 
-// Common US timezones
+// Global timezones organized by region
 const TIMEZONES = [
-  { value: 'America/New_York', label: 'Eastern Time (ET)' },
-  { value: 'America/Chicago', label: 'Central Time (CT)' },
-  { value: 'America/Denver', label: 'Mountain Time (MT)' },
+  // North America
+  { value: 'America/New_York', label: 'Eastern Time (ET) - New York' },
+  { value: 'America/Chicago', label: 'Central Time (CT) - Chicago' },
+  { value: 'America/Denver', label: 'Mountain Time (MT) - Denver' },
   { value: 'America/Phoenix', label: 'Arizona (no DST)' },
-  { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
+  { value: 'America/Los_Angeles', label: 'Pacific Time (PT) - Los Angeles' },
   { value: 'America/Anchorage', label: 'Alaska Time (AKT)' },
   { value: 'Pacific/Honolulu', label: 'Hawaii Time (HT)' },
+  { value: 'America/Toronto', label: 'Eastern Time - Toronto' },
+  { value: 'America/Vancouver', label: 'Pacific Time - Vancouver' },
+  { value: 'America/Mexico_City', label: 'Mexico City' },
+  
+  // South America
+  { value: 'America/Sao_Paulo', label: 'São Paulo, Brazil' },
+  { value: 'America/Buenos_Aires', label: 'Buenos Aires, Argentina' },
+  { value: 'America/Bogota', label: 'Bogotá, Colombia' },
+  { value: 'America/Lima', label: 'Lima, Peru' },
+  
+  // Europe
+  { value: 'Europe/London', label: 'London, UK (GMT/BST)' },
+  { value: 'Europe/Paris', label: 'Paris, France (CET)' },
+  { value: 'Europe/Berlin', label: 'Berlin, Germany (CET)' },
+  { value: 'Europe/Madrid', label: 'Madrid, Spain (CET)' },
+  { value: 'Europe/Rome', label: 'Rome, Italy (CET)' },
+  { value: 'Europe/Amsterdam', label: 'Amsterdam, Netherlands (CET)' },
+  { value: 'Europe/Moscow', label: 'Moscow, Russia (MSK)' },
+  { value: 'Europe/Istanbul', label: 'Istanbul, Turkey' },
+  
+  // Asia
+  { value: 'Asia/Dubai', label: 'Dubai, UAE (GST)' },
+  { value: 'Asia/Kolkata', label: 'India (IST)' },
+  { value: 'Asia/Bangkok', label: 'Bangkok, Thailand (ICT)' },
+  { value: 'Asia/Singapore', label: 'Singapore (SGT)' },
+  { value: 'Asia/Hong_Kong', label: 'Hong Kong (HKT)' },
+  { value: 'Asia/Shanghai', label: 'China (CST)' },
+  { value: 'Asia/Tokyo', label: 'Tokyo, Japan (JST)' },
+  { value: 'Asia/Seoul', label: 'Seoul, South Korea (KST)' },
+  { value: 'Asia/Manila', label: 'Manila, Philippines' },
+  { value: 'Asia/Jakarta', label: 'Jakarta, Indonesia' },
+  
+  // Oceania
+  { value: 'Australia/Sydney', label: 'Sydney, Australia (AEST)' },
+  { value: 'Australia/Melbourne', label: 'Melbourne, Australia (AEST)' },
+  { value: 'Australia/Perth', label: 'Perth, Australia (AWST)' },
+  { value: 'Pacific/Auckland', label: 'Auckland, New Zealand (NZST)' },
+  
+  // Africa
+  { value: 'Africa/Cairo', label: 'Cairo, Egypt (EET)' },
+  { value: 'Africa/Johannesburg', label: 'Johannesburg, South Africa (SAST)' },
+  { value: 'Africa/Lagos', label: 'Lagos, Nigeria (WAT)' },
+  { value: 'Africa/Nairobi', label: 'Nairobi, Kenya (EAT)' },
 ];
 
 const OwnerDashboard = ({ user, token, onClose }) => {
