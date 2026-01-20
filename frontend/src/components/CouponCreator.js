@@ -638,7 +638,7 @@ const CouponCreator = ({ restaurant, onClose, onSuccess, token }) => {
         </div>
 
         {/* Footer */}
-        <div className="border-t bg-gray-50 px-6 py-4 flex justify-between items-center">
+        <div className="border-t bg-gray-50 px-6 py-4 flex justify-between items-center flex-shrink-0">
           <div className="flex space-x-2">
             {step > 1 && (
               <button
