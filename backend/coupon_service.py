@@ -303,7 +303,7 @@ class CouponService:
         
         # Get all restaurants and filter by distance manually
         # (since location format is {latitude, longitude} not GeoJSON)
-        all_restaurants = await self.restaurants_collection.find({}).to_list(length=None)
+        all_restaurants = await self.restaurants_collection.find({}, {"_id": 0}).to_list(length=None)
         
         # Calculate distance and filter
         restaurants_in_area = []
@@ -329,7 +329,7 @@ class CouponService:
             "status": CouponStatus.ACTIVE.value,
             "valid_from": {"$lte": now},
             "valid_until": {"$gte": now}
-        }).to_list(length=50)
+        }, {"_id": 0}).to_list(length=50)
         
         # Combine with restaurant data
         enriched_coupons = []
