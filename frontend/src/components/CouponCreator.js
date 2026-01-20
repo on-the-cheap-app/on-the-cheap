@@ -193,9 +193,9 @@ const CouponCreator = ({ restaurant, onClose, onSuccess, token }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-6 relative">
+        <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-6 relative flex-shrink-0">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-white hover:text-orange-200 transition-colors"
@@ -226,9 +226,9 @@ const CouponCreator = ({ restaurant, onClose, onSuccess, token }) => {
           </div>
         </div>
 
-        <div className="flex">
+        <div className="flex flex-1 min-h-0">
           {/* Main Form */}
-          <div className="flex-1 p-6 overflow-y-auto max-h-[70vh]">
+          <div className="flex-1 p-6 overflow-y-auto">
             {error && (
               <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center">
                 <ExclamationTriangleIcon className="w-5 h-5 mr-2" />
