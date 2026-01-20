@@ -75,18 +75,18 @@ class CouponCreate(BaseModel):
     terms_conditions: Optional[str] = Field(None, max_length=1000)
     promotional_message: Optional[str] = Field(None, max_length=200)
     
-    @validator('coupon_type')
-    def validate_coupon_fields(cls, v, values):
+    @model_validator(mode='after')
+    def validate_coupon_fields(self):
         # Ensure required fields are present based on coupon type
-        if v == CouponType.PERCENTAGE and not values.get('discount_percentage'):
+        if self.coupon_type == CouponType.PERCENTAGE and not self.discount_percentage:
             raise ValueError('discount_percentage required for percentage coupons')
-        elif v == CouponType.FIXED_AMOUNT and not values.get('discount_amount'):
+        elif self.coupon_type == CouponType.FIXED_AMOUNT and not self.discount_amount:
             raise ValueError('discount_amount required for fixed amount coupons')
-        elif v == CouponType.FREE_ITEM and not values.get('free_item'):
+        elif self.coupon_type == CouponType.FREE_ITEM and not self.free_item:
             raise ValueError('free_item required for free item coupons')
-        elif v == CouponType.COMBO_DEAL and not values.get('combo_price'):
+        elif self.coupon_type == CouponType.COMBO_DEAL and not self.combo_price:
             raise ValueError('combo_price required for combo deal coupons')
-        return v
+        return self
 
 class Coupon(BaseModel):
     id: str
