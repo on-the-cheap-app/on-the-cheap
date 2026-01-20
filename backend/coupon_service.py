@@ -19,7 +19,7 @@ import random
 import string
 from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Optional, Any
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, model_validator
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from fastapi import HTTPException
 from enum import Enum
