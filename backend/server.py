@@ -3109,7 +3109,7 @@ async def create_coupon(coupon_data: CouponCreate, restaurant_id: str, current_u
             raise HTTPException(status_code=403, detail="Only owners can create coupons")
         
         coupon_service = get_coupon_service(db)
-        coupon = await coupon_service.create_coupon(coupon_data, current_user["user_id"], restaurant_id)
+        coupon = await coupon_service.create_coupon(coupon_data, current_user["id"], restaurant_id)
         return coupon
     except HTTPException:
         raise
