@@ -3647,6 +3647,62 @@ async def stripe_webhook(request: Request):
         logger.error(f"Stripe webhook error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
+# ===========================================
+# Export Files Download Endpoints
+# ===========================================
+
+EXPORTS_DIR = Path(__file__).parent.parent / "exports"
+
+@api_router.get("/exports/list")
+async def list_export_files():
+    """List all available export files"""
+    try:
+        if not EXPORTS_DIR.exists():
+            return {"files": []}
+        
+        files = []
+        for f in EXPORTS_DIR.iterdir():
+            if f.is_file() and f.suffix in ['.csv', '.html', '.txt']:
+                files.append({
+                    "name": f.name,
+                    "size_kb": round(f.stat().st_size / 1024, 1),
+                    "download_url": f"/api/exports/download/{f.name}"
+                })
+        
+        return {"files": sorted(files, key=lambda x: x["name"])}
+    except Exception as e:
+        logger.error(f"Error listing export files: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/exports/download/{filename}")
+async def download_export_file(filename: str):
+    """Download a specific export file"""
+    try:
+        # Security: only allow specific file extensions
+        allowed_extensions = ['.csv', '.html', '.txt']
+        file_path = EXPORTS_DIR / filename
+        
+        # Prevent directory traversal
+        if ".." in filename or "/" in filename or "\\" in filename:
+            raise HTTPException(status_code=400, detail="Invalid filename")
+        
+        if not any(filename.endswith(ext) for ext in allowed_extensions):
+            raise HTTPException(status_code=400, detail="File type not allowed")
+        
+        if not file_path.exists():
+            raise HTTPException(status_code=404, detail="File not found")
+        
+        return FileResponse(
+            path=str(file_path),
+            filename=filename,
+            media_type="application/octet-stream"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error downloading export file: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Include the router in the main app
 app.include_router(api_router)
 
