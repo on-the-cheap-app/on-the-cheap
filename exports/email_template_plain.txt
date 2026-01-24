@@ -1,0 +1,33 @@
+Subject: Free way to promote {{restaurant_name}}'s specials
+
+Hi {{first_name}},
+
+I noticed {{restaurant_name}} has excellent reviews ({{google_rating}}★ with {{review_count}}+ reviews) - congratulations on building such a great reputation in New Orleans!
+
+I'm reaching out because locals are actively searching for restaurant deals in your area, and I'd love to help you reach them.
+
+On The Cheap is a free app that helps restaurants like yours promote specials, happy hours, and daily deals to hungry customers nearby.
+
+WHY JOIN (IT'S COMPLETELY FREE):
+• Promote your specials to local deal-seekers
+• Create digital coupons to drive foot traffic  
+• No commissions, no fees, no catch
+• Takes just 2 minutes to set up
+
+GETTING STARTED IS EASY:
+1. Visit onthecheapapp.com
+2. Click "Owner Portal" → Register
+3. Add your specials and start attracting customers
+
+→ Claim Your Free Listing: https://www.onthecheapapp.com
+
+Questions? Just reply to this email - I'm happy to help.
+
+Cheers,
+Scott
+On The Cheap
+
+P.S. We're launching in New Orleans soon and featuring top-rated restaurants like yours. Get in early to be among the first listed!
+
+---
+You're receiving this because {{restaurant_name}} is listed on Google Maps as a restaurant in New Orleans. Reply "unsubscribe" to opt out.

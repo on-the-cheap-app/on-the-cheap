@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; }
+    .header { background: linear-gradient(135deg, #f97316, #ea580c); padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+    .header h1 { color: white; margin: 0; font-size: 24px; }
+    .content { padding: 25px; background: #fff; border: 1px solid #e5e5e5; }
+    .benefits { background: #fff7ed; padding: 15px; border-radius: 8px; margin: 20px 0; }
+    .benefits ul { margin: 0; padding-left: 20px; }
+    .benefits li { margin: 8px 0; }
+    .cta-button { display: inline-block; background: #f97316; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 20px 0; }
+    .cta-button:hover { background: #ea580c; }
+    .footer { font-size: 12px; color: #666; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e5e5; }
+    .highlight { color: #f97316; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>On The Cheap</h1>
+  </div>
+  <div class="content">
+    <p>Hi {{first_name}},</p>
+    
+    <p>I noticed <span class="highlight">{{restaurant_name}}</span> has excellent reviews ({{google_rating}}★ with {{review_count}}+ reviews) - congratulations on building such a great reputation in New Orleans!</p>
+    
+    <p>I'm reaching out because locals are actively searching for restaurant deals and specials in your area, and I'd love to help you reach them.</p>
+    
+    <p><strong>On The Cheap</strong> is a free app that helps restaurants like yours promote specials, happy hours, and daily deals to hungry customers nearby.</p>
+    
+    <div class="benefits">
+      <strong>Why join (it's completely free):</strong>
+      <ul>
+        <li>✓ Promote your specials to local deal-seekers</li>
+        <li>✓ Create digital coupons to drive foot traffic</li>
+        <li>✓ No commissions, no fees, no catch</li>
+        <li>✓ Takes just 2 minutes to set up</li>
+      </ul>
+    </div>
+    
+    <p><strong>Getting started is easy:</strong></p>
+    <ol>
+      <li>Visit <a href="https://www.onthecheapapp.com">onthecheapapp.com</a></li>
+      <li>Click "Owner Portal" → Register</li>
+      <li>Add your specials and start attracting customers</li>
+    </ol>
+    
+    <center>
+      <a href="https://www.onthecheapapp.com" class="cta-button">Claim Your Free Listing →</a>
+    </center>
+    
+    <p>Questions? Just reply to this email - I'm happy to help.</p>
+    
+    <p>Cheers,<br>
+    <strong>Scott</strong><br>
+    On The Cheap</p>
+    
+    <div class="footer">
+      <p>P.S. We're launching in New Orleans soon and featuring top-rated restaurants like yours. Get in early to be among the first listed!</p>
+      <p style="color: #999; font-size: 11px;">You're receiving this because {{restaurant_name}} is listed on Google Maps as a restaurant in New Orleans. If you'd prefer not to hear from us, simply reply with "unsubscribe."</p>
+    </div>
+  </div>
+</body>
+</html>
