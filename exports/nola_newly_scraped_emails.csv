@@ -1,0 +1,16 @@
+restaurant_name,email,source,website
+Willie's Chicken Shack,accountmanager@akminvestments.net,scraped_http://willieschickenshack.com/,http://willieschickenshack.com/
+Tacos & Beer,placejoys.com@gmail.com,scraped_https://tacosandbeer.shop/,https://tacosandbeer.shop/
+Betsy's Pancake House,wherevi.com@gmail.com,scraped_https://betsyspancakehouse.shop/,https://betsyspancakehouse.shop/
+Mr. Ed's Oyster Bar & Fish House Mid City,wecare@www.mredsmidcity.com,scraped_https://www.mredsmidcity.com/,https://www.mredsmidcity.com/
+Ikura Hibachi And Sushi,ikurasushihibachi@gmail.com,scraped_https://ikurahibachisushi.com/,https://ikurahibachisushi.com/
+Magasin Vietnamese Cafe,magasincafe@gmail.com,scraped_https://magasincafe.info/a-taste-of-vietnam,https://magasincafe.info/a-taste-of-vietnam
+Union Ramen Bar,info@unionramen.com,scraped_https://www.unionramen.com/location,http://www.unionramen.com/
+La Crepe Nanou,info@lacrepenanou.com,scraped_http://lacrepenanou.com/,http://lacrepenanou.com/
+14 Parishes Jamaican Restaurant on Oak,hello@14parishes.com,scraped_http://www.14parishes.com/,http://www.14parishes.com/
+Restaurant and Bar at The Chloe,info@thechloenola.com,scraped_https://www.thechloenola.com/contact-us,https://www.thechloenola.com/restaurant
+Medium Rare,mail@mediumrarerestaurant.com,scraped_http://mediumrarerestaurant.com/,http://mediumrarerestaurant.com/
+Beggars Banquet,info@beggarsbanquetnola.com,scraped_http://beggarsbanquetneworleans.com/,http://beggarsbanquetneworleans.com/
+The Bell,info@thebellnola.com,scraped_https://thebellnola.com/,https://thebellnola.com/
+Caribbean Pot LA,info@caribbeanpotla.com,scraped_http://caribbeanpotla.com/,http://caribbeanpotla.com/
+SWEGS Kitchen,info@swegskitchen.com,scraped_http://www.swegskitchen.com/,http://www.swegskitchen.com/
