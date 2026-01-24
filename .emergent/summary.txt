@@ -1,0 +1,153 @@
+<analysis>**original_problem_statement:**
+The user wants to build a full-stack restaurant deals application with a React web portal for restaurant owners and a React Native (Expo) mobile app for customers. The primary goals are to get both platforms fully functional, implement a subscription payment system for owners using Stripe, and successfully submit the mobile app to app stores.
+
+Recent work has focused on adding a Create/Manage Specials feature with image uploads for owners, fixing various bugs on the web portal, and diagnosing critical failures in the mobile app. The most recent task is to build a data enrichment pipeline to process a CSV of New Orleans restaurants for an email outreach campaign.
+
+**User's preferred language**: English
+
+**what currently exists?**
+-   **Web App:** A functional React frontend and FastAPI backend. Owners can register, manage their restaurant's timezone, and create/edit/delete specials with image uploads (using Base64). They can also create digital coupons. The backend automatically approves new specials. Customer-facing views show these specials and coupons. Production and preview environments use separate databases, which has been a source of confusion.
+-   **Mobile App (Broken):** A React Native/Expo app that is currently non-functional for testers. It was discovered to be pointing to an incorrect, old backend API URL. The user has corrected the file locally but is blocked from deploying a fix due to Expo Application Services (EAS) build limits. The app is in a mandatory 14-day Closed Testing phase on the Google Play Console with this critical bug present.
+-   **Backend:** A FastAPI server connected to MongoDB. It handles authentication, restaurant data, CRUD for specials and coupons, and timezone-aware filtering.
+-   **Data Pipeline:** A script was created to process a user-provided CSV of 1,206 New Orleans restaurants. The data has been cleaned, segmented into tiers based on rating/reviews, and exported into multiple CSV files located in . HTML and plain-text email templates have also been generated.
+
+**Last working item**:
+-   **Last item agent was working:** The user requested to begin Phase 2 of the data enrichment pipeline. Phase 1 (cleaning and segmenting the provided CSV) was completed. The agent was about to start implementing the Python web scraper to find contact emails for 305 restaurants that have a website but no listed email.
+-   **Status:** NOT STARTED
+-   **Agent Testing Done:** N/A
+-   **Which testing method agent to use?** N/A (This is a data processing task using a Python script).
+-   **User Testing Done:** N
+
+**All Pending/In progress Issue list**:
+-   **Issue 1:** Mobile App: App is non-functional due to incorrect backend URL (P0, BLOCKER)
+-   **Issue 2:** Mobile App: Restaurants near me feature is broken (P0)
+-   **Issue 3:** Mobile App: New user login fails (P0)
+-   **Issue 4:** Mobile App: Location search returns an error (P0)
+-   **Issue 5:** Mobile App: SMS sharing button bug on Android (P1)
+-   **Issue 6:** Mobile App: Filters stop working after multiple Near Me searches (P1)
+
+**Issues Detail:**
+-   **Issue 1: Mobile App: App is non-functional due to incorrect backend URL**
+    -   **Description:** The mobile app's  hardcodes an old preview URL () instead of the correct production URL (). This causes all API calls from the app to fail, rendering it unusable for testers. Issues 2, 3, and 4 are symptoms of this root cause.
+    -   **Attempted fixes:** The agent guided the user to edit the local file  and update the URL. The user confirmed the change was saved successfully.
+    -   **Next debug checklist:** The user must build a new  file using EAS and upload it to the Google Play Console to distribute the fix to testers.
+    -   **Why fix this issue and what will be achieved with the fix?** This is a critical blocker. The mobile app cannot be tested until this is resolved.
+    -   **Status:** BLOCKED
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** Frontend (Mobile App)
+    -   **Blocked on other issue:** User has hit their free monthly build limit on Expo Application Services (EAS) and must wait approximately one week (until Feb 1, 2026) or upgrade their plan.
+
+-   **Issue 5: Mobile App: SMS sharing button bug on Android**
+    -   **Description:** (From previous fork) When using the Text share feature, the message content is incorrectly placed in the To: field of the SMS app.
+    -   **Attempted fixes:** A platform-specific fix was implemented in the code but has not been deployed in a build.
+    -   **Next debug checklist:** This fix needs to be included in the next mobile app build.
+    -   **Status:** BLOCKED
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** Frontend (Mobile App)
+    -   **Blocked on other issue:** Issue 1.
+
+-   **Issue 6: Mobile App: Filters stop working after multiple Near Me searches**
+    -   **Description:** (From previous fork) The filtering functionality becomes unresponsive after repeated use of the Near Me button. This is likely a state management issue.
+    -   **Attempted fixes:** None yet.
+    -   **Next debug checklist:** Analyze and refactor the state management logic in  once core API connectivity is restored.
+    -   **Status:** BLOCKED
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** Frontend (Mobile App)
+    -   **Blocked on other issue:** Issue 1.
+
+**In progress Task List**:
+-   **Task 1: Data Enrichment Pipeline for New Orleans Restaurants (P0)**
+    -   **Where to resume:** Begin implementing Phase 2: Web Scraping. The agent needs to write and execute the Python script to scrape the 305 websites listed in  to find contact emails.
+    -   **What will be achieved with this?** It will generate more leads for the user's email outreach campaign to recruit new restaurant owners.
+    -   **Status:** IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?** N/A
+    -   **Blocked on something:** The Yelp enrichment part of the pipeline is blocked until the user provides a Yelp Fusion API key. The web scraping part can proceed independently.
+
+**Upcoming and Future Tasks**
+*   **Upcoming Tasks:**
+    *   (P0) **Mobile App Debugging:** Once the EAS build is available, thoroughly test the app to confirm the API connection is fixed and that login, search, and near me features work correctly.
+    *   (P1) **Data Enrichment - Phase 3 (Yelp):** Once the user provides a Yelp API key, run the Yelp enrichment script.
+    *   (P1) **Data Enrichment - Phase 4 (Import):** Import the final enriched list of New Orleans restaurants into the application's database so they are discoverable by customers.
+    *   (P1) **Submit mobile app to the Apple App Store.**
+*   **Future Tasks:**
+    *   (P2) Add a Map View to the mobile app.
+    -   (P2) Integrate PayPal as an alternative payment option for owner subscriptions.
+    -   (P2) Enhance the Owner Dashboard with AI-driven upselling suggestions.
+    -   (P2) Build a UI for the existing admin approval workflow for specials.
+    -   (P2) Create a dedicated landing page for New Orleans restaurant owners.
+
+**Completed work in this session**
+-   **Feature:** Implemented the Create/Manage Specials feature for owners, including CRUD endpoints and auto-approval logic.
+-   **Feature:** Added Base64 image upload functionality for specials.
+-   **Feature:** Made owner-created specials (with images) visible to customers on search cards and detail pages.
+-   **Feature:** Added a global timezone selector to the owner dashboard and made special filtering timezone-aware.
+-   **Bug Fix:** Resolved a scrolling issue in the Create Digital Coupon modal.
+-   **Bug Fix:** Fixed a critical bug preventing the successful creation of digital coupons from the owner dashboard.
+-   **Bug Fix:** Repaired the customer-facing coupon discovery page, which was failing due to a backend serialization error.
+-   **Investigation:** Diagnosed and resolved production login issues by identifying that preview and production environments use separate databases and then creating the necessary test data on production.
+-   **Investigation:** Diagnosed all critical mobile app failures, tracing them to a single incorrect backend URL in the mobile app's source code.
+-   **Data Pipeline:** Completed Phase 1 of the data enrichment task: cleaned, segmented, and exported a user-provided CSV into several email-ready outreach lists, which are available for download in .
+
+**Known issue recurrence from previous fork**
+-   **Mobile App Instability:** The previous fork noted minor mobile bugs. This session revealed critical, blocking bugs that make the app unusable. The mobile app's stability is a major concern.
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+-   **Full-Stack:** React, FastAPI, MongoDB
+-   **Mobile:** React Native with Expo (builds via EAS)
+-   **Payments:** Stripe
+-   **Image Handling:** Base64 encoding for storing images in MongoDB.
+-   **Date/Time:** Timezone-aware filtering using  on the backend.
+-   **Data Science:** Data cleaning and analysis using the Pandas library in Python for the restaurant outreach campaign.
+
+**key DB schema**
+-   **:** New collection to store specials created by owners. Includes fields like , .
+-   **:** Documents now include a  field (e.g., America/Chicago).
+-   **:** New collection for the digital coupon system.
+
+**All files of reference**
+-    (Heavily modified for new features and bug fixes)
+-    (Heavily modified for new features)
+-    (New file with multiple bug fixes applied)
+-    (UI for new owner features)
+-    (Bug fixes for scrolling and launch)
+-    (Updated to display special images)
+-    (Location of all data pipeline output files)
+-    (File on user's machine containing the critical mobile bug)
+
+**Critical Info for New Agent**
+-   **MOBILE APP IS THE TOP PRIORITY & IS BLOCKED:** The mobile app is unusable for testers due to pointing to the wrong backend URL. The user has fixed the code locally but cannot deploy a new build for approximately one week due to EAS limits. All mobile-related tasks are on hold. The next agent's first priority upon the user's return should be to guide them through building and deploying the fixed app.
+-   **PREVIEW vs. PRODUCTION DATABASES:** The preview and production environments use separate, non-synced MongoDB databases. Data created in one environment will not exist in the other. This has repeatedly caused confusion. Always verify which environment the user is referring to and be prepared to create test data on production if needed.
+-   **DATA PIPELINE TASK:** The immediate task is to proceed with Phase 2 of the data pipeline: scraping websites for emails. Do not attempt the Yelp enrichment (Phase 3) as the user has not provided an API key.
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  **User:** Asks for help building a data enrichment pipeline for a provided restaurant CSV.
+2.  **User:** Uploads the CSV and confirms they need to get a Yelp API key. Sets priorities and timeline.
+3.  **User:** Agrees to start with Phase 1 (cleaning and preparing the existing data).
+4.  **User:** Requests to download the output files from Phase 1 and to begin Phase 2 (web scraping).
+5.  **User:** Asks for advice on a Google Play Store warning about a deobfuscation file (Agent advised it's safe to ignore for now).
+6.  **User:** Reports that testers have found critical bugs: near me, login, and search all fail in the mobile app.
+7.  **User:** Shares the content of  after the agent diagnosed the mobile issues are likely due to a wrong URL.
+8.  **User:** Asks for instructions on how to edit the file in the  text editor.
+9.  **User:** Confirms they successfully updated the backend URL in the local file.
+10. **User:** Confirms they must wait 7 days for their EAS build limit to reset before they can deploy the mobile app fix.
+
+**Project Health Check:**
+-   **Broken:**
+    -   **Mobile App:** Critically broken and unusable. All API calls fail due to an incorrect hardcoded backend URL. Testers are blocked.
+-   **Mocked:**
+    -   None.
+
+**3rd Party Integrations**
+-   **Stripe (Payments):** Live and functional for owner subscriptions on the web app.
+-   **Expo Application Services (EAS):** Used for mobile app builds. The user is on the free tier and has hit their monthly build limit, blocking all mobile app updates for approximately one week.
+-   **Google Play Console:** The mobile app is in Closed Testing, but the current build is broken.
+-   **Yelp Fusion API (Planned):** User intends to get an API key to enrich their restaurant data.
+
+**Testing status**
+-   **Testing agent used after significant changes:** YES. The agent was used successfully to test the Create Special and Image Upload features on the web app.
+-   **Troubleshoot agent used after agent stuck in loop:** NO
+-   **Test files created:** None
+-   **Known regressions:** The mobile app is in a regressed, non-functional state.</analysis>
