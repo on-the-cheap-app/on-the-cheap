@@ -312,10 +312,12 @@ function App() {
   // Enhanced handler for AddressInput component
   const handleAddressSelect = (geocodeResult) => {
     setSearchLocation(geocodeResult.formatted_address);
-    setCoordinates({
+    const coords = {
       latitude: geocodeResult.latitude,
       longitude: geocodeResult.longitude
-    });
+    };
+    setCoordinates(coords);
+    coordinatesRef.current = coords; // Store in ref for filter useEffect
     setLoading(true);
     searchRestaurants(geocodeResult.latitude, geocodeResult.longitude);
   };
