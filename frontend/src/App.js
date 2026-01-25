@@ -316,25 +316,30 @@ function App() {
     setSearchLocation(value);
   };
 
-  const searchRestaurants = async (latitude, longitude) => {
+  const searchRestaurants = async (latitude, longitude, filters = {}) => {
     if (!latitude || !longitude) return;
     
     setLoading(true);
     const searchStartTime = performance.now();
     
+    // Use passed filters or fall back to current state
+    const specialType = filters.specialType !== undefined ? filters.specialType : selectedSpecialType;
+    const vendorType = filters.vendorType !== undefined ? filters.vendorType : selectedVendorType;
+    const radius = filters.radius !== undefined ? filters.radius : searchRadius;
+    
     try {
       const params = {
         latitude,
         longitude,
-        radius: searchRadius,
+        radius: radius,
       };
 
-      if (selectedSpecialType && selectedSpecialType !== "all") {
-        params.special_type = selectedSpecialType;
+      if (specialType && specialType !== "all") {
+        params.special_type = specialType;
       }
       
-      if (selectedVendorType && selectedVendorType !== "all") {
-        params.vendor_type = selectedVendorType;
+      if (vendorType && vendorType !== "all") {
+        params.vendor_type = vendorType;
       }
 
       let searchResults, searchLocation, sourceSummary;
