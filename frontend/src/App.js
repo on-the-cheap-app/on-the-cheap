@@ -213,13 +213,14 @@ function App() {
   // Auto re-search when filters change (if we already have coordinates)
   useEffect(() => {
     if (coordinates && coordinates.latitude && coordinates.longitude) {
+      console.log('Filter changed - re-searching with:', { selectedSpecialType, selectedVendorType, searchRadius });
       // Debounce to avoid too many requests
       const timeoutId = setTimeout(() => {
         searchRestaurants(coordinates.latitude, coordinates.longitude);
       }, 300);
       return () => clearTimeout(timeoutId);
     }
-  }, [selectedSpecialType, selectedVendorType, searchRadius]);
+  }, [selectedSpecialType, selectedVendorType, searchRadius, coordinates]);
 
   const getCurrentLocation = () => {
     setLoading(true);
