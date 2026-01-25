@@ -200,7 +200,7 @@ const AddressInput = ({
   };
 
   return (
-    <div className={`relative ${className}`}>
+    <div ref={containerRef} className={`relative ${className}`}>
       <input
         ref={inputRef}
         type="text"
