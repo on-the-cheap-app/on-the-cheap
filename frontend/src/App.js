@@ -226,8 +226,7 @@ function App() {
       }, 300);
       return () => clearTimeout(timeoutId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSpecialType, selectedVendorType, searchRadius]);
+  }, [selectedSpecialType, selectedVendorType, searchRadius, coordinates, restaurants.length]);
 
   const getCurrentLocation = () => {
     setLoading(true);
