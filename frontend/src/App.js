@@ -214,15 +214,14 @@ function App() {
     }
   };
 
-  // Auto re-search when filters change (if we already have coordinates)
+  // Auto re-search when filters change (if we already have coordinates from a previous search)
   useEffect(() => {
-    // Only re-search if we have existing coordinates (meaning a search was already done)
-    // Don't include coordinates in dependencies to avoid triggering on initial search
-    if (coordinates && coordinates.latitude && coordinates.longitude && restaurants.length > 0) {
+    // Only re-search if we have done an initial search (tracked via ref)
+    if (hasSearchedRef.current && coordinatesRef.current) {
       console.log('Filter changed - re-searching with:', { selectedSpecialType, selectedVendorType, searchRadius });
       // Debounce to avoid too many requests
       const timeoutId = setTimeout(() => {
-        searchRestaurants(coordinates.latitude, coordinates.longitude, {
+        searchRestaurants(coordinatesRef.current.latitude, coordinatesRef.current.longitude, {
           specialType: selectedSpecialType,
           vendorType: selectedVendorType,
           radius: searchRadius
@@ -230,7 +229,7 @@ function App() {
       }, 300);
       return () => clearTimeout(timeoutId);
     }
-  }, [selectedSpecialType, selectedVendorType, searchRadius, coordinates, restaurants.length]);
+  }, [selectedSpecialType, selectedVendorType, searchRadius]);
 
   const getCurrentLocation = () => {
     setLoading(true);
