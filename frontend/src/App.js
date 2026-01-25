@@ -422,6 +422,9 @@ function App() {
     setSelectedSpecialType("");
     setSelectedVendorType("all"); // Reset vendor type filter
     setSearchRadius(8047); // Reset to 5 miles default
+    // Reset refs
+    hasSearchedRef.current = false;
+    coordinatesRef.current = null;
     Analytics.trackConversion('search_cleared');
     console.log("Search cleared - ready for new search");
   };
