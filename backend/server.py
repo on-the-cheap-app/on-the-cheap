@@ -2828,6 +2828,73 @@ async def get_owner_restaurants(current_user: dict = Depends(get_current_user)):
         logger.error(f"Error getting restaurants: {e}")
         raise HTTPException(status_code=500, detail="Restaurants retrieval failed")
 
+class CreateRestaurantRequest(BaseModel):
+    name: str
+    address: str
+    phone: Optional[str] = None
+    website: Optional[str] = None
+    cuisine_type: List[str] = []
+    latitude: float
+    longitude: float
+
+@api_router.post("/owners/restaurants")
+async def create_owner_restaurant(request: CreateRestaurantRequest, current_user: dict = Depends(get_current_user)):
+    """Create a new restaurant and automatically claim it for the owner"""
+    try:
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Owner access required")
+        
+        # Create the restaurant document
+        restaurant_id = str(uuid.uuid4())
+        restaurant = {
+            "id": restaurant_id,
+            "name": request.name,
+            "address": request.address,
+            "location": {
+                "latitude": request.latitude,
+                "longitude": request.longitude
+            },
+            "phone": request.phone,
+            "website": request.website,
+            "cuisine_type": request.cuisine_type if request.cuisine_type else ["Restaurant"],
+            "rating": None,
+            "price_level": 2,
+            "specials": [],
+            "is_verified": False,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "source": "owner_managed",
+            "owner_id": current_user["id"],
+            "city": "",  # Will be extracted from address
+            "state": "",
+            "timezone": "America/Chicago"  # Default to Central Time
+        }
+        
+        # Try to extract city and state from address
+        address_parts = request.address.split(',')
+        if len(address_parts) >= 2:
+            restaurant["city"] = address_parts[-2].strip() if len(address_parts) >= 2 else ""
+            state_zip = address_parts[-1].strip().split()
+            restaurant["state"] = state_zip[0] if state_zip else ""
+        
+        # Insert the restaurant
+        await db.restaurants.insert_one(restaurant)
+        
+        # Link it to the owner
+        owner_service = get_owner_service(db)
+        await owner_service.link_restaurant_to_owner(current_user["id"], restaurant_id)
+        
+        logger.info(f"Owner {current_user['id']} created and claimed restaurant: {request.name}")
+        
+        return {
+            "message": f"Restaurant '{request.name}' created and claimed successfully!",
+            "restaurant": serialize_doc(restaurant)
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating restaurant: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create restaurant")
+
 @api_router.post("/owners/restaurants/{restaurant_id}/link")
 async def link_restaurant_to_owner(restaurant_id: str, current_user: dict = Depends(get_current_user)):
     """Link a restaurant to the authenticated owner"""
