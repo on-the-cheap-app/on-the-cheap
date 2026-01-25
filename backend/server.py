@@ -1063,6 +1063,16 @@ async def search_restaurants(
                     r for r in nearby_restaurants 
                     if not r.get('is_mobile_vendor', False) and r.get('vendor_type') != 'mobile'
                 ]
+            elif vendor_type == 'bar':
+                # Filter for bars based on cuisine_type
+                bar_keywords = ['bar', 'bars', 'pub', 'tavern', 'lounge', 'cocktail', 'brewery', 'wine bar', 'sports bar', 'night club']
+                nearby_restaurants = [
+                    r for r in nearby_restaurants 
+                    if any(
+                        any(keyword in cuisine.lower() for keyword in bar_keywords)
+                        for cuisine in r.get('cuisine_type', [])
+                    )
+                ]
         
         # Sort by priority: owner-managed first, then by distance
         def sort_key(restaurant):
