@@ -386,6 +386,9 @@ function App() {
       setRestaurants(searchResults);
       setLastSearch(searchLocation);
       
+      // Mark that we've done at least one search (for filter auto-refresh)
+      hasSearchedRef.current = true;
+      
       // Track search analytics
       Analytics.trackRestaurantSearch({
         location: searchLocation,
