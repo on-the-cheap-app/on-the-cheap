@@ -135,6 +135,10 @@ function App() {
   const [userFavorites, setUserFavorites] = useState([]);
   const [userType, setUserType] = useState(null); // 'user' or 'owner'
   
+  // Ref to track if initial search has been performed
+  const hasSearchedRef = useRef(false);
+  const coordinatesRef = useRef(null);
+  
   // Owner dashboard state
   const [showOwnerAuth, setShowOwnerAuth] = useState(false);
   const [showOwnerDashboard, setShowOwnerDashboard] = useState(false);
