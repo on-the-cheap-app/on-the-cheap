@@ -303,6 +303,7 @@ function App() {
     try {
       const coords = await geocodeLocation(searchLocation);
       setCoordinates(coords);
+      coordinatesRef.current = coords; // Store in ref for filter useEffect
       searchRestaurants(coords.latitude, coords.longitude);
     } catch (error) {
       console.error("Error geocoding location:", error);
