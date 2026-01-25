@@ -210,6 +210,17 @@ function App() {
     }
   };
 
+  // Auto re-search when filters change (if we already have coordinates)
+  useEffect(() => {
+    if (coordinates && coordinates.latitude && coordinates.longitude) {
+      // Debounce to avoid too many requests
+      const timeoutId = setTimeout(() => {
+        searchRestaurants(coordinates.latitude, coordinates.longitude);
+      }, 300);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [selectedSpecialType, selectedVendorType, searchRadius]);
+
   const getCurrentLocation = () => {
     setLoading(true);
     if ("geolocation" in navigator) {
