@@ -532,6 +532,7 @@ function App() {
 
   const handleUserLogout = () => {
     setCurrentUser(null);
+    setUserType(null); // Clear userType on logout
     setUserFavorites([]);
     localStorage.removeItem('user_token');
   };
