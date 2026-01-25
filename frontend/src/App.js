@@ -384,16 +384,16 @@ function App() {
         location: searchLocation,
         latitude,
         longitude,
-        radius: searchRadius,
-        special_type: selectedSpecialType,
-        vendor_type: selectedVendorType,
+        radius: radius,
+        special_type: specialType,
+        vendor_type: vendorType,
         query: null
       }, searchResults.length, sourceSummary);
       
       // Track search performance
       Analytics.trackPerformance('restaurant_search', searchTime, {
         results_count: searchResults.length,
-        has_filters: !!(selectedSpecialType || selectedVendorType)
+        has_filters: !!(specialType || vendorType)
       });
       
       setLoading(false);
