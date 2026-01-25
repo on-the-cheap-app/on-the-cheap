@@ -181,6 +181,7 @@ function App() {
           headers: { Authorization: `Bearer ${userToken}` }
         });
         setCurrentUser(response.data);
+        setUserType('user'); // Set userType when restoring session
         fetchUserFavorites();
       }
     } catch (error) {
