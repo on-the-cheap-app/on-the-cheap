@@ -137,6 +137,73 @@ const RestaurantClaimModal = ({ onClose, token, onSuccess }) => {
     }
   };
 
+  const handleAddRestaurant = async (e) => {
+    e.preventDefault();
+    
+    if (!newRestaurant.name.trim() || !newRestaurant.address.trim()) {
+      setError('Restaurant name and address are required');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError('');
+
+      // First geocode the address to get coordinates
+      const geocodeResponse = await fetch(`${backendUrl}/geocode/forward`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ address: newRestaurant.address })
+      });
+
+      let coords = { latitude: 29.9511, longitude: -90.0715 }; // Default to New Orleans
+      if (geocodeResponse.ok) {
+        const geocodeData = await geocodeResponse.json();
+        coords = {
+          latitude: geocodeData.latitude,
+          longitude: geocodeData.longitude
+        };
+      }
+
+      // Create the restaurant
+      const response = await fetch(`${backendUrl}/owners/restaurants`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: newRestaurant.name.trim(),
+          address: newRestaurant.address.trim(),
+          phone: newRestaurant.phone.trim() || null,
+          website: newRestaurant.website.trim() || null,
+          cuisine_type: newRestaurant.cuisine_type.split(',').map(c => c.trim()).filter(c => c),
+          latitude: coords.latitude,
+          longitude: coords.longitude
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccess(`${newRestaurant.name} has been added and claimed! You can now create specials for it.`);
+        setTimeout(() => {
+          onSuccess();
+          onClose();
+        }, 2000);
+      } else {
+        setError(data.detail || 'Failed to add restaurant');
+      }
+    } catch (error) {
+      console.error('Error adding restaurant:', error);
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
