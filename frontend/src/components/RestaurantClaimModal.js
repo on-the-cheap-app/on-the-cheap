@@ -15,6 +15,14 @@ const RestaurantClaimModal = ({ onClose, token, onSuccess }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [coordinates, setCoordinates] = useState(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newRestaurant, setNewRestaurant] = useState({
+    name: '',
+    address: '',
+    phone: '',
+    website: '',
+    cuisine_type: ''
+  });
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL 
     ? `${process.env.REACT_APP_BACKEND_URL}/api` 
