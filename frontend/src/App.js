@@ -241,6 +241,7 @@ function App() {
             longitude: position.coords.longitude
           };
           setCoordinates(coords);
+          coordinatesRef.current = coords; // Store in ref for filter useEffect
           setSearchLocation("Current Location");
           searchRestaurants(coords.latitude, coords.longitude);
         },
