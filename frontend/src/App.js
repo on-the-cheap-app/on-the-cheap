@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 import axios from "axios";
 import { MapPin, Clock, DollarSign, Phone, Globe, Star, Search, Navigation, Building2, ArrowLeft, User, Heart, Share2, MessageCircle, Car, ExternalLink, X, Map, List, Truck, Bell } from "lucide-react";
