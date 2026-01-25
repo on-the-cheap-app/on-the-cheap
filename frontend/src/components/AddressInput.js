@@ -19,11 +19,26 @@ const AddressInput = ({
   const { forwardGeocode, loading, error } = useGeocoding();
   const debounceRef = useRef(null);
   const inputRef = useRef(null);
+  const containerRef = useRef(null);
 
   // Update input value when initialValue changes
   useEffect(() => {
     setInputValue(initialValue);
   }, [initialValue]);
+
+  // Click outside handler to close suggestions
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Debounced geocoding for suggestions
   useEffect(() => {
