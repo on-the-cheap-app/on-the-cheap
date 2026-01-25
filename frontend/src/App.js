@@ -522,6 +522,7 @@ function App() {
 
   const handleUserLogin = (userData) => {
     setCurrentUser(userData);
+    setUserType('user'); // Set userType when customer logs in
     if (userData) {
       fetchUserFavorites();
     } else {
