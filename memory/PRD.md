@@ -3,105 +3,91 @@
 ## Original Problem Statement
 A restaurant deals mobile app and web platform that helps users find restaurant specials, happy hours, and food deals near them.
 
-## Current Status (January 19, 2026)
+## Current Status (January 25, 2026)
 
 ### Web App - PRODUCTION LIVE ✅
 - ✅ Customer experience working (search, favorites, share)
 - ✅ Owner login and dashboard
 - ✅ **Stripe subscription checkout WORKING**
-- ✅ Pricing modal scrolling fixed
 - ✅ Privacy Policy page: `/privacy`
 - ✅ Account Deletion page: `/delete-account`
 - ✅ WhatsApp share working
-- ✅ **Create/Manage Specials feature (Jan 19, 2026)**
-  - Create new specials with full form (title, description, type, pricing, schedule)
-  - Edit existing specials via modal
-  - Delete specials
-  - View specials list with status badges
-  - Auto-approval enabled (specials go live immediately)
-  - Backend API endpoints: POST/GET/PUT/DELETE `/api/owners/specials`
-- ✅ **Image Upload for Specials (NEW - Jan 19, 2026)**
-  - Base64 image encoding (max 1MB)
-  - Upload via Choose Image button in modal
-  - Images displayed in specials list
-  - Edit preserves existing images
-- ⚠️ SMS share on desktop (low priority)
+- ✅ **Create/Manage Specials feature** - Create, edit, delete specials with images
+- ✅ **Image Upload for Specials** - Base64 encoding (max 1MB)
+- ✅ **Timezone Support** - Restaurant-specific timezone for special filtering
+- ✅ **Filter Auto-Refresh (FIXED Jan 25, 2026)** - Filters now auto-refresh results without needing to click Search again
+- ✅ **New Orleans Restaurant Data** - 565 restaurants imported with Yelp enrichment
 
 ### Mobile App (Android)
-- ✅ Core features working: Near Me, Search, Filters, Restaurant Details, Login, Favorites
-- ✅ WhatsApp share working
-- ⚠️ SMS share formatting issue (fix ready, waiting for build)
-- ✅ AAB uploaded to Google Play
-- ✅ Internal testing complete
-- ✅ Closed testing live
-- ⏳ Waiting 14 days for production access (need 12 testers opted-in)
+- ⚠️ **BLOCKED** - Non-functional due to incorrect backend URL in APIService.js
+- User has fixed the code locally but waiting for EAS build limit reset (~Feb 1, 2026)
+- All mobile issues (login, search, near me) are blocked on this
+
+### Data Enrichment Pipeline ✅ COMPLETE
+- **Phase 1**: Cleaned and segmented 1,206 New Orleans restaurants
+- **Phase 2**: Web scraped 305 websites, found 15 new emails
+- **Phase 3**: Yelp enrichment - 552/565 matched (97.7% match rate)
+- **Phase 4**: Imported 565 restaurants into database
+- **Output files**: Available at `/app/exports/` - downloadable via API
 
 ## Test Accounts
 - **Customer:** sfurtwengler@gmail.com / DrFurt138!
 - **Owner (Preview):** demo@onthecheapapp.com / Demo123!
 - **Owner (Production):** demo@onthecheapapp.com / TestPass123!
-- **Expo:** onthecheapapp@gmail.com / DrFurt138!
-- **Test Restaurant (Preview):** Demo Bistro & Bar (ID: 6f5c2507-dd5b-4db4-8da7-4a81e95e345f)
-- **Test Restaurant (Production):** Demo Bistro & Bar (Test) (ID: test-demo-bistro-prod-001)
-
-## Pending Items
-
-### Waiting On
-- Google Play: 14-day closed testing period (need 12 testers)
-- EAS builds reset: Feb 1, 2026
-
-### Known Issues (Low Priority)
-- SMS share on desktop web app
-- SMS share on mobile app (fix ready for next build)
-
-## Future Tasks (Backlog)
-- P1: Apple App Store submission (iOS build needed)
-- P1: PayPal integration for owner subscriptions
-- P2: Map View for mobile app
-- P2: Admin approval workflow (if needed later)
-- P2: AI-driven upselling suggestions for owners
-
-## Recent Changes
-
-### January 19, 2026 - Session 2
-- **Customer-facing Specials with Images**: Updated restaurant search and detail views to show owner-created specials with images
-- **Special Preview on Restaurant Cards**: Added image thumbnails overlay on restaurant photos showing "Specials:" preview when specials have images
-- **Timezone Support for Specials**: 
-  - Added timezone selector in Owner Dashboard (My Restaurants tab)
-  - Supports all US timezones (Eastern, Central, Mountain, Pacific, Alaska, Hawaii, Arizona)
-  - Specials now filtered based on restaurant's local time, not server UTC time
-  - API endpoint: PATCH `/api/restaurants/{id}/timezone`
-- Backend merges specials from `owner_specials` collection with restaurant's built-in specials
-- Images display as 80x80 thumbnails alongside special details in restaurant view
-- Small 40x40 preview thumbnails shown on restaurant card photos
-
-### January 19, 2026 - Session 1
-- **Create/Manage Specials Feature**: Full CRUD for owner specials with form, scheduling, pricing
-- **Image Upload for Specials**: Base64 image upload (max 1MB), preview, display in dashboard
-- **Auto-approval**: Specials go live immediately without manual approval
-- **Test restaurant linked**: Demo Bistro & Bar linked to demo owner account
-- P1: Apple App Store submission (iOS)
-- P1: PayPal integration
-- P2: Map View for mobile app
-- P2: Owner Dashboard AI enhancements
-- P2: Admin Approval Workflow for specials
 
 ## Key URLs
 - Production: https://www.onthecheapapp.com
 - Preview: https://fooddeals-1.preview.emergentagent.com
 - Privacy Policy: https://www.onthecheapapp.com/privacy
-- Account Deletion: https://www.onthecheapapp.com/delete-account
+- Download Exports: https://fooddeals-1.preview.emergentagent.com/api/exports/list
+
+## Pending Items
+
+### Blocked
+- Mobile App: Waiting for EAS build limit reset (~Feb 1, 2026)
+
+### Known Issues
+- SMS share on desktop web app (low priority)
+- SMS share formatting on mobile app (fix ready for next build)
+- Filters on "Bars" work but may return many results since most restaurants have bar-related cuisine tags
+
+## Future Tasks (Backlog)
+- P0: Mobile app debugging (once EAS build available)
+- P1: Apple App Store submission (iOS build needed)
+- P1: PayPal integration for owner subscriptions
+- P1: Create landing page for New Orleans restaurant owner outreach
+- P2: Map View for mobile app
+- P2: Admin approval workflow UI
+- P2: AI-driven upselling suggestions for owners
+
+## Recent Changes
+
+### January 25, 2026
+- **Filter Auto-Refresh Bug Fix**: 
+  - Added useEffect to auto-trigger search when filters change
+  - Fixed stale closure issue by passing filter values explicitly to searchRestaurants()
+  - Backend now supports "bar" venue_type filter (filters by cuisine keywords)
+- **Data Enrichment Pipeline Complete**:
+  - Phase 1: CSV cleaning and segmentation
+  - Phase 2: Web scraping for emails (15 new emails found)
+  - Phase 3: Yelp API enrichment (97.7% match rate)
+  - Phase 4: Database import (565 restaurants)
+- **Export Download API**: Added `/api/exports/list` and `/api/exports/download/{filename}` endpoints
+
+### January 19, 2026
+- Create/Manage Specials feature with image upload
+- Timezone support for specials filtering
+- Customer-facing specials with images
+- Special preview thumbnails on restaurant cards
 
 ## Technical Stack
 - Frontend: React (web), React Native/Expo (mobile)
 - Backend: FastAPI (Python)
 - Database: MongoDB
 - Payments: Stripe
+- Data: Yelp Fusion API for enrichment
 
-## Recent Changes (Jan 19, 2026)
-### Create/Manage Specials Feature
-- **SpecialCreator.js**: Modal component for creating/editing specials
-- **OwnerDashboard.js**: Updated with Specials tab, CRUD handlers
-- **server.py**: Added PUT/DELETE endpoints for `/api/owners/specials`
-- **owner_service.py**: Added `update_special()` and `delete_special()` methods
-- **Tests**: `/app/tests/test_specials_crud.py` - 13 tests all passing
+## Database Stats
+- Total Restaurants: 583
+- New Orleans Restaurants: 565
+- Top Categories: Cajun/Creole (121), Seafood (102), Breakfast & Brunch (91)
