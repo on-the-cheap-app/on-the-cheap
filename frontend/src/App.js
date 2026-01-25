@@ -212,7 +212,9 @@ function App() {
 
   // Auto re-search when filters change (if we already have coordinates)
   useEffect(() => {
-    if (coordinates && coordinates.latitude && coordinates.longitude) {
+    // Only re-search if we have existing coordinates (meaning a search was already done)
+    // Don't include coordinates in dependencies to avoid triggering on initial search
+    if (coordinates && coordinates.latitude && coordinates.longitude && restaurants.length > 0) {
       console.log('Filter changed - re-searching with:', { selectedSpecialType, selectedVendorType, searchRadius });
       // Debounce to avoid too many requests
       const timeoutId = setTimeout(() => {
@@ -224,7 +226,8 @@ function App() {
       }, 300);
       return () => clearTimeout(timeoutId);
     }
-  }, [selectedSpecialType, selectedVendorType, searchRadius, coordinates]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSpecialType, selectedVendorType, searchRadius]);
 
   const getCurrentLocation = () => {
     setLoading(true);
