@@ -216,7 +216,11 @@ function App() {
       console.log('Filter changed - re-searching with:', { selectedSpecialType, selectedVendorType, searchRadius });
       // Debounce to avoid too many requests
       const timeoutId = setTimeout(() => {
-        searchRestaurants(coordinates.latitude, coordinates.longitude);
+        searchRestaurants(coordinates.latitude, coordinates.longitude, {
+          specialType: selectedSpecialType,
+          vendorType: selectedVendorType,
+          radius: searchRadius
+        });
       }, 300);
       return () => clearTimeout(timeoutId);
     }
