@@ -338,20 +338,170 @@ const RestaurantClaimModal = ({ onClose, token, onSuccess }) => {
                   </div>
                 ))}
               </div>
+              
+              {/* Can't find your restaurant link */}
+              <div className="mt-6 pt-4 border-t text-center">
+                <p className="text-gray-600 mb-2">Can't find your restaurant in the list?</p>
+                <button
+                  onClick={() => setShowAddForm(true)}
+                  className="text-orange-600 hover:text-orange-700 font-medium underline"
+                >
+                  + Add Your Restaurant Manually
+                </button>
+              </div>
             </div>
           ) : coordinates ? (
             <div className="text-center py-8 text-gray-500">
               <BuildingStorefrontIcon className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <p>No restaurants found in this area.</p>
-              <p className="text-sm mt-2">Try a different location or search term.</p>
+              <p className="mb-2">No restaurants found in this area.</p>
+              <p className="text-sm mb-4">Try a different location or search term.</p>
+              <button
+                onClick={() => setShowAddForm(true)}
+                className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+              >
+                + Add Your Restaurant
+              </button>
             </div>
           ) : (
             <div className="text-center py-8 text-gray-500">
               <MagnifyingGlassIcon className="w-16 h-16 mx-auto mb-4 text-gray-300" />
               <p>Search for your restaurant location to get started</p>
+              <p className="text-sm mt-4 text-gray-400">Or</p>
+              <button
+                onClick={() => setShowAddForm(true)}
+                className="mt-2 text-orange-600 hover:text-orange-700 font-medium underline"
+              >
+                + Add Your Restaurant Manually
+              </button>
             </div>
           )}
         </div>
+
+        {/* Add Restaurant Form Modal */}
+        {showAddForm && (
+          <div className="absolute inset-0 bg-white z-10 overflow-y-auto">
+            <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white p-6 relative">
+              <button
+                onClick={() => setShowAddForm(false)}
+                className="absolute top-4 right-4 text-white hover:text-green-200 transition-colors"
+              >
+                <XMarkIcon className="w-6 h-6" />
+              </button>
+              
+              <h2 className="text-2xl font-bold">Add Your Restaurant</h2>
+              <p className="text-green-100">Fill in your restaurant details to get started</p>
+            </div>
+
+            <form onSubmit={handleAddRestaurant} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Restaurant Name *
+                </label>
+                <input
+                  type="text"
+                  value={newRestaurant.name}
+                  onChange={(e) => setNewRestaurant({...newRestaurant, name: e.target.value})}
+                  placeholder="e.g., Avenue Pub"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Full Address *
+                </label>
+                <input
+                  type="text"
+                  value={newRestaurant.address}
+                  onChange={(e) => setNewRestaurant({...newRestaurant, address: e.target.value})}
+                  placeholder="e.g., 1732 St. Charles Ave, New Orleans, LA 70130"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  value={newRestaurant.phone}
+                  onChange={(e) => setNewRestaurant({...newRestaurant, phone: e.target.value})}
+                  placeholder="e.g., (504) 555-1234"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Website
+                </label>
+                <input
+                  type="url"
+                  value={newRestaurant.website}
+                  onChange={(e) => setNewRestaurant({...newRestaurant, website: e.target.value})}
+                  placeholder="e.g., https://www.myrestaurant.com"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Cuisine Types (comma separated)
+                </label>
+                <input
+                  type="text"
+                  value={newRestaurant.cuisine_type}
+                  onChange={(e) => setNewRestaurant({...newRestaurant, cuisine_type: e.target.value})}
+                  placeholder="e.g., Bar, Gastropub, American"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              {error && (
+                <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+                  {error}
+                </div>
+              )}
+
+              {success && (
+                <div className="p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg flex items-center">
+                  <CheckCircleIcon className="w-5 h-5 mr-2" />
+                  {success}
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowAddForm(false)}
+                  className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Back to Search
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 flex items-center justify-center"
+                >
+                  {loading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      Adding...
+                    </>
+                  ) : (
+                    <>
+                      <BuildingStorefrontIcon className="w-5 h-5 mr-2" />
+                      Add & Claim Restaurant
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
       </div>
     </div>
   );
