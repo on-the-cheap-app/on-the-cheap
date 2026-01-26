@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from typing import Dict, Any, Optional
 
 # Backend URL from frontend environment
-BACKEND_URL = "https://fooddeals-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://dealstack-5.preview.emergentagent.com/api"
 
 class OwnerDashboardTester:
     def __init__(self):
