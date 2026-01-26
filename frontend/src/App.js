@@ -156,9 +156,10 @@ function App() {
   // PWA hook
   const { cacheRestaurantData, getCachedRestaurantData, isOnline } = usePWA();
 
-  // Check if we're on the privacy policy page or delete account page
+  // Check if we're on the privacy policy page, delete account page, or partner info page
   const isPrivacyPage = window.location.pathname === '/privacy';
   const isDeleteAccountPage = window.location.pathname === '/delete-account';
+  const isPartnerInfoPage = window.location.pathname === '/partner-info';
 
   useEffect(() => {
     // Initialize analytics
