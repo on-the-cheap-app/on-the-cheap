@@ -1234,6 +1234,25 @@ const OwnerDashboard = ({ user, token, onClose }) => {
                     )}
                   </div>
                 </div>
+
+                {/* Danger Zone */}
+                <div className="mt-8 p-6 border-2 border-red-200 rounded-lg bg-red-50">
+                  <h4 className="text-lg font-semibold text-red-700 mb-2">Danger Zone</h4>
+                  <p className="text-sm text-red-600 mb-4">
+                    Once you delete your profile, all your data will be permanently removed. Your restaurants will be unlinked but remain in the system.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setDeleteConfirmEmail('');
+                      setDeletePassword('');
+                      setActionError('');
+                      setShowDeleteProfileModal(true);
+                    }}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    Delete My Profile
+                  </button>
+                </div>
               </div>
             )}
 
