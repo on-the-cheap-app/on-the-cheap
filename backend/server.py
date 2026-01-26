@@ -1815,7 +1815,7 @@ async def add_favorite_restaurant(
             return {"message": "Restaurant already in favorites"}
         
         # Determine which collection to update
-        collection = db.owners if current_user.get('is_owner') else db.users
+        collection = db.restaurant_owners if current_user.get('is_owner') else db.users
         
         # Add to favorites
         await collection.update_one(
@@ -1837,7 +1837,7 @@ async def remove_favorite_restaurant(
     """Remove restaurant from user's favorites"""
     try:
         # Determine which collection to update
-        collection = db.owners if current_user.get('is_owner') else db.users
+        collection = db.restaurant_owners if current_user.get('is_owner') else db.users
         
         # Remove from favorites
         await collection.update_one(
