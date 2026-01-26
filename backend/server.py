@@ -1714,18 +1714,39 @@ async def register_user(user_data: UserCreate):
 
 @api_router.post("/users/login")
 async def login_user(login_data: UserLogin):
-    """Login regular user"""
+    """Login regular user (also allows owners to login as customers)"""
     try:
-        # Find user by email
+        # First, try to find user in regular users collection
         user = await db.users.find_one({"email": login_data.email})
-        if not user:
-            raise HTTPException(status_code=401, detail="Invalid email or password")
+        is_owner_as_customer = False
         
-        user = prepare_from_mongo(user)
-        
-        # Verify password
-        if not verify_password(login_data.password, user['password_hash']):
-            raise HTTPException(status_code=401, detail="Invalid email or password")
+        if user:
+            user = prepare_from_mongo(user)
+            
+            # Verify password
+            if not verify_password(login_data.password, user['password_hash']):
+                raise HTTPException(status_code=401, detail="Invalid email or password")
+        else:
+            # If not found in users, check owners collection
+            owner = await db.owners.find_one({"email": login_data.email})
+            if not owner:
+                raise HTTPException(status_code=401, detail="Invalid email or password")
+            
+            owner = prepare_from_mongo(owner)
+            
+            # Verify owner password
+            if not verify_password(login_data.password, owner['password_hash']):
+                raise HTTPException(status_code=401, detail="Invalid email or password")
+            
+            # Owner logging in as customer - create a user-like object
+            is_owner_as_customer = True
+            user = {
+                'id': owner['id'],
+                'email': owner['email'],
+                'first_name': owner.get('first_name', ''),
+                'last_name': owner.get('last_name', ''),
+                'favorite_restaurant_ids': owner.get('favorite_restaurant_ids', [])
+            }
         
         # Create access token
         token = create_access_token({"user_id": user['id'], "email": user['email'], "user_type": "user"})
@@ -1735,6 +1756,7 @@ async def login_user(login_data: UserLogin):
             "access_token": token,
             "token_type": "bearer",
             "user_type": "user",
+            "is_owner_as_customer": is_owner_as_customer,
             "user": {
                 "id": user['id'],
                 "email": user['email'],
