@@ -855,6 +855,13 @@ function App() {
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
+                  <a
+                    href="/partner-info"
+                    className="px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600 transition-colors"
+                    data-testid="partner-info-link"
+                  >
+                    Partner With Us
+                  </a>
                   <button
                     onClick={() => setShowUserAuth(true)}
                     className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
