@@ -186,7 +186,7 @@ const PartnerInfo = () => {
             Join forward-thinking restaurants using data-driven strategies to increase traffic during slow times.
           </p>
           <a 
-            href="mailto:sfurtwengler@gmail.com" 
+            href="mailto:info@onthecheapapp.com" 
             className="inline-block bg-white text-orange-600 font-bold py-3 px-8 rounded-lg hover:bg-orange-50 transition-colors shadow-md"
             data-testid="partner-cta-btn"
           >
@@ -200,9 +200,9 @@ const PartnerInfo = () => {
           <p className="text-gray-600 mb-4">Founder & CEO, On-the-Cheap</p>
           
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 text-gray-600">
-            <a href="mailto:sfurtwengler@gmail.com" className="flex items-center gap-2 text-orange-600 hover:text-orange-700">
+            <a href="mailto:info@onthecheapapp.com" className="flex items-center gap-2 text-orange-600 hover:text-orange-700">
               <Mail className="w-4 h-4" />
-              sfurtwengler@gmail.com
+              info@onthecheapapp.com
             </a>
             <a href="tel:6189241145" className="flex items-center gap-2 text-orange-600 hover:text-orange-700">
               <Phone className="w-4 h-4" />
