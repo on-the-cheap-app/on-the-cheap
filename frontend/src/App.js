@@ -23,6 +23,7 @@ import CouponDiscovery from "./components/CouponDiscovery";
 import useNotifications from "./hooks/useNotifications";
 import { usePWA } from "./hooks/usePWA";
 import * as Analytics from './utils/analytics';
+import PartnerInfo from "./pages/PartnerInfo";
 
 // Get backend URL from environment variables
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
