@@ -1744,8 +1744,8 @@ async def login_user(login_data: UserLogin):
             if not verify_password(login_data.password, user['password_hash']):
                 raise HTTPException(status_code=401, detail="Invalid email or password")
         else:
-            # If not found in users, check owners collection
-            owner = await db.owners.find_one({"email": login_data.email})
+            # If not found in users, check restaurant_owners collection
+            owner = await db.restaurant_owners.find_one({"email": login_data.email})
             if not owner:
                 raise HTTPException(status_code=401, detail="Invalid email or password")
             
