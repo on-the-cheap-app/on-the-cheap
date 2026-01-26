@@ -374,6 +374,91 @@ const OwnerDashboard = ({ user, token, onClose }) => {
     }
   };
 
+  const handleTransferRestaurant = async () => {
+    if (!transferEmail.trim()) {
+      setActionError('Please enter the new owner\'s email address');
+      return;
+    }
+
+    try {
+      setActionLoading(true);
+      setActionError('');
+
+      const response = await fetch(`${backendUrl}/owners/restaurants/${transferRestaurantId}/transfer`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ new_owner_email: transferEmail })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(data.message);
+        setShowTransferModal(false);
+        setTransferEmail('');
+        setTransferRestaurantId(null);
+        loadDashboardData(); // Refresh the dashboard
+      } else {
+        setActionError(data.detail || 'Failed to transfer restaurant');
+      }
+    } catch (error) {
+      console.error('Error transferring restaurant:', error);
+      setActionError('Network error. Please try again.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeleteProfile = async () => {
+    if (!deleteConfirmEmail.trim() || !deletePassword.trim()) {
+      setActionError('Please fill in all fields');
+      return;
+    }
+
+    try {
+      setActionLoading(true);
+      setActionError('');
+
+      const response = await fetch(`${backendUrl}/owners/profile`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          confirm_email: deleteConfirmEmail,
+          password: deletePassword
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(data.message + ` (${data.restaurants_unlinked} restaurants unlinked)`);
+        setShowDeleteProfileModal(false);
+        onClose(); // Close dashboard and log out
+        window.location.reload(); // Refresh to clear auth state
+      } else {
+        setActionError(data.detail || 'Failed to delete profile');
+      }
+    } catch (error) {
+      console.error('Error deleting profile:', error);
+      setActionError('Network error. Please try again.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const openTransferModal = (restaurantId) => {
+    setTransferRestaurantId(restaurantId);
+    setTransferEmail('');
+    setActionError('');
+    setShowTransferModal(true);
+  };
+
   if (loading) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
