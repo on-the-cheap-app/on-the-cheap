@@ -594,8 +594,8 @@ async def get_current_regular_user(credentials: HTTPAuthorizationCredentials = D
     if user:
         return prepare_from_mongo(user)
     
-    # If not found, check owners collection (owner logged in as customer)
-    owner = await db.owners.find_one({"id": user_id})
+    # If not found, check restaurant_owners collection (owner logged in as customer)
+    owner = await db.restaurant_owners.find_one({"id": user_id})
     if owner:
         owner = prepare_from_mongo(owner)
         # Return owner data in user-like format
