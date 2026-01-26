@@ -2965,6 +2965,130 @@ async def link_restaurant_to_owner(restaurant_id: str, current_user: dict = Depe
         logger.error(f"Error linking restaurant: {e}")
         raise HTTPException(status_code=500, detail="Restaurant linking failed")
 
+# =================== OWNER PROFILE MANAGEMENT ===================
+
+class TransferRestaurantRequest(BaseModel):
+    new_owner_email: str
+
+@api_router.post("/owners/restaurants/{restaurant_id}/transfer")
+async def transfer_restaurant(restaurant_id: str, request: TransferRestaurantRequest, current_user: dict = Depends(get_current_user)):
+    """Transfer restaurant management to another owner"""
+    try:
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Owner access required")
+        
+        # Verify current owner owns this restaurant
+        owner_service = get_owner_service(db)
+        owner_restaurants = await owner_service.get_owner_restaurants(current_user["id"])
+        restaurant_ids = [r.get('id') for r in owner_restaurants]
+        
+        if restaurant_id not in restaurant_ids:
+            raise HTTPException(status_code=403, detail="You don't own this restaurant")
+        
+        # Find the new owner by email
+        new_owner = await db.restaurant_owners.find_one({"email": request.new_owner_email.lower()})
+        if not new_owner:
+            raise HTTPException(status_code=404, detail=f"No owner account found with email: {request.new_owner_email}")
+        
+        new_owner = prepare_from_mongo(new_owner)
+        
+        if new_owner['id'] == current_user['id']:
+            raise HTTPException(status_code=400, detail="Cannot transfer to yourself")
+        
+        # Get restaurant details for the response
+        restaurant = await db.restaurants.find_one({"id": restaurant_id})
+        restaurant_name = restaurant.get('name', 'Restaurant') if restaurant else 'Restaurant'
+        
+        # Remove restaurant from current owner's linked restaurants
+        await db.restaurant_owners.update_one(
+            {"id": current_user["id"]},
+            {"$pull": {"restaurant_ids": restaurant_id}}
+        )
+        
+        # Add restaurant to new owner's linked restaurants
+        await db.restaurant_owners.update_one(
+            {"id": new_owner['id']},
+            {"$addToSet": {"restaurant_ids": restaurant_id}}
+        )
+        
+        # Update restaurant's owner_id
+        await db.restaurants.update_one(
+            {"id": restaurant_id},
+            {"$set": {"owner_id": new_owner['id']}}
+        )
+        
+        logger.info(f"Restaurant {restaurant_id} transferred from {current_user['email']} to {request.new_owner_email}")
+        
+        return {
+            "message": f"'{restaurant_name}' has been transferred to {request.new_owner_email}",
+            "restaurant_id": restaurant_id,
+            "new_owner_email": request.new_owner_email
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error transferring restaurant: {e}")
+        raise HTTPException(status_code=500, detail="Failed to transfer restaurant")
+
+class DeleteOwnerProfileRequest(BaseModel):
+    confirm_email: str
+    password: str
+
+@api_router.delete("/owners/profile")
+async def delete_owner_profile(request: DeleteOwnerProfileRequest, current_user: dict = Depends(get_current_user)):
+    """Delete owner profile and unlink all restaurants"""
+    try:
+        if current_user.get("user_type") != "owner":
+            raise HTTPException(status_code=403, detail="Owner access required")
+        
+        # Verify email matches
+        if request.confirm_email.lower() != current_user['email'].lower():
+            raise HTTPException(status_code=400, detail="Email confirmation does not match your account email")
+        
+        # Verify password
+        owner = await db.restaurant_owners.find_one({"id": current_user['id']})
+        if not owner:
+            raise HTTPException(status_code=404, detail="Owner not found")
+        
+        owner = prepare_from_mongo(owner)
+        if not verify_password(request.password, owner['password_hash']):
+            raise HTTPException(status_code=401, detail="Invalid password")
+        
+        # Get owner's restaurants before deletion
+        owner_service = get_owner_service(db)
+        owner_restaurants = await owner_service.get_owner_restaurants(current_user["id"])
+        
+        # Unlink all restaurants (set them as unclaimed but keep them in database)
+        for restaurant in owner_restaurants:
+            await db.restaurants.update_one(
+                {"id": restaurant['id']},
+                {
+                    "$set": {"owner_id": None, "source": "unclaimed"},
+                    "$unset": {"owner_email": ""}
+                }
+            )
+        
+        # Delete owner's specials
+        await db.owner_specials.delete_many({"owner_id": current_user['id']})
+        
+        # Delete any pending claims
+        await db.owner_claims.delete_many({"owner_id": current_user['id']})
+        
+        # Delete the owner profile
+        await db.restaurant_owners.delete_one({"id": current_user['id']})
+        
+        logger.info(f"Owner profile deleted: {current_user['email']} - {len(owner_restaurants)} restaurants unlinked")
+        
+        return {
+            "message": "Your owner profile has been deleted successfully",
+            "restaurants_unlinked": len(owner_restaurants)
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting owner profile: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete profile")
+
 # =================== ADMIN OWNER ENDPOINTS ===================
 
 @api_router.get("/admin/owners/claims")
