@@ -580,7 +580,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     return user_data
 
 async def get_current_regular_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """Get current authenticated regular user"""
+    """Get current authenticated regular user (also supports owners logged in as customers)"""
     token = credentials.credentials
     payload = verify_token(token)
     user_id = payload.get("user_id")
@@ -589,11 +589,28 @@ async def get_current_regular_user(credentials: HTTPAuthorizationCredentials = D
     if not user_id or user_type != "user":
         raise HTTPException(status_code=401, detail="Invalid user token")
     
+    # First try to find in users collection
     user = await db.users.find_one({"id": user_id})
-    if not user:
-        raise HTTPException(status_code=401, detail="User not found")
+    if user:
+        return prepare_from_mongo(user)
     
-    return prepare_from_mongo(user)
+    # If not found, check owners collection (owner logged in as customer)
+    owner = await db.owners.find_one({"id": user_id})
+    if owner:
+        owner = prepare_from_mongo(owner)
+        # Return owner data in user-like format
+        return {
+            'id': owner['id'],
+            'email': owner['email'],
+            'first_name': owner.get('first_name', ''),
+            'last_name': owner.get('last_name', ''),
+            'favorite_restaurant_ids': owner.get('favorite_restaurant_ids', []),
+            'preferences': owner.get('preferences', {}),
+            'created_at': owner.get('created_at'),
+            'is_owner': True  # Flag to identify owner-as-customer
+        }
+    
+    raise HTTPException(status_code=401, detail="User not found")
 
 # Optional security for endpoints that can work with or without authentication
 optional_security = HTTPBearer(auto_error=False)
