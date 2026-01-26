@@ -577,6 +577,11 @@ function App() {
   //   return <OwnerPortal />;
   // }
 
+  // If on partner info page, show the partner info component
+  if (isPartnerInfoPage) {
+    return <PartnerInfo />;
+  }
+
   // If on privacy page, show standalone privacy policy
   if (isPrivacyPage) {
     return (
