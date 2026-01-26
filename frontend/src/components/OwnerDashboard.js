@@ -15,7 +15,8 @@ import {
   SparklesIcon,
   QrCodeIcon,
   TrendingUpIcon,
-  GlobeAltIcon
+  GlobeAltIcon,
+  ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline';
 import CouponCreator from './CouponCreator';
 import RestaurantClaimModal from './RestaurantClaimModal';
