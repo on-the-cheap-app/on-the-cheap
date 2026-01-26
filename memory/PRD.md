@@ -11,6 +11,7 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 - ✅ **Stripe subscription checkout WORKING**
 - ✅ Privacy Policy page: `/privacy`
 - ✅ Account Deletion page: `/delete-account`
+- ✅ **Partner Info page**: `/partner-info` - Added to header navigation
 - ✅ WhatsApp share working
 - ✅ Create/Manage Specials feature with image upload
 - ✅ Timezone support for specials filtering
@@ -42,6 +43,7 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 - Production: https://www.onthecheapapp.com
 - Preview: https://dealstack-5.preview.emergentagent.com
 - Privacy Policy: https://www.onthecheapapp.com/privacy
+- Partner Info: https://www.onthecheapapp.com/partner-info
 
 ## Manually Added Restaurants
 - Avenue Pub - 1732 St. Charles Ave, New Orleans, LA 70130
@@ -50,12 +52,13 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 ## Recent Changes (January 26, 2026)
 
 ### New Features
-1. **Filter Auto-Refresh** - Search results update automatically when filters change
-2. **Customer Favorites Button** - Heart icon button in header for logged-in customers
-3. **Add Your Own Restaurant** - Owners can add venues not found in database
-4. **Owner Login as Customer** - Owners can use customer Sign In with same credentials
-5. **Transfer Restaurant Ownership** - Transfer restaurants to another owner's email
-6. **Delete Owner Profile** - Owners can delete their account (restaurants become unclaimed)
+1. **Partner Info Page** - Static page at `/partner-info` with orange-themed styling, accessible from main navigation header "Partner With Us" button
+2. **Filter Auto-Refresh** - Search results update automatically when filters change
+3. **Customer Favorites Button** - Heart icon button in header for logged-in customers
+4. **Add Your Own Restaurant** - Owners can add venues not found in database
+5. **Owner Login as Customer** - Owners can use customer Sign In with same credentials
+6. **Transfer Restaurant Ownership** - Transfer restaurants to another owner's email
+7. **Delete Owner Profile** - Owners can delete their account (restaurants become unclaimed)
 
 ### Bug Fixes
 - Fixed stale closure issue in filter useEffect
