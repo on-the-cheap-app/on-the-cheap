@@ -1497,6 +1497,154 @@ const OwnerDashboard = ({ user, token, onClose }) => {
             <OwnerBilling />
           </div>
         )}
+
+        {/* Transfer Restaurant Modal */}
+        {showTransferModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+              <div className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white p-6 rounded-t-lg">
+                <h3 className="text-xl font-bold">Transfer Restaurant Ownership</h3>
+                <p className="text-blue-100 text-sm">Transfer this restaurant to another owner</p>
+              </div>
+              <div className="p-6">
+                <p className="text-gray-600 mb-4">
+                  Enter the email address of the owner you want to transfer this restaurant to. 
+                  They must already have an owner account.
+                </p>
+                
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    New Owner's Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={transferEmail}
+                    onChange={(e) => setTransferEmail(e.target.value)}
+                    placeholder="newowner@email.com"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                {actionError && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+                    {actionError}
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowTransferModal(false);
+                      setTransferEmail('');
+                      setActionError('');
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleTransferRestaurant}
+                    disabled={actionLoading}
+                    className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 flex items-center justify-center"
+                  >
+                    {actionLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Transferring...
+                      </>
+                    ) : (
+                      'Transfer Ownership'
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Profile Modal */}
+        {showDeleteProfileModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+              <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-6 rounded-t-lg">
+                <h3 className="text-xl font-bold">Delete Owner Profile</h3>
+                <p className="text-red-100 text-sm">This action cannot be undone</p>
+              </div>
+              <div className="p-6">
+                <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-yellow-800 text-sm">
+                    <strong>Warning:</strong> Deleting your profile will:
+                  </p>
+                  <ul className="mt-2 text-sm text-yellow-700 list-disc list-inside">
+                    <li>Remove your owner account permanently</li>
+                    <li>Unlink all your restaurants (they'll become claimable by others)</li>
+                    <li>Delete all your specials and coupons</li>
+                  </ul>
+                </div>
+                
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Confirm your email address
+                  </label>
+                  <input
+                    type="email"
+                    value={deleteConfirmEmail}
+                    onChange={(e) => setDeleteConfirmEmail(e.target.value)}
+                    placeholder={user?.email || 'your@email.com'}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Enter your password
+                  </label>
+                  <input
+                    type="password"
+                    value={deletePassword}
+                    onChange={(e) => setDeletePassword(e.target.value)}
+                    placeholder="Your password"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  />
+                </div>
+
+                {actionError && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+                    {actionError}
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowDeleteProfileModal(false);
+                      setDeleteConfirmEmail('');
+                      setDeletePassword('');
+                      setActionError('');
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDeleteProfile}
+                    disabled={actionLoading}
+                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center"
+                  >
+                    {actionLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Deleting...
+                      </>
+                    ) : (
+                      'Delete My Profile'
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
