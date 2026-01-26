@@ -102,6 +102,16 @@ const OwnerDashboard = ({ user, token, onClose }) => {
   const [showClaimModal, setShowClaimModal] = useState(false);
   const [showSpecialCreator, setShowSpecialCreator] = useState(false);
   const [editingSpecial, setEditingSpecial] = useState(null);
+  
+  // Transfer & Delete Profile States
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [transferRestaurantId, setTransferRestaurantId] = useState(null);
+  const [transferEmail, setTransferEmail] = useState('');
+  const [showDeleteProfileModal, setShowDeleteProfileModal] = useState(false);
+  const [deleteConfirmEmail, setDeleteConfirmEmail] = useState('');
+  const [deletePassword, setDeletePassword] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState('');
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL 
     ? `${process.env.REACT_APP_BACKEND_URL}/api` 
