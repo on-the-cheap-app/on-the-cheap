@@ -1673,6 +1673,7 @@ const OwnerDashboard = ({ user, token, onClose }) => {
           </div>
         )}
       </div>
+      </div>
     </div>
   );
 };
