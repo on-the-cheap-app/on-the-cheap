@@ -1674,7 +1674,8 @@ async def login_owner(login_data: RestaurantOwnerLogin):
                 "business_name": user['business_name'],
                 "first_name": user['first_name'],
                 "last_name": user['last_name'],
-                "restaurant_ids": user.get('restaurant_ids', [])
+                "restaurant_ids": user.get('restaurant_ids', []),
+                "referral_code": user.get('referral_code')
             }
         }
         
