@@ -597,6 +597,19 @@ const OwnerDashboard = ({ user, token, onClose }) => {
                 </svg>
                 Billing
               </button>
+              
+              <button
+                onClick={() => setActiveTab('referrals')}
+                className={`w-full flex items-center px-4 py-2 text-left rounded-lg transition-colors ${
+                  activeTab === 'referrals' 
+                    ? 'bg-orange-100 text-orange-700 border-orange-200' 
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+                data-testid="referrals-tab"
+              >
+                <GiftIcon className="w-5 h-5 mr-3" />
+                Referrals
+              </button>
             </nav>
           </div>
 
