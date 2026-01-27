@@ -63,8 +63,30 @@ class RestaurantOwner(BaseModel):
     restaurant_ids: List[str] = Field(default_factory=list)
     verification_documents: List[str] = Field(default_factory=list)
     is_verified: bool = False
+    referral_code: Optional[str] = None  # Unique referral code for this owner
+    referred_by: Optional[str] = None  # ID of the owner who referred this owner
+    referral_discount_applied: bool = False  # Whether the 10% new owner discount has been applied
     created_at: str
     updated_at: str
+
+
+class ReferralStatus(Enum):
+    PENDING = "pending"  # Referred owner signed up but hasn't been on paid plan for 6 months
+    QUALIFIED = "qualified"  # Referred owner has been on paid plan for 6 months
+    REWARDED = "rewarded"  # Referrer has received their 20% discount
+
+
+class Referral(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    referrer_id: str  # Owner who made the referral
+    referred_owner_id: str  # Owner who was referred
+    referral_code_used: str  # The referral code that was used
+    status: ReferralStatus = ReferralStatus.PENDING
+    referred_owner_subscription_start: Optional[str] = None  # When they started paid subscription
+    qualification_date: Optional[str] = None  # Date when 6-month threshold was met
+    reward_applied_date: Optional[str] = None  # Date when referrer got their discount
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class RestaurantClaimRequest(BaseModel):
     id: Optional[str] = None
