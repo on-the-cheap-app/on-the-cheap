@@ -1513,6 +1513,13 @@ const OwnerDashboard = ({ user, token, onClose }) => {
           </div>
         )}
 
+        {/* Referrals Tab */}
+        {activeTab === 'referrals' && (
+          <div>
+            <ReferralProgram token={localStorage.getItem('owner_token')} />
+          </div>
+        )}
+
         {/* Transfer Restaurant Modal */}
         {showTransferModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
