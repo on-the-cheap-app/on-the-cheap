@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { BuildingStorefrontIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import React, { useState, useEffect } from 'react';
+import { BuildingStorefrontIcon, EyeIcon, EyeSlashIcon, GiftIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
 const OwnerAuth = ({ onClose, onAuthSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [referralValid, setReferralValid] = useState(null);
+  const [referralInfo, setReferralInfo] = useState(null);
   
   const [formData, setFormData] = useState({
     // Login fields
@@ -16,7 +18,8 @@ const OwnerAuth = ({ onClose, onAuthSuccess }) => {
     last_name: '',
     phone: '',
     business_name: '',
-    business_type: 'restaurant'
+    business_type: 'restaurant',
+    referral_code: ''
   });
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL 
@@ -26,6 +29,30 @@ const OwnerAuth = ({ onClose, onAuthSuccess }) => {
   // Debug logging
   console.log('🔍 OwnerAuth Debug - backendUrl:', backendUrl);
   console.log('🔍 OwnerAuth Debug - process.env.REACT_APP_BACKEND_URL:', process.env.REACT_APP_BACKEND_URL);
+
+  // Validate referral code when it changes
+  useEffect(() => {
+    const validateReferralCode = async () => {
+      if (!formData.referral_code || formData.referral_code.length < 4) {
+        setReferralValid(null);
+        setReferralInfo(null);
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${backendUrl}/referral/validate/${formData.referral_code}`);
+        const data = await response.json();
+        setReferralValid(data.valid);
+        setReferralInfo(data.valid ? data : null);
+      } catch (err) {
+        console.error('Error validating referral code:', err);
+        setReferralValid(null);
+      }
+    };
+
+    const debounce = setTimeout(validateReferralCode, 500);
+    return () => clearTimeout(debounce);
+  }, [formData.referral_code, backendUrl]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
