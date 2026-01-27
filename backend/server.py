@@ -980,8 +980,9 @@ async def search_restaurants(
         all_restaurants = []
         
         # STEP 1: Get restaurants with owner-managed specials (highest priority)
-        restaurants_cursor = db.restaurants.find({})
-        all_restaurants_raw = await restaurants_cursor.to_list(length=None)
+        # Limit query to prevent memory issues - use geospatial query for better performance
+        restaurants_cursor = db.restaurants.find({}).limit(5000)  # Reasonable limit
+        all_restaurants_raw = await restaurants_cursor.to_list(length=5000)
         owner_restaurants = [prepare_from_mongo(restaurant) for restaurant in all_restaurants_raw]
 
         # Filter owner restaurants by location and add active specials
