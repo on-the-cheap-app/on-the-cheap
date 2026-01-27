@@ -473,8 +473,13 @@ const OwnerDashboard = ({ user, token, onClose }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full h-[90vh] flex flex-col relative overflow-hidden">
+    <div className="fixed inset-0 z-50">
+      {/* Solid backdrop */}
+      <div className="absolute inset-0 bg-black/80" />
+      
+      {/* Modal container */}
+      <div className="relative flex items-center justify-center h-full p-4">
+        <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-6 flex justify-between items-center flex-shrink-0 rounded-t-lg">
           <div>
