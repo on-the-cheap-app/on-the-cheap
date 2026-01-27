@@ -7,9 +7,12 @@ This service handles:
 - Special scheduling and management
 - Owner dashboard functionality
 - Approval workflow for owner-submitted content
+- Referral program management
 """
 
 import logging
+import random
+import string
 from datetime import datetime, timezone, time
 from typing import List, Dict, Optional, Any
 from pydantic import BaseModel, Field, EmailStr
@@ -21,6 +24,22 @@ from fastapi import HTTPException
 from enum import Enum
 
 logger = logging.getLogger(__name__)
+
+
+def generate_referral_code(business_name: Optional[str] = None) -> str:
+    """Generate a unique referral code for an owner"""
+    # Create a base from business name if provided, else use random
+    if business_name:
+        # Clean business name: uppercase, remove special chars, take first 6 chars
+        clean_name = ''.join(c for c in business_name.upper() if c.isalnum())[:6]
+        if len(clean_name) < 3:
+            clean_name = "REF"
+    else:
+        clean_name = "REF"
+    
+    # Add random suffix
+    suffix = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
+    return f"{clean_name}-{suffix}"
 
 class OwnerStatus(Enum):
     PENDING = "pending"
