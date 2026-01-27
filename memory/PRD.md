@@ -3,7 +3,7 @@
 ## Original Problem Statement
 A restaurant deals mobile app and web platform that helps users find restaurant specials, happy hours, and food deals near them.
 
-## Current Status (January 26, 2026)
+## Current Status (January 27, 2026)
 
 ### Web App - PRODUCTION READY ✅
 - ✅ Customer experience working (search, favorites, share)
@@ -12,6 +12,7 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 - ✅ Privacy Policy page: `/privacy`
 - ✅ Account Deletion page: `/delete-account`
 - ✅ **Partner Info page**: `/partner-info` - Added to header navigation
+- ✅ **Referral Program** - Owners can earn rewards by referring other owners
 - ✅ WhatsApp share working
 - ✅ Create/Manage Specials feature with image upload
 - ✅ Timezone support for specials filtering
@@ -22,6 +23,15 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 - ✅ **Transfer Restaurant Ownership** - Transfer restaurants to other owners
 - ✅ **Delete Owner Profile** - Owners can delete their account
 - ✅ **New Orleans Restaurant Data** - 565 restaurants imported with Yelp enrichment
+
+### Referral Program Details
+- **New owners get**: 10% off first 6 months when using a referral code
+- **Referrers get**: 20% one-time discount after referred owner stays 6 months
+- **Features**:
+  - Unique referral code per owner (auto-generated)
+  - Referral code validation during signup
+  - Dashboard showing referral stats and status
+  - Copy referral code and share message functionality
 
 ### Mobile App (Android)
 - ⚠️ **BLOCKED** - Non-functional due to incorrect backend URL in APIService.js
@@ -49,16 +59,16 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 - Avenue Pub - 1732 St. Charles Ave, New Orleans, LA 70130
 - Oh My Chives - 7332 Nolensville Rd, Suite 304, Nolensville, TN 37135
 
-## Recent Changes (January 26, 2026)
+## Recent Changes (January 27, 2026)
 
 ### New Features
-1. **Partner Info Page** - Static page at `/partner-info` with orange-themed styling, accessible from main navigation header "Partner With Us" button
-2. **Filter Auto-Refresh** - Search results update automatically when filters change
-3. **Customer Favorites Button** - Heart icon button in header for logged-in customers
-4. **Add Your Own Restaurant** - Owners can add venues not found in database
-5. **Owner Login as Customer** - Owners can use customer Sign In with same credentials
-6. **Transfer Restaurant Ownership** - Transfer restaurants to another owner's email
-7. **Delete Owner Profile** - Owners can delete their account (restaurants become unclaimed)
+1. **Referral Program** - Complete owner referral system
+   - Unique referral codes per owner
+   - 10% discount for new owners using referral code
+   - 20% one-time discount for referrers after 6 months
+   - Dashboard with referral stats and tracking
+   - Referral code validation during signup
+2. **Partner Info Page** - Static page at `/partner-info` with orange-themed styling
 
 ### Bug Fixes
 - Fixed stale closure issue in filter useEffect
@@ -70,6 +80,11 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 - Backend: FastAPI (Python)
 - Database: MongoDB
 - Payments: Stripe
+
+## New API Endpoints (Referral Program)
+- `GET /api/owners/referral-code` - Get owner's referral code
+- `GET /api/owners/referrals` - Get referral history and stats
+- `GET /api/referral/validate/{code}` - Validate a referral code (public)
 
 ## Pending Items
 
@@ -83,3 +98,4 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 - P1: Landing page for New Orleans restaurant owner outreach
 - P2: Map View for mobile app
 - P2: Admin approval workflow UI
+- P2: Stripe integration for referral discounts (automated discount application)
