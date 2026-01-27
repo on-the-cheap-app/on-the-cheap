@@ -46,8 +46,11 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 
 ## Test Accounts
 - **Customer:** sfurtwengler@gmail.com / DrFurt138!
-- **Owner (Preview):** demo@onthecheapapp.com / Demo123!
-- **Owner (Production):** demo@onthecheapapp.com / TestPass123!
+- **Owner:** demo@onthecheapapp.com / Demo123!
+
+**Note:** These credentials work on the preview environment. For production (onthecheapapp.com), ensure the production deployment environment variables are set correctly:
+- `DB_NAME=onthecheap_production`
+- `MONGO_URL` pointing to the correct MongoDB Atlas cluster
 
 ## Key URLs
 - Production: https://www.onthecheapapp.com
