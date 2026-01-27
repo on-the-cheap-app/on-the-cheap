@@ -60,7 +60,7 @@ const OwnerAuth = ({ onClose, onAuthSuccess }) => {
     setError('');
 
     try {
-      const endpoint = isLogin ? '/owners/login' : '/owners/register';
+      const endpoint = isLogin ? '/auth/login' : '/auth/register';
       const payload = isLogin 
         ? { email: formData.email, password: formData.password }
         : formData;
