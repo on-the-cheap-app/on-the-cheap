@@ -81,6 +81,12 @@ security = HTTPBearer()
 # Create the main app without a prefix
 app = FastAPI(title="On-the-Cheap API", description="Find local restaurant and bar specials")
 
+# Root health endpoint for Kubernetes health checks
+@app.get("/health")
+async def health_check():
+    """Root health check endpoint for Kubernetes"""
+    return {"status": "healthy", "service": "on-the-cheap-api"}
+
 # Production startup and shutdown events
 @app.on_event("startup")
 async def startup_event():
