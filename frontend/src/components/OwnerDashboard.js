@@ -1515,7 +1515,7 @@ const OwnerDashboard = ({ user, token, onClose }) => {
 
         {/* Referrals Tab */}
         {activeTab === 'referrals' && (
-          <div>
+          <div className="h-full overflow-y-auto">
             <ReferralProgram token={localStorage.getItem('owner_token')} />
           </div>
         )}
