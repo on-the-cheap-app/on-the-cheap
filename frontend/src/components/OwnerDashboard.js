@@ -23,6 +23,7 @@ import RestaurantClaimModal from './RestaurantClaimModal';
 import OwnerPricing from './OwnerPricing';
 import OwnerBilling from './OwnerBilling';
 import SpecialCreator from './SpecialCreator';
+import ReferralProgram from './ReferralProgram';
 
 // Global timezones organized by region
 const TIMEZONES = [
