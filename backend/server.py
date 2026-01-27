@@ -69,7 +69,7 @@ db_name = os.environ.get('DB_NAME', 'onthecheap_production')
 if not mongo_url:
     raise ValueError("MONGO_URL environment variable is required")
 
-logger.info(f"Connecting to MongoDB database: {db_name}")
+print(f"[INFO] Connecting to MongoDB database: {db_name}")
 client = AsyncIOMotorClient(mongo_url)
 db = client[db_name]
 
