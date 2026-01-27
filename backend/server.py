@@ -1561,21 +1561,67 @@ async def register_owner(owner_data: RestaurantOwnerCreate):
         if existing_owner:
             raise HTTPException(status_code=400, detail="Email already registered")
         
-        # Create new owner
-        owner = RestaurantOwner(
-            email=owner_data.email,
-            password_hash=hash_password(owner_data.password),
-            business_name=owner_data.business_name,
-            phone=owner_data.phone,
-            first_name=owner_data.first_name,
-            last_name=owner_data.last_name
-        )
+        # Handle referral code if provided
+        referrer_id = None
+        if owner_data.referral_code:
+            referrer = await db.restaurant_owners.find_one({"referral_code": owner_data.referral_code.upper()})
+            if referrer:
+                referrer_id = referrer.get("id")
+            else:
+                # Invalid referral code - log but don't block registration
+                logger.warning(f"Invalid referral code used: {owner_data.referral_code}")
         
-        owner_dict = prepare_for_mongo(owner.dict())
+        # Generate unique referral code for this new owner
+        new_referral_code = generate_referral_code(owner_data.business_name)
+        # Ensure uniqueness
+        while await db.restaurant_owners.find_one({"referral_code": new_referral_code}):
+            new_referral_code = generate_referral_code(owner_data.business_name)
+        
+        # Create owner dict directly (RestaurantOwner model has different fields)
+        owner_id = str(uuid.uuid4())
+        now = datetime.now(timezone.utc).isoformat()
+        
+        owner_dict = {
+            "id": owner_id,
+            "email": owner_data.email,
+            "password_hash": hash_password(owner_data.password),
+            "business_name": owner_data.business_name,
+            "business_type": owner_data.business_type or "restaurant",
+            "phone": owner_data.phone,
+            "first_name": owner_data.first_name,
+            "last_name": owner_data.last_name,
+            "status": "pending",
+            "restaurant_ids": [],
+            "verification_documents": [],
+            "is_verified": False,
+            "referral_code": new_referral_code,
+            "referred_by": referrer_id,
+            "referral_discount_applied": False,
+            "created_at": now,
+            "updated_at": now
+        }
+        
         result = await db.restaurant_owners.insert_one(owner_dict)
         
+        # If referred, create a referral record
+        if referrer_id:
+            referral_record = {
+                "id": str(uuid.uuid4()),
+                "referrer_id": referrer_id,
+                "referred_owner_id": owner_id,
+                "referral_code_used": owner_data.referral_code.upper(),
+                "status": "pending",
+                "referred_owner_subscription_start": None,
+                "qualification_date": None,
+                "reward_applied_date": None,
+                "created_at": now,
+                "updated_at": now
+            }
+            await db.referrals.insert_one(referral_record)
+            logger.info(f"Created referral record: {referrer_id} -> {owner_id}")
+        
         # Create access token
-        token = create_access_token({"user_id": owner.id, "email": owner.email, "user_type": "owner"})
+        token = create_access_token({"user_id": owner_id, "email": owner_data.email, "user_type": "owner"})
         
         return {
             "message": "Registration successful",
@@ -1583,11 +1629,13 @@ async def register_owner(owner_data: RestaurantOwnerCreate):
             "token_type": "bearer",
             "user_type": "owner",
             "user": {
-                "id": owner.id,
-                "email": owner.email,
-                "business_name": owner.business_name,
-                "first_name": owner.first_name,
-                "last_name": owner.last_name
+                "id": owner_id,
+                "email": owner_data.email,
+                "business_name": owner_data.business_name,
+                "first_name": owner_data.first_name,
+                "last_name": owner_data.last_name,
+                "referral_code": new_referral_code,
+                "was_referred": referrer_id is not None
             }
         }
         
