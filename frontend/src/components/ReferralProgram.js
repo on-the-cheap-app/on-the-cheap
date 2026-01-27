@@ -87,7 +87,7 @@ const ReferralProgram = ({ token }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
+    <div className="bg-white rounded-lg shadow-md p-6 space-y-6 max-h-full overflow-y-auto">
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="p-2 bg-orange-100 rounded-lg">
