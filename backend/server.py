@@ -80,7 +80,10 @@ redis_service = None
 monitoring_service = None
 
 # JWT Configuration
-JWT_SECRET = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production')
+JWT_SECRET = os.environ.get('JWT_SECRET')
+if not JWT_SECRET:
+    JWT_SECRET = 'on-the-cheap-super-secret-jwt-key-2024'  # Default for development
+    logger.warning("JWT_SECRET not set, using default value")
 JWT_ALGORITHM = 'HS256'
 security = HTTPBearer()
 
