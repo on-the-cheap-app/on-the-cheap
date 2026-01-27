@@ -614,7 +614,7 @@ const OwnerDashboard = ({ user, token, onClose }) => {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 p-6 overflow-y-auto" style={{minHeight: 0, maxHeight: '100%'}}>
+          <div className="flex-1 p-6 overflow-y-auto bg-gray-100" style={{minHeight: 0, maxHeight: '100%'}}>
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
                 {error}
