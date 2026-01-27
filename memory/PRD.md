@@ -102,3 +102,28 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 - P2: Map View for mobile app
 - P2: Admin approval workflow UI
 - P2: Stripe integration for referral discounts (automated discount application)
+
+## Planned Features (Post-Deployment Fix)
+
+### Owner Analytics Dashboard (Tier 1 - Engagement Metrics)
+**Priority:** P1 (Next feature after production fix)
+**Goal:** Provide restaurant owners with valuable insights on customer engagement
+
+**Metrics to Track:**
+- Card Views (restaurant displayed in search results)
+- Card Clicks (user opens restaurant details)
+- Special Views (views of specific deals)
+- Share Actions (WhatsApp/SMS shares)
+- Favorites Added
+- Direction Requests ("Get Directions" clicks)
+- Call Button Clicks
+
+**Implementation:**
+- Add event tracking to frontend components
+- Create analytics events collection in MongoDB
+- Build new "Analytics" tab in Owner Dashboard with charts
+- Show views over time, click-through rates, popular specials, peak times
+
+**Future Tiers:**
+- Tier 2: Conversion tracking (check-ins, redemptions, return visits)
+- Tier 3: Purchase analytics (POS integration for ticket size, items purchased, loyalty sign-ups)
