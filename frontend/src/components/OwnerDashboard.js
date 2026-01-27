@@ -473,8 +473,8 @@ const OwnerDashboard = ({ user, token, onClose }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-hidden">
-      <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full h-[90vh] flex flex-col relative z-50">
         {/* Header */}
         <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-6 flex justify-between items-center flex-shrink-0 rounded-t-lg">
           <div>
