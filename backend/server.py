@@ -188,6 +188,7 @@ class RestaurantOwnerCreate(BaseModel):
     phone: str = Field(..., min_length=10, max_length=20)
     business_name: Optional[str] = Field(None, max_length=100)
     business_type: str = Field(default="restaurant")  # restaurant, bar, cafe, food_truck, etc.
+    referral_code: Optional[str] = Field(None, description="Referral code from another owner")
 
 class RestaurantOwnerLogin(BaseModel):
     email: str
