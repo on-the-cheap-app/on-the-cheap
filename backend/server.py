@@ -1734,6 +1734,110 @@ async def update_owner_profile(
         logger.error(f"Error updating owner profile: {e}")
         raise HTTPException(status_code=500, detail="Failed to update profile")
 
+# =================== REFERRAL PROGRAM ===================
+
+@api_router.get("/owners/referral-code")
+async def get_owner_referral_code(current_user: dict = Depends(get_current_user)):
+    """Get the current owner's referral code"""
+    try:
+        owner = await db.restaurant_owners.find_one({"id": current_user["id"]})
+        if not owner:
+            raise HTTPException(status_code=404, detail="Owner not found")
+        
+        referral_code = owner.get("referral_code")
+        
+        # Generate one if it doesn't exist (for existing owners before the feature)
+        if not referral_code:
+            referral_code = generate_referral_code(owner.get("business_name"))
+            while await db.restaurant_owners.find_one({"referral_code": referral_code}):
+                referral_code = generate_referral_code(owner.get("business_name"))
+            
+            await db.restaurant_owners.update_one(
+                {"id": current_user["id"]},
+                {"$set": {"referral_code": referral_code, "updated_at": datetime.now(timezone.utc).isoformat()}}
+            )
+        
+        return {
+            "referral_code": referral_code,
+            "share_message": f"Join On-the-Cheap and get 10% off your first 6 months! Use my referral code: {referral_code}"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting referral code: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get referral code")
+
+
+@api_router.get("/owners/referrals")
+async def get_owner_referrals(current_user: dict = Depends(get_current_user)):
+    """Get the owner's referral history and stats"""
+    try:
+        owner_id = current_user["id"]
+        
+        # Get all referrals made by this owner
+        referrals_cursor = db.referrals.find({"referrer_id": owner_id})
+        referrals = await referrals_cursor.to_list(length=100)
+        
+        # Enrich referral data with referred owner info
+        enriched_referrals = []
+        for ref in referrals:
+            if '_id' in ref:
+                del ref['_id']
+            
+            # Get referred owner's basic info
+            referred_owner = await db.restaurant_owners.find_one({"id": ref["referred_owner_id"]})
+            if referred_owner:
+                ref["referred_owner_name"] = f"{referred_owner.get('first_name', '')} {referred_owner.get('last_name', '')}".strip()
+                ref["referred_owner_business"] = referred_owner.get("business_name", "N/A")
+            else:
+                ref["referred_owner_name"] = "Unknown"
+                ref["referred_owner_business"] = "N/A"
+            
+            enriched_referrals.append(ref)
+        
+        # Calculate stats
+        total_referrals = len(referrals)
+        pending_referrals = sum(1 for r in referrals if r.get("status") == "pending")
+        qualified_referrals = sum(1 for r in referrals if r.get("status") == "qualified")
+        rewarded_referrals = sum(1 for r in referrals if r.get("status") == "rewarded")
+        
+        # Get owner's referral code
+        owner = await db.restaurant_owners.find_one({"id": owner_id})
+        referral_code = owner.get("referral_code") if owner else None
+        
+        return {
+            "referral_code": referral_code,
+            "stats": {
+                "total_referrals": total_referrals,
+                "pending": pending_referrals,
+                "qualified": qualified_referrals,
+                "rewarded": rewarded_referrals,
+                "potential_savings": qualified_referrals * 20  # 20% discount per qualified referral
+            },
+            "referrals": enriched_referrals
+        }
+    except Exception as e:
+        logger.error(f"Error getting referrals: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get referrals")
+
+
+@api_router.get("/referral/validate/{code}")
+async def validate_referral_code(code: str):
+    """Validate a referral code (public endpoint for signup form)"""
+    try:
+        owner = await db.restaurant_owners.find_one({"referral_code": code.upper()})
+        if owner:
+            return {
+                "valid": True,
+                "referrer_name": f"{owner.get('first_name', '')} {owner.get('last_name', '')}".strip() or "A fellow restaurant owner",
+                "discount": "10% off your first 6 months!"
+            }
+        return {"valid": False}
+    except Exception as e:
+        logger.error(f"Error validating referral code: {e}")
+        return {"valid": False}
+
+
 # =================== REGULAR USER AUTHENTICATION ===================
 
 @api_router.post("/users/register")
