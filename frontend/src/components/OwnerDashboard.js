@@ -474,8 +474,8 @@ const OwnerDashboard = ({ user, token, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50">
-      {/* Solid backdrop */}
-      <div className="absolute inset-0 bg-black/80" />
+      {/* Solid backdrop - completely opaque */}
+      <div className="absolute inset-0 bg-gray-900" />
       
       {/* Modal container */}
       <div className="relative flex items-center justify-center h-full p-4">
