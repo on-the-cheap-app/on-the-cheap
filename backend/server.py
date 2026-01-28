@@ -209,6 +209,34 @@ class RestaurantOwnerLogin(BaseModel):
     email: str
     password: str
 
+# Analytics Models
+class AnalyticsEventType(str, Enum):
+    CARD_VIEW = "card_view"           # Restaurant card displayed in results
+    CARD_CLICK = "card_click"         # User clicked on restaurant card
+    SPECIAL_VIEW = "special_view"     # User viewed a specific special/deal
+    SHARE_CLICK = "share_click"       # User clicked share button
+    FAVORITE_ADD = "favorite_add"     # User added to favorites
+    FAVORITE_REMOVE = "favorite_remove"  # User removed from favorites
+    DIRECTIONS_CLICK = "directions_click"  # User clicked get directions
+    CALL_CLICK = "call_click"         # User clicked phone number
+    CHECKIN_ATTEMPT = "checkin_attempt"   # User attempted to check in
+    CHECKIN_VERIFIED = "checkin_verified"  # Check-in verified (within geofence)
+    CHECKIN_FAILED = "checkin_failed"     # Check-in failed (outside geofence)
+
+class AnalyticsEvent(BaseModel):
+    event_type: AnalyticsEventType
+    restaurant_id: str
+    special_id: Optional[str] = None  # For special_view events
+    user_id: Optional[str] = None     # Optional - can track anonymous users
+    user_latitude: Optional[float] = None  # For check-in verification
+    user_longitude: Optional[float] = None
+    metadata: Optional[dict] = None   # Additional context (share_type, etc.)
+
+class CheckInRequest(BaseModel):
+    restaurant_id: str
+    latitude: float
+    longitude: float
+
 # Regular User Models
 class User(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
