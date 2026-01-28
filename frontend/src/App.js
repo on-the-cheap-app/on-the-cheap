@@ -408,6 +408,12 @@ function App() {
       // Mark that we've done at least one search (for filter auto-refresh)
       hasSearchedRef.current = true;
       
+      // Track card views for owner analytics (reset and track new results)
+      resetViewedCards();
+      searchResults.forEach(restaurant => {
+        trackCardView(restaurant.id);
+      });
+      
       // Track search analytics
       Analytics.trackRestaurantSearch({
         location: searchLocation,
