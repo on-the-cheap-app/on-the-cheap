@@ -1883,6 +1883,236 @@ async def validate_referral_code(code: str):
         return {"valid": False}
 
 
+# =================== ANALYTICS TRACKING ===================
+
+def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Calculate distance between two points in meters using Haversine formula"""
+    from math import radians, cos, sin, asin, sqrt
+    
+    # Convert to radians
+    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+    
+    # Haversine formula
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a))
+    
+    # Earth's radius in meters
+    r = 6371000
+    return c * r
+
+
+@api_router.post("/analytics/event")
+async def record_analytics_event(event: AnalyticsEvent):
+    """Record an analytics event (public endpoint for tracking)"""
+    try:
+        event_doc = {
+            "id": str(uuid.uuid4()),
+            "event_type": event.event_type.value,
+            "restaurant_id": event.restaurant_id,
+            "special_id": event.special_id,
+            "user_id": event.user_id,
+            "metadata": event.metadata or {},
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+            "hour": datetime.now(timezone.utc).hour
+        }
+        
+        await db.analytics_events.insert_one(event_doc)
+        return {"success": True, "event_id": event_doc["id"]}
+    except Exception as e:
+        logger.error(f"Error recording analytics event: {e}")
+        # Don't fail silently but also don't block the user experience
+        return {"success": False, "error": str(e)}
+
+
+@api_router.post("/analytics/checkin")
+async def verify_checkin(checkin: CheckInRequest, current_user: dict = Depends(get_current_user)):
+    """Verify a customer check-in using geofencing"""
+    try:
+        # Get restaurant location
+        restaurant = await db.restaurants.find_one({"id": checkin.restaurant_id})
+        if not restaurant:
+            raise HTTPException(status_code=404, detail="Restaurant not found")
+        
+        # Get restaurant coordinates
+        location = restaurant.get("location", {})
+        restaurant_lat = location.get("latitude")
+        restaurant_lon = location.get("longitude")
+        
+        if not restaurant_lat or not restaurant_lon:
+            raise HTTPException(status_code=400, detail="Restaurant location not available")
+        
+        # Calculate distance
+        distance = calculate_distance(
+            checkin.latitude, checkin.longitude,
+            restaurant_lat, restaurant_lon
+        )
+        
+        # Geofence radius: 200 meters
+        GEOFENCE_RADIUS = 200
+        is_verified = distance <= GEOFENCE_RADIUS
+        
+        # Record the event
+        event_type = "checkin_verified" if is_verified else "checkin_failed"
+        event_doc = {
+            "id": str(uuid.uuid4()),
+            "event_type": event_type,
+            "restaurant_id": checkin.restaurant_id,
+            "user_id": current_user.get("id"),
+            "metadata": {
+                "distance_meters": round(distance, 2),
+                "user_lat": checkin.latitude,
+                "user_lon": checkin.longitude,
+                "restaurant_lat": restaurant_lat,
+                "restaurant_lon": restaurant_lon
+            },
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+            "hour": datetime.now(timezone.utc).hour
+        }
+        
+        await db.analytics_events.insert_one(event_doc)
+        
+        return {
+            "success": True,
+            "verified": is_verified,
+            "distance_meters": round(distance, 2),
+            "message": "Check-in verified! Thanks for visiting!" if is_verified else f"You appear to be {round(distance)}m away from the restaurant."
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error verifying check-in: {e}")
+        raise HTTPException(status_code=500, detail="Failed to verify check-in")
+
+
+@api_router.get("/owners/analytics")
+async def get_owner_analytics(
+    days: int = Query(default=30, ge=1, le=90),
+    current_user: dict = Depends(get_current_user)
+):
+    """Get analytics data for owner's restaurants"""
+    try:
+        # Get owner's restaurant IDs
+        owner = await db.restaurant_owners.find_one({"id": current_user["id"]})
+        if not owner:
+            raise HTTPException(status_code=404, detail="Owner not found")
+        
+        restaurant_ids = owner.get("restaurant_ids", [])
+        if not restaurant_ids:
+            return {
+                "period_days": days,
+                "total_views": 0,
+                "total_clicks": 0,
+                "total_shares": 0,
+                "total_favorites": 0,
+                "total_directions": 0,
+                "total_calls": 0,
+                "total_checkins": 0,
+                "click_through_rate": 0,
+                "daily_stats": [],
+                "hourly_distribution": [],
+                "top_specials": [],
+                "recent_checkins": []
+            }
+        
+        # Calculate date range
+        end_date = datetime.now(timezone.utc)
+        start_date = end_date - timedelta(days=days)
+        start_date_str = start_date.strftime("%Y-%m-%d")
+        
+        # Query analytics events
+        events_cursor = db.analytics_events.find({
+            "restaurant_id": {"$in": restaurant_ids},
+            "date": {"$gte": start_date_str}
+        })
+        events = await events_cursor.to_list(length=10000)
+        
+        # Aggregate stats
+        total_views = sum(1 for e in events if e.get("event_type") == "card_view")
+        total_clicks = sum(1 for e in events if e.get("event_type") == "card_click")
+        total_shares = sum(1 for e in events if e.get("event_type") == "share_click")
+        total_favorites = sum(1 for e in events if e.get("event_type") == "favorite_add")
+        total_directions = sum(1 for e in events if e.get("event_type") == "directions_click")
+        total_calls = sum(1 for e in events if e.get("event_type") == "call_click")
+        total_checkins = sum(1 for e in events if e.get("event_type") == "checkin_verified")
+        
+        # Calculate click-through rate
+        ctr = round((total_clicks / total_views * 100), 1) if total_views > 0 else 0
+        
+        # Daily stats
+        daily_stats = {}
+        for event in events:
+            date = event.get("date")
+            if date not in daily_stats:
+                daily_stats[date] = {"date": date, "views": 0, "clicks": 0, "shares": 0, "checkins": 0}
+            if event.get("event_type") == "card_view":
+                daily_stats[date]["views"] += 1
+            elif event.get("event_type") == "card_click":
+                daily_stats[date]["clicks"] += 1
+            elif event.get("event_type") == "share_click":
+                daily_stats[date]["shares"] += 1
+            elif event.get("event_type") == "checkin_verified":
+                daily_stats[date]["checkins"] += 1
+        
+        # Sort by date
+        daily_stats_list = sorted(daily_stats.values(), key=lambda x: x["date"])
+        
+        # Hourly distribution
+        hourly_dist = [0] * 24
+        for event in events:
+            hour = event.get("hour", 0)
+            hourly_dist[hour] += 1
+        hourly_distribution = [{"hour": h, "count": c} for h, c in enumerate(hourly_dist)]
+        
+        # Top specials (by views)
+        special_views = {}
+        for event in events:
+            if event.get("event_type") == "special_view" and event.get("special_id"):
+                special_id = event.get("special_id")
+                special_views[special_id] = special_views.get(special_id, 0) + 1
+        
+        top_specials = sorted(
+            [{"special_id": k, "views": v} for k, v in special_views.items()],
+            key=lambda x: x["views"],
+            reverse=True
+        )[:5]
+        
+        # Recent check-ins
+        recent_checkins = [
+            {
+                "timestamp": e.get("timestamp"),
+                "restaurant_id": e.get("restaurant_id"),
+                "distance": e.get("metadata", {}).get("distance_meters")
+            }
+            for e in events
+            if e.get("event_type") == "checkin_verified"
+        ][-10:]
+        
+        return {
+            "period_days": days,
+            "total_views": total_views,
+            "total_clicks": total_clicks,
+            "total_shares": total_shares,
+            "total_favorites": total_favorites,
+            "total_directions": total_directions,
+            "total_calls": total_calls,
+            "total_checkins": total_checkins,
+            "click_through_rate": ctr,
+            "daily_stats": daily_stats_list,
+            "hourly_distribution": hourly_distribution,
+            "top_specials": top_specials,
+            "recent_checkins": recent_checkins
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting owner analytics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get analytics")
+
+
 # =================== REGULAR USER AUTHENTICATION ===================
 
 @api_router.post("/users/register")
