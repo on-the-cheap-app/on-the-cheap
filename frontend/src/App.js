@@ -515,12 +515,14 @@ function App() {
         });
         const newFavorites = userFavorites.filter(fav => fav.id !== restaurantId);
         setUserFavorites(newFavorites);
+        trackFavoriteRemove(restaurantId); // Track for owner analytics
       } else {
         await axios.post(`${API}/users/favorites/${restaurantId}`, {}, {
           headers: { Authorization: `Bearer ${userToken}` }
         });
         const newFavorites = [...userFavorites, restaurant];
         setUserFavorites(newFavorites);
+        trackFavoriteAdd(restaurantId); // Track for owner analytics
         
         // Refresh favorites from server to ensure synchronization
         setTimeout(() => {
