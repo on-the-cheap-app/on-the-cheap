@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 import axios from "axios";
-import { MapPin, Clock, DollarSign, Phone, Globe, Star, Search, Navigation, Building2, ArrowLeft, User, Heart, Share2, MessageCircle, Car, ExternalLink, X, Map, List, Truck, Bell } from "lucide-react";
+import { MapPin, Clock, DollarSign, Phone, Globe, Star, Search, Navigation, Building2, ArrowLeft, User, Heart, Share2, MessageCircle, Car, ExternalLink, X, Map, List, Truck, Bell, CheckCircle } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/card";
@@ -24,6 +24,18 @@ import useNotifications from "./hooks/useNotifications";
 import { usePWA } from "./hooks/usePWA";
 import * as Analytics from './utils/analytics';
 import PartnerInfo from "./pages/PartnerInfo";
+import { 
+  trackCardView, 
+  trackCardClick, 
+  trackShareClick, 
+  trackFavoriteAdd, 
+  trackFavoriteRemove,
+  trackDirectionsClick,
+  trackCallClick,
+  trackSpecialView,
+  verifyCheckIn,
+  resetViewedCards
+} from './services/analyticsService';
 
 // Get backend URL from environment variables
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
