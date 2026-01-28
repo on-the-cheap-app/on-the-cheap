@@ -120,6 +120,7 @@ const openShareLink = async (url, platform, message) => {
 // Analytics-enabled share function
 const handleShare = (restaurant, platform) => {
   Analytics.trackRestaurantShare(restaurant, platform);
+  trackShareClick(restaurant.id, platform); // Track for owner analytics
   const shareUrls = getShareUrls(restaurant);
   const message = generateShareMessage(restaurant);
   openShareLink(shareUrls[platform], platform, message);
@@ -128,6 +129,7 @@ const handleShare = (restaurant, platform) => {
 // Analytics-enabled ride function  
 const handleRide = (restaurant, service) => {
   Analytics.trackRideRequest(restaurant, service);
+  trackDirectionsClick(restaurant.id); // Track for owner analytics
   const rideUrls = getRideUrls(restaurant);
   openShareLink(rideUrls[service], service);
 };
