@@ -36,6 +36,7 @@ import {
   verifyCheckIn,
   resetViewedCards
 } from './services/analyticsService';
+import CheckInButton from './components/CheckInButton';
 
 // Get backend URL from environment variables
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
