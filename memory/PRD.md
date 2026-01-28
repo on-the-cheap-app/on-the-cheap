@@ -105,25 +105,40 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 
 ## Planned Features (Post-Deployment Fix)
 
-### Owner Analytics Dashboard (Tier 1 - Engagement Metrics)
-**Priority:** P1 (Next feature after production fix)
-**Goal:** Provide restaurant owners with valuable insights on customer engagement
+### Owner Analytics Dashboard (Tier 1 - Engagement Metrics) ✅ IMPLEMENTED
+**Status:** Complete
+**Implementation Date:** January 28, 2026
 
-**Metrics to Track:**
-- Card Views (restaurant displayed in search results)
-- Card Clicks (user opens restaurant details)
-- Special Views (views of specific deals)
-- Share Actions (WhatsApp/SMS shares)
-- Favorites Added
-- Direction Requests ("Get Directions" clicks)
-- Call Button Clicks
+**Metrics Tracked:**
+- ✅ Card Views (restaurant displayed in search results)
+- ✅ Card Clicks (user opens restaurant details)
+- ✅ Special Views (views of specific deals)
+- ✅ Share Actions (WhatsApp/SMS shares)
+- ✅ Favorites Added/Removed
+- ✅ Direction Requests ("Get Directions" / Uber/Lyft clicks)
+- ✅ Call Button Clicks
+- ✅ Check-ins (geofence-verified visits)
 
-**Implementation:**
-- Add event tracking to frontend components
-- Create analytics events collection in MongoDB
-- Build new "Analytics" tab in Owner Dashboard with charts
-- Show views over time, click-through rates, popular specials, peak times
+**Dashboard Features:**
+- Period selector (7/30/90 days)
+- Stats cards with color-coded metrics
+- Views Over Time chart
+- Peak Hours distribution chart
+- Click-through rate calculation
+- Engagement insights section
+- Recent check-ins list
 
-**Future Tiers:**
-- Tier 2: Conversion tracking (check-ins, redemptions, return visits)
+**Check-In Feature:**
+- "I'm Here" button on restaurant detail page
+- Geofence verification (200m radius)
+- Location permission request
+- Success/failure feedback
+
+**API Endpoints:**
+- POST /api/analytics/event - Record tracking events
+- POST /api/analytics/checkin - Verify customer check-in
+- GET /api/owners/analytics - Get owner's analytics data
+
+**Future Tiers (Backlog):**
+- Tier 2: Conversion tracking (redemptions, return visits)
 - Tier 3: Purchase analytics (POS integration for ticket size, items purchased, loyalty sign-ups)
