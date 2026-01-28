@@ -1383,6 +1383,7 @@ function App() {
                       restaurant_source: restaurant.source,
                       is_mobile_vendor: restaurant.is_mobile_vendor
                     });
+                    trackCardClick(restaurant.id); // Track for owner analytics
                     console.log('Restaurant clicked:', restaurant.name);
                   }}
                   className="rounded-lg border"
