@@ -1540,6 +1540,13 @@ const OwnerDashboard = ({ user, token, onClose }) => {
           </div>
         )}
 
+        {/* Analytics Tab */}
+        {activeTab === 'analytics' && (
+          <div className="h-full overflow-y-auto">
+            <AnalyticsDashboard token={localStorage.getItem('owner_token')} />
+          </div>
+        )}
+
         {/* Transfer Restaurant Modal */}
         {showTransferModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
