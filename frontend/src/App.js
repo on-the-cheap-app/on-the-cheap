@@ -1378,6 +1378,19 @@ function App() {
                                 </Button>
                               </div>
                             </div>
+                            
+                            {/* Check-In Button */}
+                            <div>
+                              <h5 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                <CheckCircle className="w-4 h-4 mr-1" />
+                                Visiting Now?
+                              </h5>
+                              <CheckInButton 
+                                restaurant={restaurant}
+                                userToken={localStorage.getItem('user_token')}
+                                onSuccess={(result) => console.log('Check-in successful:', result)}
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
