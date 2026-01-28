@@ -617,6 +617,19 @@ const OwnerDashboard = ({ user, token, onClose }) => {
                 <GiftIcon className="w-5 h-5 mr-3" />
                 Referrals
               </button>
+              
+              <button
+                onClick={() => setActiveTab('analytics')}
+                className={`w-full flex items-center px-4 py-2 text-left rounded-lg transition-colors ${
+                  activeTab === 'analytics' 
+                    ? 'bg-orange-100 text-orange-700 border-orange-200' 
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+                data-testid="analytics-tab"
+              >
+                <BarChart3 className="w-5 h-5 mr-3" />
+                Analytics
+              </button>
             </nav>
           </div>
 
