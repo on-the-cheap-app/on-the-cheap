@@ -1233,7 +1233,13 @@ function App() {
                         {restaurant.phone && (
                           <p className="text-sm text-gray-600 flex items-center">
                             <Phone className="w-4 h-4 mr-2" />
-                            {restaurant.phone}
+                            <a 
+                              href={`tel:${restaurant.phone}`} 
+                              className="text-orange-600 hover:underline"
+                              onClick={() => trackCallClick(restaurant.id)}
+                            >
+                              {restaurant.phone}
+                            </a>
                           </p>
                         )}
                         
