@@ -24,6 +24,8 @@ import OwnerPricing from './OwnerPricing';
 import OwnerBilling from './OwnerBilling';
 import SpecialCreator from './SpecialCreator';
 import ReferralProgram from './ReferralProgram';
+import AnalyticsDashboard from './AnalyticsDashboard';
+import { BarChart3 } from 'lucide-react';
 
 // Global timezones organized by region
 const TIMEZONES = [
