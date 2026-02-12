@@ -2308,13 +2308,24 @@ async def get_favorite_restaurants(current_user: dict = Depends(get_current_regu
             
             for restaurant in restaurants:
                 restaurant = prepare_from_mongo(restaurant)
+                # Get photos or generate fallback
+                photos = restaurant.get('photos', [])
+                if not photos:
+                    photos = get_fallback_photos(
+                        restaurant.get('name', ''),
+                        restaurant.get('cuisine_type', []),
+                        restaurant.get('is_mobile_vendor', False)
+                    )
+                
                 favorites.append({
                     "id": restaurant['id'],
                     "name": restaurant['name'],
                     "address": restaurant.get('address', ''),
                     "rating": restaurant.get('rating'),
                     "cuisine_type": restaurant.get('cuisine_type', []),
-                    "specials_count": len(restaurant.get('specials', []))
+                    "specials": restaurant.get('specials', []),
+                    "specials_count": len(restaurant.get('specials', [])),
+                    "photos": photos
                 })
         
         # Get Google Places restaurants
