@@ -324,15 +324,15 @@ const RestaurantClaimModal = ({ onClose, token, onSuccess }) => {
                       </div>
                       <button
                         onClick={() => handleClaimRestaurant(restaurant)}
-                        disabled={loading || restaurant.source === 'owner_managed'}
+                        disabled={loading || restaurant.owner_id || restaurant.source === 'owner_managed'}
                         className={`ml-4 px-4 py-2 rounded-lg transition-colors flex items-center ${
-                          restaurant.source === 'owner_managed'
+                          (restaurant.owner_id || restaurant.source === 'owner_managed')
                             ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                             : 'bg-orange-500 text-white hover:bg-orange-600'
                         }`}
                       >
                         <BuildingStorefrontIcon className="w-4 h-4 mr-1" />
-                        {restaurant.source === 'owner_managed' ? 'Already Claimed' : 'Claim'}
+                        {(restaurant.owner_id || restaurant.source === 'owner_managed') ? 'Already Claimed' : 'Claim'}
                       </button>
                     </div>
                   </div>
