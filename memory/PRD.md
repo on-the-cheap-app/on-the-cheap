@@ -62,6 +62,15 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 - Avenue Pub - 1732 St. Charles Ave, New Orleans, LA 70130
 - Oh My Chives - 7332 Nolensville Rd, Suite 304, Nolensville, TN 37135
 
+## Recent Changes (February 12, 2026)
+
+### New Features
+1. **Admin Restaurant Ownership Endpoints** - Added for internal management
+   - `GET /api/admin/restaurant-owner/{restaurant_id}` - Find who owns a restaurant
+   - `DELETE /api/admin/release-restaurant/{restaurant_id}` - Release restaurant from owner
+   - Works with both MongoDB ObjectId and string IDs
+   - Returns detailed owner information or "no owner" status
+
 ## Recent Changes (January 27, 2026)
 
 ### New Features
