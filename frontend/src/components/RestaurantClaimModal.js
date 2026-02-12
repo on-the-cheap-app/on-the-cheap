@@ -254,9 +254,8 @@ const RestaurantClaimModal = ({ onClose, token, onSuccess }) => {
             {coordinates && (
               <input
                 type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && searchRestaurants(coordinates.latitude, coordinates.longitude)}
+                value={filterQuery}
+                onChange={(e) => setFilterQuery(e.target.value)}
                 placeholder="Filter by restaurant name..."
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
