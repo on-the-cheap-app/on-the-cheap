@@ -93,6 +93,10 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 - Database: MongoDB
 - Payments: Stripe
 
+## New API Endpoints (Admin - Internal Use)
+- `GET /api/admin/restaurant-owner/{restaurant_id}` - Get owner info for a restaurant
+- `DELETE /api/admin/release-restaurant/{restaurant_id}` - Release restaurant from ownership
+
 ## New API Endpoints (Referral Program)
 - `GET /api/owners/referral-code` - Get owner's referral code
 - `GET /api/owners/referrals` - Get referral history and stats
