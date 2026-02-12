@@ -10,7 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 class APIService {
   constructor() {
-    this.baseURL = 'https://dealstack-5.preview.emergentagent.com/api';
+    this.baseURL = 'https://owner-mgmt.preview.emergentagent.com/api';
     this.api = axios.create({ baseURL: this.baseURL, timeout: 15000 });
     this.api.interceptors.request.use(async (config) => {
       const token = await AsyncStorage.getItem('auth_token');

@@ -11,7 +11,7 @@ from datetime import datetime
 import uuid
 
 class OwnerDashboardTester:
-    def __init__(self, base_url="https://dealstack-5.preview.emergentagent.com"):
+    def __init__(self, base_url="https://owner-mgmt.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
