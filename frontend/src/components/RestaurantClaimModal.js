@@ -283,13 +283,13 @@ const RestaurantClaimModal = ({ onClose, token, onSuccess }) => {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
               <p className="text-gray-600">Searching restaurants...</p>
             </div>
-          ) : searchResults.length > 0 ? (
+          ) : filteredResults.length > 0 ? (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                Found {searchResults.length} restaurant{searchResults.length !== 1 ? 's' : ''}
+                Found {filteredResults.length} restaurant{filteredResults.length !== 1 ? 's' : ''}{filterQuery && ` matching "${filterQuery}"`}
               </h3>
               <div className="grid grid-cols-1 gap-4">
-                {searchResults.map((restaurant) => (
+                {filteredResults.map((restaurant) => (
                   <div
                     key={restaurant.id}
                     className="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow"
