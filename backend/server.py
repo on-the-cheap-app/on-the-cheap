@@ -2339,11 +2339,11 @@ async def get_favorite_restaurants(current_user: dict = Depends(get_current_regu
                             # Extract the Google Place ID from our format (google_PLACE_ID)
                             place_id = google_id.replace('google_', '')
                             
-                            # Use the new Places API (same as restaurant search)
+                            # Use the new Places API (same as restaurant search) - include photos
                             headers = {
                                 "Content-Type": "application/json",
                                 "X-Goog-Api-Key": google_api_key,
-                                "X-Goog-FieldMask": "id,displayName,types,rating,priceLevel,location,formattedAddress,nationalPhoneNumber,websiteUri"
+                                "X-Goog-FieldMask": "id,displayName,types,rating,priceLevel,location,formattedAddress,nationalPhoneNumber,websiteUri,photos"
                             }
                             
                             # Get place details using the new Places API
@@ -2359,24 +2359,47 @@ async def get_favorite_restaurants(current_user: dict = Depends(get_current_regu
                                 display_name = place.get('displayName', {})
                                 name = display_name.get('text', 'Unknown Restaurant') if display_name else 'Unknown Restaurant'
                                 
+                                # Process photos from Google Places
+                                photos = []
+                                if place.get('photos'):
+                                    for photo in place.get('photos', [])[:3]:  # Limit to 3 photos
+                                        photo_name = photo.get('name', '')
+                                        if photo_name:
+                                            # Google Places API v1 photo URL format
+                                            photo_url = f"https://places.googleapis.com/v1/{photo_name}/media?maxHeightPx=400&maxWidthPx=400&key={google_api_key}"
+                                            photos.append({
+                                                "url": photo_url,
+                                                "width": 400,
+                                                "height": 400,
+                                                "is_fallback": False
+                                            })
+                                
+                                # Use fallback photos if none available
+                                if not photos:
+                                    photos = get_fallback_photos(name, place.get('types', []), False)
+                                
                                 favorites.append({
                                     "id": google_id,  # Keep our format
                                     "name": name,
                                     "address": place.get('formattedAddress', ''),
                                     "rating": place.get('rating'),
                                     "cuisine_type": place.get('types', []),
-                                    "specials_count": 0  # Google Places restaurants don't have our specials
+                                    "specials": [],
+                                    "specials_count": 0,  # Google Places restaurants don't have our specials
+                                    "photos": photos
                                 })
                             else:
                                 logger.warning(f"Failed to get Google Place details for {google_id}: HTTP {response.status_code}")
-                                # Add placeholder for failed API call
+                                # Add placeholder for failed API call with fallback photo
                                 favorites.append({
                                     "id": google_id,
                                     "name": "Restaurant (Details Unavailable)",
                                     "address": "",
                                     "rating": None,
                                     "cuisine_type": [],
-                                    "specials_count": 0
+                                    "specials": [],
+                                    "specials_count": 0,
+                                    "photos": get_fallback_photos("Restaurant", [], False)
                                 })
                                 
                         except Exception as e:
@@ -2388,7 +2411,9 @@ async def get_favorite_restaurants(current_user: dict = Depends(get_current_regu
                                 "address": "",
                                 "rating": None,
                                 "cuisine_type": [],
-                                "specials_count": 0
+                                "specials": [],
+                                "specials_count": 0,
+                                "photos": get_fallback_photos("Restaurant", [], False)
                             })
         
         return {"favorites": favorites}
