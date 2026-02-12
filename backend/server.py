@@ -1023,7 +1023,11 @@ async def search_restaurants(
             
             if distance <= radius:
                 restaurant['distance'] = round(distance)
-                restaurant['source'] = 'owner_managed'
+                # Only mark as owner_managed if it actually has an owner
+                if restaurant.get('owner_id'):
+                    restaurant['source'] = 'owner_managed'
+                else:
+                    restaurant['source'] = restaurant.get('source', 'database')
                 
                 # Add photos (from database or fallback)
                 if 'photos' not in restaurant or not restaurant['photos']:
