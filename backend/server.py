@@ -3153,6 +3153,57 @@ async def get_quota_status():
 
 # =================== ADMIN RESTAURANT OWNERSHIP MANAGEMENT ===================
 
+@api_router.get("/admin/search-restaurants")
+async def admin_search_restaurants(
+    name: Optional[str] = Query(None, description="Search by restaurant name"),
+    has_owner: Optional[bool] = Query(None, description="Filter by ownership status"),
+    limit: int = Query(20, ge=1, le=100, description="Max results to return")
+):
+    """Search restaurants by name for admin purposes (admin only)
+    
+    Returns restaurant ID, name, address, and owner status.
+    """
+    try:
+        query = {}
+        
+        # Name search (case-insensitive partial match)
+        if name:
+            query["name"] = {"$regex": name, "$options": "i"}
+        
+        # Filter by ownership status
+        if has_owner is True:
+            query["owner_id"] = {"$exists": True, "$ne": None}
+        elif has_owner is False:
+            query["$or"] = [
+                {"owner_id": {"$exists": False}},
+                {"owner_id": None}
+            ]
+        
+        # Execute search
+        cursor = db.restaurants.find(query).limit(limit)
+        restaurants = await cursor.to_list(length=limit)
+        
+        results = []
+        for r in restaurants:
+            results.append({
+                "id": str(r.get("_id", r.get("id"))),
+                "name": r.get("name", "Unknown"),
+                "address": r.get("address", ""),
+                "city": r.get("city", ""),
+                "has_owner": bool(r.get("owner_id")),
+                "owner_id": r.get("owner_id")
+            })
+        
+        return {
+            "count": len(results),
+            "restaurants": results
+        }
+        
+    except Exception as e:
+        logger.error(f"Error searching restaurants: {e}")
+        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
+
+
 @api_router.get("/admin/restaurant-owner/{restaurant_id}")
 async def get_restaurant_owner(restaurant_id: str):
     """Get the owner of a restaurant by restaurant ID (admin only)"""
