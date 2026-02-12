@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   MagnifyingGlassIcon,
   XMarkIcon,
@@ -10,6 +10,7 @@ import {
 const RestaurantClaimModal = ({ onClose, token, onSuccess }) => {
   const [searchLocation, setSearchLocation] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterQuery, setFilterQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -23,6 +24,14 @@ const RestaurantClaimModal = ({ onClose, token, onSuccess }) => {
     website: '',
     cuisine_type: ''
   });
+
+  // Filter results client-side
+  const filteredResults = useMemo(() => {
+    if (!filterQuery.trim()) return searchResults;
+    return searchResults.filter(r => 
+      r.name.toLowerCase().includes(filterQuery.toLowerCase())
+    );
+  }, [searchResults, filterQuery]);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL 
     ? `${process.env.REACT_APP_BACKEND_URL}/api` 
