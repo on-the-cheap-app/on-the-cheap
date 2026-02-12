@@ -94,6 +94,7 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 - Payments: Stripe
 
 ## New API Endpoints (Admin - Internal Use)
+- `GET /api/admin/search-restaurants?name=X&has_owner=true/false&limit=N` - Search restaurants by name
 - `GET /api/admin/restaurant-owner/{restaurant_id}` - Get owner info for a restaurant
 - `DELETE /api/admin/release-restaurant/{restaurant_id}` - Release restaurant from ownership
 
