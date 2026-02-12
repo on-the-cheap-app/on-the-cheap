@@ -316,7 +316,7 @@ const RestaurantClaimModal = ({ onClose, token, onSuccess }) => {
                             )}
                             {restaurant.source && (
                               <p className="text-xs text-gray-500 mt-2">
-                                Source: {restaurant.source === 'owner_managed' ? 'Owner Managed' : restaurant.source === 'google_places' ? 'Google Places' : 'Foursquare'}
+                                Source: {restaurant.source === 'owner_managed' ? 'Owner Managed' : restaurant.source === 'google_places' ? 'Google Places' : restaurant.source === 'manual_add' ? 'Manually Added' : restaurant.source === 'database' ? 'Database' : restaurant.source}
                               </p>
                             )}
                           </div>
