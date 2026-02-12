@@ -3151,6 +3151,183 @@ async def get_quota_status():
         "cache_performance": cache_service.get_cache_stats() if cache_service else None
     }
 
+# =================== ADMIN RESTAURANT OWNERSHIP MANAGEMENT ===================
+
+@api_router.get("/admin/restaurant-owner/{restaurant_id}")
+async def get_restaurant_owner(restaurant_id: str):
+    """Get the owner of a restaurant by restaurant ID (admin only)"""
+    try:
+        from bson import ObjectId
+        
+        # Try to find restaurant by ID (could be ObjectId or string ID)
+        restaurant = None
+        
+        # First try as ObjectId
+        try:
+            restaurant = await db.restaurants.find_one({"_id": ObjectId(restaurant_id)})
+        except:
+            pass
+        
+        # If not found, try as string ID
+        if not restaurant:
+            restaurant = await db.restaurants.find_one({"id": restaurant_id})
+        
+        if not restaurant:
+            raise HTTPException(status_code=404, detail=f"Restaurant not found with ID: {restaurant_id}")
+        
+        restaurant_name = restaurant.get("name", "Unknown")
+        restaurant_str_id = str(restaurant.get("_id", restaurant.get("id", restaurant_id)))
+        owner_id = restaurant.get("owner_id")
+        
+        # If no owner_id on restaurant, check claims
+        if not owner_id:
+            # Check for any approved claims
+            claim = await db.restaurant_claims.find_one({
+                "restaurant_id": restaurant_str_id,
+                "status": "approved"
+            })
+            if claim:
+                owner_id = claim.get("owner_id")
+        
+        if not owner_id:
+            return {
+                "restaurant_id": restaurant_str_id,
+                "restaurant_name": restaurant_name,
+                "has_owner": False,
+                "owner": None,
+                "message": "This restaurant has no owner assigned"
+            }
+        
+        # Get owner details
+        owner = await db.restaurant_owners.find_one({"id": owner_id})
+        
+        if not owner:
+            return {
+                "restaurant_id": restaurant_str_id,
+                "restaurant_name": restaurant_name,
+                "has_owner": True,
+                "owner_id": owner_id,
+                "owner": None,
+                "message": f"Owner ID {owner_id} found on restaurant but owner record doesn't exist"
+            }
+        
+        return {
+            "restaurant_id": restaurant_str_id,
+            "restaurant_name": restaurant_name,
+            "has_owner": True,
+            "owner": {
+                "id": owner.get("id"),
+                "email": owner.get("email"),
+                "first_name": owner.get("first_name"),
+                "last_name": owner.get("last_name"),
+                "business_name": owner.get("business_name"),
+                "phone": owner.get("phone"),
+                "restaurant_ids": owner.get("restaurant_ids", [])
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting restaurant owner: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get restaurant owner: {str(e)}")
+
+
+@api_router.delete("/admin/release-restaurant/{restaurant_id}")
+async def release_restaurant_ownership(restaurant_id: str):
+    """Release a restaurant from its current owner (admin only)
+    
+    This will:
+    1. Remove owner_id from the restaurant document
+    2. Delete any approved claims for this restaurant
+    3. Remove the restaurant_id from the owner's restaurant_ids array
+    """
+    try:
+        from bson import ObjectId
+        
+        # Try to find restaurant by ID
+        restaurant = None
+        mongo_id = None
+        
+        # First try as ObjectId
+        try:
+            mongo_id = ObjectId(restaurant_id)
+            restaurant = await db.restaurants.find_one({"_id": mongo_id})
+        except:
+            pass
+        
+        # If not found, try as string ID
+        if not restaurant:
+            restaurant = await db.restaurants.find_one({"id": restaurant_id})
+        
+        if not restaurant:
+            raise HTTPException(status_code=404, detail=f"Restaurant not found with ID: {restaurant_id}")
+        
+        restaurant_name = restaurant.get("name", "Unknown")
+        restaurant_str_id = str(restaurant.get("_id", restaurant.get("id", restaurant_id)))
+        owner_id = restaurant.get("owner_id")
+        
+        results = {
+            "restaurant_id": restaurant_str_id,
+            "restaurant_name": restaurant_name,
+            "previous_owner_id": owner_id,
+            "actions_taken": []
+        }
+        
+        # 1. Remove owner_id from restaurant document
+        if mongo_id:
+            update_result = await db.restaurants.update_one(
+                {"_id": mongo_id},
+                {"$unset": {"owner_id": ""}}
+            )
+        else:
+            update_result = await db.restaurants.update_one(
+                {"id": restaurant_id},
+                {"$unset": {"owner_id": ""}}
+            )
+        
+        if update_result.modified_count > 0:
+            results["actions_taken"].append("Removed owner_id from restaurant document")
+        
+        # 2. Delete/update claims for this restaurant
+        claims_result = await db.restaurant_claims.update_many(
+            {"restaurant_id": restaurant_str_id},
+            {"$set": {"status": "released", "released_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        if claims_result.modified_count > 0:
+            results["actions_taken"].append(f"Updated {claims_result.modified_count} claim(s) to 'released' status")
+        
+        # 3. Remove restaurant from owner's restaurant_ids array (if owner exists)
+        if owner_id:
+            owner_result = await db.restaurant_owners.update_one(
+                {"id": owner_id},
+                {"$pull": {"restaurant_ids": restaurant_str_id}}
+            )
+            if owner_result.modified_count > 0:
+                results["actions_taken"].append(f"Removed restaurant from owner's restaurant_ids")
+            
+            # Also try with the ObjectId string version
+            if mongo_id:
+                owner_result2 = await db.restaurant_owners.update_one(
+                    {"id": owner_id},
+                    {"$pull": {"restaurant_ids": str(mongo_id)}}
+                )
+                if owner_result2.modified_count > 0:
+                    results["actions_taken"].append(f"Removed restaurant (ObjectId) from owner's restaurant_ids")
+        
+        if not results["actions_taken"]:
+            results["actions_taken"].append("No changes needed - restaurant was already released or had no owner")
+        
+        results["success"] = True
+        results["message"] = f"Restaurant '{restaurant_name}' has been released from ownership"
+        
+        return results
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error releasing restaurant ownership: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to release restaurant: {str(e)}")
+
 # =================== RESTAURANT OWNER ENDPOINTS ===================
 
 @api_router.post("/owners/register", response_model=RestaurantOwner)
