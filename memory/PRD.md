@@ -66,10 +66,29 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 
 ### New Features
 1. **Admin Restaurant Ownership Endpoints** - Added for internal management
+   - `GET /api/admin/search-restaurants` - Search restaurants by name
    - `GET /api/admin/restaurant-owner/{restaurant_id}` - Find who owns a restaurant
    - `DELETE /api/admin/release-restaurant/{restaurant_id}` - Release restaurant from owner
    - Works with both MongoDB ObjectId and string IDs
    - Returns detailed owner information or "no owner" status
+
+2. **Mobile App Favorites Photos** - Added real photos to favorites
+   - Google Places favorites now show actual venue photos
+   - Database restaurants get fallback stock photos
+   - Fixed empty favorites display issue
+
+### Bug Fixes
+1. **"Already Claimed" Bug** - Fixed restaurants incorrectly showing as claimed
+   - Backend now only sets `source: 'owner_managed'` when restaurant has actual owner
+   - Frontend checks both `owner_id` and `source` before disabling claim button
+   - Added client-side filtering to claim modal
+
+### Pending
+1. **New App Icon/Logo/Splash** - Waiting on design firm to deliver assets
+   - App Icon: 1024x1024 PNG
+   - Splash Screen: 1284x2778 PNG
+   - Web Logo: ~200px wide PNG/SVG
+   - Favicon: 32x32 ICO/PNG
 
 ## Recent Changes (January 27, 2026)
 
