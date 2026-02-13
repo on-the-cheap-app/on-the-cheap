@@ -1,5 +1,20 @@
 # Build and Test Guide - On the Cheap Mobile App
 
+## Latest Features to Test (February 2026)
+
+### 🗺️ Map View
+- Toggle between List/Map view on home screen
+- Custom markers (orange = has specials, gray = no specials)
+- Tap marker to see restaurant preview card
+- Tap preview card to open restaurant detail
+
+### 🔔 Push Notifications
+- OneSignal App ID: `e841b137-33e1-439c-8284-7cebb747fde7`
+- Notification preferences in Profile screen
+- Receives notifications for favorites' new specials
+
+---
+
 ## Prerequisites
 
 Before building, you need:
