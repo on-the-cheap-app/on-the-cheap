@@ -27,6 +27,17 @@ const RestaurantMapView: React.FC<RestaurantMapViewProps> = ({
   const mapRef = useRef<MapView>(null);
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
 
+  // Helper to get coordinates from restaurant (handles both formats)
+  const getCoordinates = (restaurant: Restaurant): { latitude: number; longitude: number } | null => {
+    if (restaurant.latitude && restaurant.longitude) {
+      return { latitude: restaurant.latitude, longitude: restaurant.longitude };
+    }
+    if (restaurant.location?.latitude && restaurant.location?.longitude) {
+      return { latitude: restaurant.location.latitude, longitude: restaurant.location.longitude };
+    }
+    return null;
+  };
+
   // Sort restaurants: those with active specials first
   const sortedRestaurants = [...restaurants].sort((a, b) => {
     const aHasSpecials = (a.specials?.length || 0) > 0;
@@ -40,11 +51,8 @@ const RestaurantMapView: React.FC<RestaurantMapViewProps> = ({
   useEffect(() => {
     if (mapRef.current && restaurants.length > 0) {
       const coordinates = restaurants
-        .filter(r => r.latitude && r.longitude)
-        .map(r => ({
-          latitude: r.latitude!,
-          longitude: r.longitude!,
-        }));
+        .map(r => getCoordinates(r))
+        .filter((c): c is { latitude: number; longitude: number } => c !== null);
       
       if (userLocation) {
         coordinates.push(userLocation);
