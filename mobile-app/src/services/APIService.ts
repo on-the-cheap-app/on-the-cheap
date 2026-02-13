@@ -148,6 +148,15 @@ class APIService {
   async addFavorite(restaurantId: string) {
     try {
       const response = await this.api.post(`/users/favorites/${restaurantId}`);
+      
+      // Tag user in OneSignal for push notification targeting
+      try {
+        const OneSignalService = require('./OneSignalService').default;
+        await OneSignalService.tagFavoriteRestaurant(restaurantId);
+      } catch (e) {
+        console.log('OneSignal tagging skipped:', e);
+      }
+      
       return response.data;
     } catch (error) {
       console.error('API Error - Add Favorite:', error);
@@ -158,6 +167,15 @@ class APIService {
   async removeFavorite(restaurantId: string) {
     try {
       const response = await this.api.delete(`/users/favorites/${restaurantId}`);
+      
+      // Remove tag from OneSignal (simplified - just removes generic tag)
+      try {
+        const OneSignalService = require('./OneSignalService').default;
+        await OneSignalService.untagFavoriteRestaurant(restaurantId);
+      } catch (e) {
+        console.log('OneSignal untagging skipped:', e);
+      }
+      
       return response.data;
     } catch (error) {
       console.error('API Error - Remove Favorite:', error);
