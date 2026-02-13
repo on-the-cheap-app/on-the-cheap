@@ -2983,6 +2983,138 @@ async def send_test_notification(
         logging.error(f"Error sending test notification: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.post("/notifications/favorite-special")
+async def notify_favorite_restaurant_special(
+    restaurant_id: str,
+    special_title: str,
+    special_description: str = "",
+    special_id: Optional[str] = None,
+    current_user: dict = Depends(get_current_user_optional)
+):
+    """
+    Send push notification to all users who have favorited this restaurant
+    when a new special is created or about to start.
+    """
+    try:
+        # Find all users who have favorited this restaurant
+        users_cursor = db.users.find(
+            {"favorite_restaurant_ids": restaurant_id},
+            {"id": 1, "email": 1}
+        )
+        users = await users_cursor.to_list(length=None)
+        
+        if not users:
+            return {
+                "success": True,
+                "message": "No users have favorited this restaurant",
+                "users_notified": 0
+            }
+        
+        # Get restaurant details
+        restaurant = await db.restaurants.find_one({"id": restaurant_id})
+        if not restaurant:
+            # Try with ObjectId
+            from bson import ObjectId
+            try:
+                restaurant = await db.restaurants.find_one({"_id": ObjectId(restaurant_id)})
+            except:
+                pass
+        
+        restaurant_name = restaurant.get("name", "Your Favorite Restaurant") if restaurant else "Your Favorite Restaurant"
+        
+        # Prepare notification
+        user_ids = [u.get("id") for u in users if u.get("id")]
+        
+        restaurant_service = get_restaurant_notification_service()
+        result = await restaurant_service.send_favorite_restaurant_update(
+            {
+                "id": restaurant_id,
+                "name": restaurant_name,
+                "special_title": special_title,
+                "special_description": special_description,
+                "special_id": special_id
+            },
+            user_ids
+        )
+        
+        if result:
+            return {
+                "success": True,
+                "notification_id": result.get("id"),
+                "users_notified": len(user_ids),
+                "message": f"Notification sent to {len(user_ids)} users who favorited {restaurant_name}"
+            }
+        else:
+            return {
+                "success": False,
+                "message": "Failed to send notification",
+                "users_notified": 0
+            }
+    
+    except Exception as e:
+        logging.error(f"Error notifying favorite restaurant users: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/notifications/special-starting")
+async def notify_special_starting_soon(
+    restaurant_id: str,
+    special_title: str,
+    start_time: str,
+    minutes_before: int = 30,
+    current_user: dict = Depends(get_current_user_optional)
+):
+    """
+    Send push notification to users about a special that's starting soon.
+    Called by a scheduled job or manually.
+    """
+    try:
+        # Find all users who have favorited this restaurant
+        users_cursor = db.users.find(
+            {"favorite_restaurant_ids": restaurant_id},
+            {"id": 1}
+        )
+        users = await users_cursor.to_list(length=None)
+        
+        if not users:
+            return {
+                "success": True,
+                "message": "No users have favorited this restaurant",
+                "users_notified": 0
+            }
+        
+        # Get restaurant details
+        restaurant = await db.restaurants.find_one({"id": restaurant_id})
+        restaurant_name = restaurant.get("name", "Restaurant") if restaurant else "Restaurant"
+        
+        user_ids = [u.get("id") for u in users if u.get("id")]
+        
+        onesignal_service = get_onesignal_service()
+        payload = NotificationPayload(
+            title=f"⏰ {special_title} Starting Soon!",
+            message=f"{restaurant_name}'s special starts in {minutes_before} minutes. Don't miss it!",
+            user_ids=user_ids,
+            tags={"notify_specials_starting": "true"}
+        )
+        
+        result = await onesignal_service.send_notification(payload)
+        
+        if result:
+            return {
+                "success": True,
+                "notification_id": result.get("id"),
+                "users_notified": len(user_ids),
+                "message": f"Reminder sent to {len(user_ids)} users"
+            }
+        else:
+            return {
+                "success": False,
+                "message": "Failed to send notification"
+            }
+    
+    except Exception as e:
+        logging.error(f"Error sending special starting notification: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # =============================================================================
 # STATUS CHECK ENDPOINTS
 # =============================================================================
