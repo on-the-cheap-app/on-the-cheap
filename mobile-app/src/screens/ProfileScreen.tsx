@@ -25,6 +25,9 @@ import { colors, spacing } from '../theme/colors';
 const ProfileScreen = ({ navigation }: any) => {
   const [user, setUser] = useState<any>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [notifyNewSpecials, setNotifyNewSpecials] = useState(true);
+  const [notifySpecialsStarting, setNotifySpecialsStarting] = useState(true);
+  const [notifyDailyDigest, setNotifyDailyDigest] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
