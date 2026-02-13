@@ -631,6 +631,41 @@ const styles = StyleSheet.create({
     color: colors.textLight,
     marginTop: spacing.xs,
   },
+  viewToggleContainer: {
+    flexDirection: 'row',
+    marginTop: spacing.md,
+    backgroundColor: colors.background,
+    borderRadius: 8,
+    padding: 4,
+  },
+  viewToggleButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: 6,
+  },
+  viewToggleActive: {
+    backgroundColor: colors.primary,
+  },
+  viewToggleText: {
+    marginLeft: spacing.xs,
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textDark,
+  },
+  viewToggleTextActive: {
+    color: '#fff',
+  },
+  mapContainer: {
+    height: 500,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
   resultsSection: {
     padding: spacing.md,
     paddingTop: 0,
