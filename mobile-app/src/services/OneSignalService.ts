@@ -2,8 +2,8 @@ import { OneSignal, LogLevel } from 'react-native-onesignal';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// OneSignal App ID - should be set from environment or config
-const ONESIGNAL_APP_ID = process.env.ONESIGNAL_APP_ID || '';
+// OneSignal App ID
+const ONESIGNAL_APP_ID = 'e841b137-33e1-439c-8284-7cebb747fde7';
 
 interface NotificationData {
   restaurantId?: string;

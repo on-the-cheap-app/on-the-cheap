@@ -14,8 +14,8 @@ import AppNavigator from './src/navigation/AppNavigator';
 import { theme } from './src/theme/colors';
 import OneSignalService from './src/services/OneSignalService';
 
-// OneSignal App ID - Replace with your actual App ID
-const ONESIGNAL_APP_ID = process.env.ONESIGNAL_APP_ID || '';
+// OneSignal App ID
+const ONESIGNAL_APP_ID = 'e841b137-33e1-439c-8284-7cebb747fde7';
 
 const App = (): React.JSX.Element => {
   const navigationRef = useRef<NavigationContainerRef<any>>(null);

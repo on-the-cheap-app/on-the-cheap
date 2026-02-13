@@ -61,6 +61,13 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Allow On-the-Cheap to use your location to find nearby restaurant deals."
         }
+      ],
+      [
+        "onesignal-expo-plugin",
+        {
+          "mode": "development",
+          "devTeam": "YOUR_APPLE_TEAM_ID"
+        }
       ]
     ],
     "sdkVersion": "53.0.0",
