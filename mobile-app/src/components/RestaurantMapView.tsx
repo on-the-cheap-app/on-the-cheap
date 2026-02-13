@@ -110,17 +110,15 @@ const RestaurantMapView: React.FC<RestaurantMapViewProps> = ({
         onPress={() => setSelectedRestaurant(null)}
       >
         {sortedRestaurants.map((restaurant) => {
-          if (!restaurant.latitude || !restaurant.longitude) return null;
+          const coords = getCoordinates(restaurant);
+          if (!coords) return null;
           
           const hasSpecials = (restaurant.specials?.length || 0) > 0;
           
           return (
             <Marker
               key={restaurant.id}
-              coordinate={{
-                latitude: restaurant.latitude,
-                longitude: restaurant.longitude,
-              }}
+              coordinate={coords}
               onPress={() => handleMarkerPress(restaurant)}
               pinColor={getMarkerColor(restaurant)}
             >
