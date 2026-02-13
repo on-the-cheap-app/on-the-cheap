@@ -229,3 +229,79 @@ If you encounter any issues:
 - Describe what's not working
 
 I'll help troubleshoot and get your app ready for submission!
+
+---
+
+## Testing New Features (February 2026)
+
+### Map View Testing Checklist
+
+1. **Search for restaurants:**
+   - Enter a location (e.g., "New Orleans, LA")
+   - Click "Near Me" or enter an address
+
+2. **Toggle to Map View:**
+   - Look for "Found X restaurants" section
+   - Tap the "Map" toggle button (next to "List")
+   - Map should appear with restaurant markers
+
+3. **Verify Markers:**
+   - Orange markers = restaurants with active specials
+   - Gray markers = restaurants without specials
+   - Truck icon = food trucks
+   - Fork & knife icon = regular restaurants
+
+4. **Test Interactions:**
+   - Tap a marker → preview card should appear
+   - Tap preview card → should navigate to restaurant detail
+   - Tap X button → should close preview card
+   - Pinch to zoom, drag to pan the map
+
+5. **Check Legend:**
+   - Top-right corner should show legend explaining marker colors
+
+### Push Notifications Testing Checklist
+
+1. **Enable Notifications:**
+   - Go to Profile tab
+   - Sign in if not already
+   - Toggle "Push Notifications" ON
+   - Accept system permission prompt
+
+2. **Configure Preferences:**
+   - "New Specials" - notifications for favorites' new deals
+   - "Specials Starting Soon" - 30 min reminder
+   - "Daily Digest" - morning summary
+
+3. **Test Notification Flow:**
+   - Add a restaurant to favorites (heart icon)
+   - Have an owner create a new special for that restaurant
+   - You should receive a push notification
+
+4. **Test Deep Linking:**
+   - When you tap the notification, app should open to that restaurant's detail page
+
+### Test Accounts
+- **Customer:** sfurtwengler@gmail.com / DrFurt138!
+- **Owner (web):** demo@onthecheapapp.com / Demo123!
+
+### Backend API for Manual Testing
+```bash
+# Test notification endpoint (replace IDs)
+curl -X POST "https://deals-alert-staging.preview.emergentagent.com/api/notifications/favorite-special?restaurant_id=YOUR_RESTAURANT_ID&special_title=Test%20Special&special_description=50%25%20off%20lunch"
+```
+
+---
+
+## Quick Commands
+
+```bash
+# Build preview APK
+eas build --profile preview --platform android
+
+# Check build status
+eas build:list
+
+# Update over-the-air (after first build)
+eas update --branch preview --message "Map and notifications update"
+```
