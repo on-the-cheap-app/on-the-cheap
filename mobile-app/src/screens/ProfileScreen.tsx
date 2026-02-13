@@ -263,7 +263,7 @@ const ProfileScreen = ({ navigation }: any) => {
           
           <List.Item
             title="Push Notifications"
-            description="Get notified about restaurant specials"
+            description="Enable notifications from On-the-Cheap"
             left={(props) => <List.Icon {...props} icon="bell" />}
             right={() => (
               <Switch
@@ -276,8 +276,49 @@ const ProfileScreen = ({ navigation }: any) => {
           <Divider />
           
           <List.Item
+            title="New Specials"
+            description="When your favorite restaurants add new specials"
+            left={(props) => <List.Icon {...props} icon="tag-plus" />}
+            right={() => (
+              <Switch
+                value={notifyNewSpecials}
+                onValueChange={handleNewSpecialsToggle}
+                disabled={!notificationsEnabled}
+              />
+            )}
+          />
+          
+          <List.Item
+            title="Specials Starting Soon"
+            description="30 minutes before a special begins"
+            left={(props) => <List.Icon {...props} icon="clock-alert" />}
+            right={() => (
+              <Switch
+                value={notifySpecialsStarting}
+                onValueChange={handleSpecialsStartingToggle}
+                disabled={!notificationsEnabled}
+              />
+            )}
+          />
+          
+          <List.Item
+            title="Daily Digest"
+            description="Morning summary of today's specials"
+            left={(props) => <List.Icon {...props} icon="newspaper" />}
+            right={() => (
+              <Switch
+                value={notifyDailyDigest}
+                onValueChange={handleDailyDigestToggle}
+                disabled={!notificationsEnabled}
+              />
+            )}
+          />
+          
+          <Divider style={{ marginTop: spacing.sm }} />
+          
+          <List.Item
             title="Test Notification"
-            description="Send a test notification"
+            description="Send a test notification to this device"
             left={(props) => <List.Icon {...props} icon="bell-ring" />}
             onPress={sendTestNotification}
             disabled={!notificationsEnabled}
