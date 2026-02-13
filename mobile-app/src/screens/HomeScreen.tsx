@@ -18,6 +18,7 @@ import {
   ActivityIndicator,
   Menu,
   Divider,
+  SegmentedButtons,
 } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Geolocation from 'react-native-geolocation-service';
@@ -25,6 +26,7 @@ import { PermissionsAndroid, Platform } from 'react-native';
 
 import APIService from '../services/APIService';
 import RestaurantCard from '../components/RestaurantCard';
+import RestaurantMapView from '../components/RestaurantMapView';
 import AddressInput from '../components/AddressInput';
 import { colors, spacing } from '../theme/colors';
 import { Restaurant, SearchParams } from '../types/restaurant';
