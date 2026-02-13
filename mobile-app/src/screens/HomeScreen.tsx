@@ -409,6 +409,36 @@ const HomeScreen = ({ navigation }: any) => {
                   </Text>
                 </View>
               </View>
+              
+              {/* View Mode Toggle */}
+              <View style={styles.viewToggleContainer}>
+                <TouchableOpacity
+                  style={[styles.viewToggleButton, viewMode === 'list' && styles.viewToggleActive]}
+                  onPress={() => setViewMode('list')}
+                >
+                  <Icon 
+                    name="format-list-bulleted" 
+                    size={20} 
+                    color={viewMode === 'list' ? '#fff' : colors.textDark} 
+                  />
+                  <Text style={[styles.viewToggleText, viewMode === 'list' && styles.viewToggleTextActive]}>
+                    List
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.viewToggleButton, viewMode === 'map' && styles.viewToggleActive]}
+                  onPress={() => setViewMode('map')}
+                >
+                  <Icon 
+                    name="map" 
+                    size={20} 
+                    color={viewMode === 'map' ? '#fff' : colors.textDark} 
+                  />
+                  <Text style={[styles.viewToggleText, viewMode === 'map' && styles.viewToggleTextActive]}>
+                    Map
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </Card.Content>
           </Card>
         </View>
