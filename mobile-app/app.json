@@ -65,8 +65,7 @@
       [
         "onesignal-expo-plugin",
         {
-          "mode": "development",
-          "devTeam": "YOUR_APPLE_TEAM_ID"
+          "mode": "development"
         }
       ]
     ],
