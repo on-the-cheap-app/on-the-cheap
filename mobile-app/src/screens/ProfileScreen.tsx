@@ -84,12 +84,9 @@ const ProfileScreen = ({ navigation }: any) => {
       setNotificationsEnabled(granted);
       
       if (granted && user) {
-        // Tag user for notifications
-        OneSignalService.tagUser({
-          user_id: user.id,
-          user_type: 'user',
-          notifications_enabled: true,
-        });
+        // Login user to OneSignal and set initial preferences
+        await OneSignalService.loginUser(user.id, user.email);
+        await updateNotificationPreferences();
       }
     } else {
       setNotificationsEnabled(false);
@@ -98,6 +95,47 @@ const ProfileScreen = ({ navigation }: any) => {
         'To disable notifications, please go to your device settings',
         [{ text: 'OK' }]
       );
+    }
+  };
+
+  const updateNotificationPreferences = async () => {
+    await OneSignalService.setNotificationPreferences({
+      newSpecials: notifyNewSpecials,
+      specialsStarting: notifySpecialsStarting,
+      dailyDigest: notifyDailyDigest,
+    });
+  };
+
+  const handleNewSpecialsToggle = async (enabled: boolean) => {
+    setNotifyNewSpecials(enabled);
+    if (notificationsEnabled) {
+      await OneSignalService.setNotificationPreferences({
+        newSpecials: enabled,
+        specialsStarting: notifySpecialsStarting,
+        dailyDigest: notifyDailyDigest,
+      });
+    }
+  };
+
+  const handleSpecialsStartingToggle = async (enabled: boolean) => {
+    setNotifySpecialsStarting(enabled);
+    if (notificationsEnabled) {
+      await OneSignalService.setNotificationPreferences({
+        newSpecials: notifyNewSpecials,
+        specialsStarting: enabled,
+        dailyDigest: notifyDailyDigest,
+      });
+    }
+  };
+
+  const handleDailyDigestToggle = async (enabled: boolean) => {
+    setNotifyDailyDigest(enabled);
+    if (notificationsEnabled) {
+      await OneSignalService.setNotificationPreferences({
+        newSpecials: notifyNewSpecials,
+        specialsStarting: notifySpecialsStarting,
+        dailyDigest: enabled,
+      });
     }
   };
 
