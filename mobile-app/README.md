@@ -56,7 +56,7 @@ cd ios && pod install
 
 ### Configuration
 
-1. **Backend API**: Already configured to use the production backend at `https://owner-mgmt.preview.emergentagent.com/api`
+1. **Backend API**: Already configured to use the production backend at `https://deals-alert-staging.preview.emergentagent.com/api`
 
 2. **OneSignal**: Already configured with App ID `4ca64e1c-b430-436d-8037-ffc9d4176b62`
 

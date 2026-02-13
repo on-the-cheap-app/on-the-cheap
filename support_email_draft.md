@@ -13,7 +13,7 @@ I'm experiencing a critical issue with my production deployment where all login 
 ## Application Details
 - **Job/App Name:** dealstack-5
 - **Production URL:** https://onthecheapapp.com
-- **Preview URL:** https://owner-mgmt.preview.emergentagent.com
+- **Preview URL:** https://deals-alert-staging.preview.emergentagent.com
 - **Stack:** React (Frontend) + FastAPI (Backend) + MongoDB
 
 ## The Problem

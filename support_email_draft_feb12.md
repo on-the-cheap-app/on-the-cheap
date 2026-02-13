@@ -30,7 +30,7 @@ Response: {"detail":"Invalid email or password"}
 
 **Preview test (WORKING):**
 ```
-curl -X POST "https://owner-mgmt.preview.emergentagent.com/api/users/login" \
+curl -X POST "https://deals-alert-staging.preview.emergentagent.com/api/users/login" \
   -H "Content-Type: application/json" \
   -d '{"email":"sfurtwengler@gmail.com","password":"DrFurt138!"}'
 

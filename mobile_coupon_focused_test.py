@@ -19,7 +19,7 @@ from datetime import datetime, timezone, timedelta
 from typing import Dict, Any, Optional, List
 
 # Backend URL from frontend environment
-BACKEND_URL = "https://owner-mgmt.preview.emergentagent.com/api"
+BACKEND_URL = "https://deals-alert-staging.preview.emergentagent.com/api"
 
 class MobileCouponFocusedTester:
     def __init__(self):

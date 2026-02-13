@@ -1,179 +1,197 @@
 <analysis>**original_problem_statement:**
-The user wants to build a full-stack restaurant deals application. The core components are a React web portal for restaurant owners and a React Native (Expo) mobile app for customers.
+The user wants to build a full-stack restaurant deals application. The initial request in this session was to add administrative endpoints to manage restaurant ownership. After successfully implementing and deploying those, along with fixing a critical UI bug, the user pivoted to enhancing the mobile app. The current tasks are to add a map view for browsing restaurants and to implement push notifications for new specials from a user's favorite restaurants.
 
-In this session, the focus shifted to completing a multi-phase data enrichment pipeline to populate the app with New Orleans restaurants. After completing the data task, the user requested several new features and bug fixes for the web portal, including: fixing a filter auto-refresh bug, adding a Favorites button for customers, allowing owners to add their own restaurants, enabling owners to log in as customers, and providing options for owners to delete their profiles or transfer restaurant ownership. The latest request is to add a static HTML page provided by the user to the web app.
+PRODUCT REQUIREMENTS:
+-   **Mobile Map View:**
+    -   Add a toggle on the home screen to switch between the existing list view and a new map view.
+    -   On the map, display markers for all nearby restaurants.
+    -   Use a different style for markers of restaurants that have active specials.
+-   **Push Notifications:**
+    -   Integrate OneSignal to send push notifications.
+    -   Notify users when a new special is created by one of their favorited restaurants.
+    -   Provide granular notification settings for the user to control what they receive.
+-   **App Branding Update:**
+    -   A pending task is to replace the current app icon, splash screen, and web logo with new assets once they are provided by the user's design firm.
 
 **User's preferred language**: English
 
 **what currently exists?**
--   **Web App:** A functional React frontend and FastAPI backend. It now includes a significant number of features for restaurant owners, such as claiming a venue, adding a venue manually, creating specials/coupons, managing their profile (including deletion), and transferring restaurant ownership. The customer-facing side allows searching for restaurants, and a recent bug fix ensures filters auto-refresh results. Owners can now also log in via the customer portal to see how their listings appear.
--   **Mobile App (Broken):** A React Native/Expo app that remains non-functional due to pointing to an incorrect backend API URL. All work on the mobile app is blocked.
--   **Backend:** A FastAPI server connected to MongoDB. The database has been populated with ~565 enriched restaurant records from New Orleans. The backend now includes numerous new endpoints to support owner management features like adding restaurants, deleting profiles, and transferring ownership, as well as a unified login system. A temporary endpoint for downloading files was also added.
--   **Data Pipeline:** The 4-phase data pipeline is complete. Scripts for cleaning, web scraping, Yelp enrichment, and database import are located in . All generated data has been successfully imported into the production database.
+-   **Web App:** A functional React frontend and FastAPI backend. It includes features for restaurant owners, a referral program, and an analytics dashboard. All known production bugs have been fixed.
+-   **Mobile App (React Native/Expo):** The app is functional and deployed. Users can log in, browse restaurants, and manage favorites. The codebase includes initial scaffolding for a map view and push notifications.
+-   **Backend:** A FastAPI server connected to MongoDB. It serves both the web and mobile apps. It has APIs for owner management, analytics, referrals, and recently added admin endpoints. A backend service for OneSignal also exists.
 
 **Last working item**:
--   **Last item agent was working:** The user uploaded an HTML file () and requested that it be added as a new page at the URL . The agent was about to inspect the contents of the uploaded HTML file to begin implementation.
--   **Status:** NOT STARTED
+-   **Last item agent was working:** The agent was simultaneously implementing two mobile app features: a map view and push notifications.
+    -   **For Map View:** A reusable  component was created, and the  was modified to include a list/map toggle and conditional rendering logic.
+    -   **For Push Notifications:** The agent received the OneSignal App ID, retrieved the integration playbook, and added a backend endpoint to trigger notifications. The mobile app's profile screen was updated with notification preferences, and the API service was updated to tag users in OneSignal.
+-   **Status:** IN PROGRESS
 -   **Agent Testing Done:** N
--   **Which testing method agent to use?** After creating the new route and component, the agent should use the  tool to navigate to the  page and verify its content is displayed correctly.
+-   **Which testing method agent to use?** both
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1:** Mobile App: App is non-functional due to incorrect backend URL (P0, BLOCKER)
--   **Issue 2:** Mobile App: Restaurants near me feature is broken (P0, Symptom of Issue 1)
--   **Issue 3:** Mobile App: New user login fails (P0, Symptom of Issue 1)
--   **Issue 4:** Mobile App: Location search returns an error (P0, Symptom of Issue 1)
--   **Issue 5:** Mobile App: SMS sharing button bug on Android (P1, Blocked)
--   **Issue 6:** Mobile App: Filters stop working after multiple Near Me searches (P1, Blocked)
+-   **Issue 1:** Complete and test the mobile map view feature (P0)
+-   **Issue 2:** Complete and test the push notification integration (P0)
 
 **Issues Detail:**
--   **Issue 1: Mobile App: App is non-functional due to incorrect backend URL**
-    -   **Attempted fixes:** The user has locally edited  to point to the correct URL.
-    -   **Next debug checklist:** User must wait for their Expo Application Services (EAS) free tier build limit to reset (est. Feb 1, 2026). Once unblocked, they need to create a new build ( file) and upload it to the Google Play Console.
-    -   **Why fix this issue and what will be achieved with the fix?** This is a critical blocker. The entire mobile app is unusable until this is fixed and deployed.
-    -   **Status:** BLOCKED
+-   **Issue 1: Complete and test the mobile map view feature**
+    -   **Attempted fixes:** The agent has already created the  component and added the toggle logic to .
+    -   **Next debug checklist:**
+        1.  Build and run the mobile app in a simulator or on a device.
+        2.  Verify the list/map toggle functions correctly on the home screen.
+        3.  Confirm that restaurant markers are displayed on the map.
+        4.  Ensure markers for restaurants with specials are visually distinct.
+        5.  Test the tap interaction on a marker to confirm it opens a restaurant preview.
+    -   **Why fix this issue and what will be achieved with the fix?** To complete the user-requested map view, offering an engaging and visual way for users to discover restaurants with deals.
+    -   **Status:** IN PROGRESS
     -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** Frontend (Mobile App)
-    -   **Blocked on other issue:** User's EAS build limit.
+    -   **Should Test frontend/backend/both after fix?** frontend
+    -   **Blocked on other issue:** None
 
--   **Issues 2-6 (All other Mobile App issues):**
-    -   **Attempted fixes:** None in this session.
-    -   **Status:** BLOCKED
-    -   **Blocked on other issue:** Issue 1. No work can proceed on these until a working build is deployed to testers.
+-   **Issue 2: Complete and test the push notification integration**
+    -   **Attempted fixes:** The agent has added a backend endpoint, UI for preferences on , and OneSignal tagging logic in .
+    -   **Next debug checklist:**
+        1.  Uncomment and correctly implement the OneSignal initialization in  using the provided App ID.
+        2.  Configure the OneSignal Gradle plugin in  as per the integration playbook.
+        3.  Build the app and test that it prompts for notification permissions.
+        4.  Trigger the backend notification endpoint (e.g., ) and verify the notification is received on the device.
+        5.  Test the notification preference toggles on the profile screen to ensure they function correctly.
+    -   **Why fix this issue and what will be achieved with the fix?** To complete the push notification feature, which will increase user retention and engagement by proactively alerting them to relevant deals.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** both
+    -   **Blocked on other issue:** None
 
 **In progress Task List**:
--   **Task 1: Add Partner Info Page (P0)**
-    -   **Where to resume:** Read the user-uploaded file . Create a new route and a React component in the frontend to render this HTML content at the  path.
-    -   **What will be achieved with this?** Fulfills the user's latest request to add a static informational page to the website.
+-   **Task 1: Mobile App - Map View (P0)**
+    -   **Where to resume:** Test the existing implementation in  and  by building and running the mobile app.
+    -   **What will be achieved with this?** A functional map view on the mobile home screen where users can see restaurant locations.
     -   **Status:** IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?** Frontend
+    -   **Should Test frontend/backend/both after fix?** frontend
+    -   **Blocked on something:** No.
+
+-   **Task 2: Mobile App - Push Notifications (P0)**
+    -   **Where to resume:** The immediate next step is to correctly initialize the OneSignal SDK in  and configure it in  using the provided App ID.
+    -   **What will be achieved with this?** A fully functional push notification system that alerts users to new specials from their favorite restaurants.
+    -   **Status:** IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?** both
     -   **Blocked on something:** No.
 
 **Upcoming and Future Tasks**
 *   **Upcoming Tasks:**
-    *   (P0) **Mobile App Debugging:** Once the EAS build is available, guide the user to deploy it and then thoroughly test the app to confirm API connectivity and core features (login, search, near me) are working.
-    *   (P1) **Submit mobile app to the Apple App Store.**
+    *   (P1) **Mobile App & Web - Branding Update:** Replace the current app icon, splash screen, web logo, and favicon with new assets when the user provides them.
 *   **Future Tasks:**
     *   (P2) Create a dedicated landing page for New Orleans restaurant owners.
-    *   (P2) Add a Map View to the mobile app.
-    *   (P2) Integrate PayPal as an alternative payment option for owner subscriptions.
-    *   (P2) Enhance the Owner Dashboard with AI-driven upselling suggestions.
-    *   (P2) Build a UI for the existing admin approval workflow for specials.
+    *   (P2) Integrate PayPal as an alternative payment option.
+    - (P2) Enhance the Owner Analytics Dashboard (Tier 2/3 features).
+    - (P2) Build a UI for the admin approval workflow for specials.
+    - (P2) Submit the mobile app to the Apple App Store.
 
 **Completed work in this session**
-- **Data Pipeline (Complete):**
-  - **Phase 1:** Cleaned and segmented a user-provided CSV of 1,206 restaurants.
-  - **Phase 2:** Scraped 305 websites to find 15 new, valid contact emails.
-  - **Phase 3:** Enriched 565 restaurant records with data from the Yelp API.
-  - **Phase 4:** Imported 565 new, enriched restaurant records into the application's database.
-- **Web App Bug Fixes:**
-  - Fixed a critical bug where search filters (radius, venue type) did not automatically re-trigger a search.
-- **Web App Features:**
-  - Added a Favorites button to the header for logged-in customers to access their profile and saved restaurants.
-  - Implemented an Add Your Own Restaurant feature, allowing owners to create a listing if it's not in the database.
-  - Unified the login system, allowing owners to use their credentials on the customer Sign In form to view the app as a customer.
-  - Implemented owner account management:
-    - **Delete Profile:** Owners can delete their own accounts.
-    - **Transfer Ownership:** Owners can transfer claimed restaurants to other registered owners.
-- **Data Management:**
-  - Manually added two restaurants (Avenue Pub, Oh My Chives) to the database at the user's request.
-- **API:**
-  - Created a temporary endpoint () to allow the user to download the files generated by the data pipeline.
+-   **Admin Endpoints & Enhancement:**
+    -   Implemented and tested  and .
+    -   Added a new  endpoint as an enhancement.
+-   **Production Deployment & Debugging:**
+    -   Guided the user through multiple production deployments.
+    -   Diagnosed and provided a resolution for a recurring production login failure caused by incorrect database environment variables.
+-   **Critical UI Bug Fix (Already Claimed):**
+    -   Fixed a bug where an un-claimed restaurant was incorrectly displayed as Already Claimed. This involved fixes to both the backend search API and the frontend claim modal logic.
+-   **Mobile App Bug Fixes:**
+    -   **Missing Photos:** Updated the  endpoint to include photo URLs, fixing an issue where favorite restaurant cards had no images.
+    -   **Disappearing Favorites:** Diagnosed that favorites were disappearing due to a stale auth token and guided the user to log out and back in to resolve it.
+-   **Planning:**
+    -   Outlined the complete process for the upcoming app branding update.
+    -   Gathered requirements and created a plan for the map view and push notification features.
 
 **Earlier issues found/mentioned but not fixed**
-- None. All web app issues reported by the user in this session were addressed. Mobile issues are documented above.
+-   None. All previously known issues have been addressed or are currently in progress.
 
 **Known issue recurrence from previous fork**
--   **Mobile App Instability:** The mobile app remains the primary area of concern, being in a critically broken and unusable state. This has been a persistent theme.
+-   **Production Environment Instability:** A critical recurring issue where production deployments can cause database environment variables (, ) to be reset, leading to application-wide failures (e.g., login). This occurred again this session and required external support to fix.
+-   **Status:** RESOLVED (for now, but high risk of recurrence on next deployment).
+-   **Mobile App Token Handling:** The disappearing favorites bug was resolved by a user-side logout/login, suggesting the app's session/token management may be fragile and could cause similar issues in the future.
+-   **Status:** NOT STARTED
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Full-Stack:** React, FastAPI, MongoDB
--   **Mobile:** React Native with Expo (builds via EAS)
--   **Data Science:** Pandas for data cleaning, BeautifulSoup for web scraping.
--   **State Management:** React Hooks (, , ) for managing complex UI state and side effects.
--   **API Integration:** Yelp Fusion API.
+-   **React Native Maps:** Using the  library to display interactive maps and markers.
+-   **Push Notifications (OneSignal):** Integrating a third-party service for push notifications, including SDK setup, user segmentation with tags, and backend triggers.
+-   **Production Environment Debugging:** Isolating issues specific to a production environment, particularly related to configuration and environment variables.
+-   **State Management:** Differentiating between server-side data errors and client-side state/cache issues (e.g., the expired auth token).
 
 **key DB schema**
--   ****: No schema change, but this collection was populated with 565 new documents from the data pipeline. Documents now contain rich data from Yelp (ratings, categories, price, etc.).
--   ****: Logic was added to handle un-linking restaurants upon profile deletion and re-assigning them upon transfer.
+-   No new schemas were introduced. Work involved the , , and  (via favorites) collections.
 
 **All files of reference**
--   : Heavily modified. Added endpoints for downloading exports, adding restaurants, deleting profiles, transferring ownership. Modified login/auth endpoints for unified user/owner access.
--   : Heavily modified. Implemented the filter auto-refresh fix using . Added logic for the customer Favorites button and managing  state across sessions.
--   : Heavily modified. Added UI and handlers for Delete Profile and Transfer Ownership features.
--   : Heavily modified. Added the Add Your Restaurant form and its submission logic.
--   : New file. Python script to scrape websites for emails.
--   : New file. Python script to enrich data using the Yelp API.
--   : New file. Python script to import the final CSV into MongoDB.
+-    (Map View UI)
+-    (Map View Component)
+-    (OneSignal Initialization)
+-    (OneSignal Configuration)
+-    (Notification Preferences UI)
+-    (OneSignal Tagging)
+-    (Notification Trigger Endpoint)
+-    (Integration Guide)
 
-**Areas that need refactoring**
--   The file download endpoints ( and ) added to  were a temporary solution to help the user. This is not a scalable or secure way to handle file storage and should be replaced with a proper file service or removed if no longer needed.
+**Areas that need refactoring**:
+-   The  file is now over 3000 lines and handles almost all application logic. It should be modularized by feature (e.g., , , ) to improve maintainability.
+-   The mobile app's authentication flow needs improved error handling for expired tokens to avoid silent failures that make data appear to be missing. It should automatically attempt to refresh the token or prompt the user to log in again.
 
 **key api endpoints**
--   ****: (New) Allows an authenticated owner to create a new restaurant listing.
--   ****: (New) Allows an authenticated owner to delete their own profile.
--   ****: (New) Allows an owner to transfer a claimed restaurant to another owner.
--   ****: (Modified) Now accepts owner credentials, allowing them to log in as customers.
--   ****: (Modified) Now handles tokens for both regular users and owners logged in as customers.
--   ****: (New, Temporary) Lists downloadable files in the  directory.
--   ****: (New, Temporary) Serves a file for download from the  directory.
+-   **Admin (New):**
+    -   
+    -   
+    -   
+-   **Favorites (Updated):**
+    -    (Now includes ).
+-   **Notifications (New):**
+    -   
 
 **Critical Info for New Agent**
--   **MOBILE APP IS THE #1 PRIORITY & STILL BLOCKED:** The mobile app is completely unusable. All mobile-related tasks are on hold until the user's EAS build limit resets. Do not attempt any mobile work.
--   **IMMEDIATE TASK:** The immediate P0 task is to add the user-provided HTML as a static page at the  route.
--   **WEB APP IS DEPLOYABLE:** A significant number of new features and fixes have been added to the web app. The user has indicated they are ready to deploy these changes.
+-   **Priorities:** Your immediate task is to complete the two in-progress mobile features: Map View and Push Notifications. They should be worked on in parallel and tested thoroughly.
+-   **Map View Status:** The UI code is written. You need to build the app, test it on a simulator, and debug any issues with the map rendering, markers, or interactions.
+-   **Push Notification Status:** The user has provided the OneSignal App ID: . Your next step is to correctly initialize the SDK in  and configure  using the playbook at . After that, test the full end-to-end flow.
+-   **Recurring Production Risk:** Be extremely cautious with deployments. There is a known, recurring platform issue where production environment variables (especially for MongoDB) are reset, causing the live application to fail. If logins break after deployment, this is the first thing to suspect.
+-   **Pending User Request:** The user is waiting on new brand assets from a design firm. Be prepared to implement the UI changes for the app icon, splash screen, and logos once the user provides the files.
 
 **documents and test reports created in this job**
 -   
 -   
 -   
 -   
--   
--   
--   
--   
--   
--   
--   
--   
--    (updated)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Asks to proceed with implementing both Delete Profile and Transfer Ownership for owners. (Completed)
-2.  **User:** Asks to add Oh My Chives restaurant to the database. (Completed)
-3.  **User:** Reports Oh My Chives is not showing up in search. (Resolved - was a caching/search location issue)
-4.  **User:** Confirms they can now see the restaurant. (Acknowledged)
-5.  **User:** Confirms they have no more changes before deployment. (Acknowledged)
-6.  **Agent:** Finishes the task and summarizes all completed features, stating it's ready for deployment. (Completed)
-7.  **User:** Uploads an HTML file and asks to add it to the website at . (Pending - This is the current )
-8.  **Agent:** Acknowledges and begins inspecting the uploaded file. (In Progress)
-9.  **User:** *No new messages from user.*
-10. **Agent:** *No new messages from agent.*
+-   **10. User:** Asked for a plan to change the app icon, logo, and splash screen. (Agent provided a plan).
+-   **9. User:** Confirmed they shared the plan with their graphics firm and declared a break.
+-   **8. User:** Returned from break and requested work on the mobile map view and push notifications. (Tasks are in progress).
+-   **7. User:** Provided detailed requirements for the map view (toggle, prioritize specials) and push notifications.
+-   **6. Agent:** Proposed a plan and asked for the OneSignal App ID.
+-   **5. User:** Provided the OneSignal App ID: .
+-   **4-1. Agent:** Acknowledged the ID and proceeded with implementation. The remaining messages are the agent's internal thought process and tool calls before the session ended.
 
 **Project Health Check:**
--   **Broken:**
-    -   **Mobile App:** Critically broken and unusable. All API calls fail. Blocked by EAS build limits.
--   **Mocked:**
-    -   None.
+-   **Broken:** None.
+-   **Mocked:** None.
 
 **3rd Party Integrations**
--   **Stripe (Payments):** Live and functional for owner subscriptions.
--   **Expo Application Services (EAS):** Used for mobile app builds. User is blocked by free tier build limits.
--   **Google Play Console:** Mobile app is in Closed Testing with a broken build.
--   **Yelp Fusion API:** Actively used to enrich restaurant data. The user provided a working API key.
+-   **Stripe (Payments):** Live and functional.
+-   **Yelp Fusion API:** Used for data ingestion.
+-   **Expo Application Services (EAS):** Used for mobile app builds.
+-   **OneSignal (Push Notifications):** **IN PROGRESS**. App ID is known. SDK is installed but requires final configuration in  and .
+-   **react-native-maps:** Installed and used for the new map view feature.
 
 **Testing status**
--   **Testing agent used after significant changes:** YES, for the filter auto-refresh bug.
+-   **Testing agent used after significant changes:** NO
 -   **Troubleshoot agent used after agent stuck in loop:** NO
--   **Test files created:** None
--   **Known regressions:** The mobile app remains in a non-functional state.
+-   **Test files created:** []
+-   **Known regressions:** None.
 
 **Credentials to test flow:**
 -   **Owner:**  / 
 -   **Customer:**  / 
+-   **OneSignal App ID:** 
 
 **What agent forgot to execute**
-- The agent has not forgotten any tasks. The last user request to add a static HTML page is the current highest-priority task and was in the process of being started.</analysis>
+-   The agent was in the middle of implementation and did not complete the final configuration steps for the OneSignal SDK in  and .
+-   The agent did not build or test the mobile app after adding the new code for both the map view and the push notification features. This is the most critical next step.</analysis>
