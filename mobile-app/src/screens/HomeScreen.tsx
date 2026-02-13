@@ -444,8 +444,8 @@ const HomeScreen = ({ navigation }: any) => {
         </View>
       )}
 
-      {/* Results */}
-      {!loading && restaurants.length > 0 && (
+      {/* Results - List View */}
+      {!loading && restaurants.length > 0 && viewMode === 'list' && (
         <View style={styles.resultsSection}>          
           {restaurants.map((restaurant, index) => {
             console.log(`Rendering restaurant ${index}:`, restaurant.name, 'Photos:', restaurant.photos?.length || 0);
@@ -457,6 +457,17 @@ const HomeScreen = ({ navigation }: any) => {
               />
             );
           })}
+        </View>
+      )}
+
+      {/* Results - Map View */}
+      {!loading && restaurants.length > 0 && viewMode === 'map' && (
+        <View style={styles.mapContainer}>
+          <RestaurantMapView
+            restaurants={restaurants}
+            userLocation={location}
+            onRestaurantPress={(restaurant) => navigation.navigate('RestaurantDetail', { restaurant })}
+          />
         </View>
       )}
 
