@@ -62,6 +62,41 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 - Avenue Pub - 1732 St. Charles Ave, New Orleans, LA 70130
 - Oh My Chives - 7332 Nolensville Rd, Suite 304, Nolensville, TN 37135
 
+## Recent Changes (February 13, 2026)
+
+### New Features
+1. **Mobile Map View** - Toggle between list and map view on home screen
+   - Custom markers showing restaurants with/without active specials
+   - Restaurant preview card when tapping markers
+   - Legend showing marker colors
+   - Auto-fits map to show all restaurants
+
+2. **Push Notifications System** - Full OneSignal integration
+   - Mobile app: OneSignal SDK initialization
+   - Mobile app: User tagging for favorites targeting
+   - Mobile app: Notification preferences (new specials, starting soon, daily digest)
+   - Backend: Notification endpoints for favorites' specials
+   - Backend: Special starting soon notifications
+   - Deep linking: Tap notification to open restaurant detail
+
+### Files Changed
+- `/app/mobile-app/src/components/RestaurantMapView.tsx` (new)
+- `/app/mobile-app/src/screens/HomeScreen.tsx` (map toggle)
+- `/app/mobile-app/src/services/OneSignalService.ts` (rewritten)
+- `/app/mobile-app/src/services/APIService.ts` (favorite tagging)
+- `/app/mobile-app/src/screens/ProfileScreen.tsx` (notification preferences)
+- `/app/mobile-app/App.tsx` (OneSignal initialization)
+- `/app/backend/server.py` (notification endpoints)
+
+### Setup Required for Push Notifications
+1. Create OneSignal account at https://onesignal.com
+2. Create new app and get App ID
+3. Configure iOS (APNs p8 certificate) and Android (FCM)
+4. Add to backend `.env`: ONESIGNAL_APP_ID, ONESIGNAL_API_KEY
+5. Add to mobile app build: ONESIGNAL_APP_ID environment variable
+6. Add onesignal-expo-plugin to app.json plugins array
+7. Rebuild mobile app with EAS
+
 ## Recent Changes (February 12, 2026)
 
 ### New Features
