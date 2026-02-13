@@ -25,10 +25,13 @@ export interface Restaurant {
   id: string;
   name: string;
   address: string;
-  location: {
+  location?: {
     latitude: number;
     longitude: number;
   };
+  // Direct lat/lng from API (some endpoints return this format)
+  latitude?: number;
+  longitude?: number;
   phone?: string;
   website?: string;
   cuisine_type: string[];
