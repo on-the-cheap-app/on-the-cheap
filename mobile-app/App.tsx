@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   SafeAreaProvider,
   SafeAreaView,
@@ -7,18 +7,41 @@ import {
   StatusBar,
   StyleSheet,
 } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, NavigationContainerRef } from '@react-navigation/native';
 import { Provider as PaperProvider } from 'react-native-paper';
 
 import AppNavigator from './src/navigation/AppNavigator';
 import { theme } from './src/theme/colors';
-// Remove OneSignal for now to avoid compilation issues
-// import OneSignalService from './src/services/OneSignalService';
+import OneSignalService from './src/services/OneSignalService';
 
-// Initialize OneSignal
-// OneSignalService.initialize();
+// OneSignal App ID - Replace with your actual App ID
+const ONESIGNAL_APP_ID = process.env.ONESIGNAL_APP_ID || '';
 
 const App = (): React.JSX.Element => {
+  const navigationRef = useRef<NavigationContainerRef<any>>(null);
+
+  useEffect(() => {
+    // Initialize OneSignal
+    if (ONESIGNAL_APP_ID) {
+      OneSignalService.initialize(ONESIGNAL_APP_ID);
+      
+      // Request notification permission
+      OneSignalService.requestPermission();
+      
+      // Set up notification click handler for deep linking
+      OneSignalService.onNotificationClick((data) => {
+        if (data.restaurantId && navigationRef.current) {
+          // Navigate to restaurant detail when notification is tapped
+          navigationRef.current.navigate('RestaurantDetail', { 
+            restaurantId: data.restaurantId 
+          });
+        }
+      });
+    } else {
+      console.log('OneSignal App ID not configured. Push notifications disabled.');
+    }
+  }, []);
+
   return (
     <SafeAreaProvider>
       <PaperProvider theme={theme}>
@@ -26,7 +49,7 @@ const App = (): React.JSX.Element => {
           barStyle="light-content"
           backgroundColor={theme.colors.primary}
         />
-        <NavigationContainer>
+        <NavigationContainer ref={navigationRef}>
           <SafeAreaView style={styles.container}>
             <AppNavigator />
           </SafeAreaView>
