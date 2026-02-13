@@ -43,6 +43,7 @@ const HomeScreen = ({ navigation }: any) => {
   const [specialTypes, setSpecialTypes] = useState<any[]>([]);
   const [searchLocation, setSearchLocation] = useState<string>('');
   const [lastSearchLocation, setLastSearchLocation] = useState<string>('');
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   
   // Menu states for dropdowns
   const [specialTypeMenuVisible, setSpecialTypeMenuVisible] = useState(false);
