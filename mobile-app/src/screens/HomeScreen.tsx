@@ -134,35 +134,29 @@ const HomeScreen = ({ navigation }: any) => {
     }
   }, [isAuthenticated, favorites]);
 
-  // Get current location
+  // Get current location using expo-location
   const getCurrentLocation = async () => {
     try {
-      if (Platform.OS === 'android') {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-        );
-        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-          Alert.alert('Permission denied', 'Location permission is required to find nearby restaurants');
-          return;
-        }
+      // Request permission
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission denied', 'Location permission is required to find nearby restaurants');
+        return;
       }
 
-      Geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setLocation({ latitude, longitude });
-          
-          // Auto-search nearby restaurants
-          searchNearbyRestaurants(latitude, longitude);
-        },
-        (error) => {
-          console.error('Location error:', error);
-          Alert.alert('Location Error', 'Could not get your current location. Please enter an address to search.');
-        },
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-      );
+      const position = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+      
+      const { latitude, longitude } = position.coords;
+      setLocation({ latitude, longitude });
+      setLastSearchLocation('Current Location');
+      
+      // Auto-search nearby restaurants
+      searchNearbyRestaurants(latitude, longitude);
     } catch (error) {
-      console.error('Location permission error:', error);
+      console.error('Location error:', error);
+      Alert.alert('Location Error', 'Could not get your current location. Please enter an address to search.');
     }
   };
 
