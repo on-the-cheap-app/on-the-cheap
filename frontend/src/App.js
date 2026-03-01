@@ -1532,7 +1532,10 @@ function App() {
       <footer className="bg-white border-t mt-12">
         <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">On-the-Cheap</h3>
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <img src="/logo.png" alt="On-the-Cheap" className="w-8 h-8" />
+              <h3 className="text-lg font-semibold text-gray-900">On-the-Cheap</h3>
+            </div>
             <p className="text-gray-600 text-sm">
               Discover the best restaurant specials and save money on great food!
             </p>
