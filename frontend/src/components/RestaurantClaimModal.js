@@ -469,6 +469,24 @@ const RestaurantClaimModal = ({ onClose, token, onSuccess }) => {
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Venue Type *
+                </label>
+                <select
+                  value={newRestaurant.vendor_type}
+                  onChange={(e) => setNewRestaurant({...newRestaurant, vendor_type: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                >
+                  <option value="permanent">Restaurant</option>
+                  <option value="bar">Bar</option>
+                  <option value="mobile">Food Truck</option>
+                  <option value="popup">Pop-up</option>
+                  <option value="other">Other (Smoke Shop, Salon, etc.)</option>
+                </select>
+              </div>
+
               {error && (
                 <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
                   {error}
