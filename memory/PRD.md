@@ -58,6 +58,7 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 5. **Auth State** - Added authentication checking and favorites loading on app startup
 6. **Pull-to-Refresh Favorites Sync** - Pull down to refresh syncs favorites with server and shows snackbar confirmation
 7. **Favorite Toggle Feedback** - Snackbar notifications when adding/removing favorites
+8. **Venue Type Filters** - Added Bars, Pop-ups, and Other venue types to filter options
 
 ### Data Enrichment Pipeline ✅ COMPLETE
 - **Phase 1**: Cleaned and segmented 1,206 New Orleans restaurants
