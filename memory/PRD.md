@@ -47,8 +47,15 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
   - Copy referral code and share message functionality
 
 ### Mobile App (Android)
-- ⚠️ **BLOCKED** - Non-functional due to incorrect backend URL in APIService.js
-- User has fixed the code locally but waiting for EAS build limit reset
+- ✅ Bug fixes applied to codebase
+- ⏳ **Requires EAS Build** - User needs to build locally to test
+
+### Recent Mobile App Bug Fixes (March 1, 2026)
+1. **Geolocation** - Replaced `react-native-geolocation-service` with `expo-location`
+2. **Favorites** - Added state management, API calls, and optimistic UI updates
+3. **Search Button** - Added explicit "Search" button next to address input field
+4. **Search After Logout** - Fixed by preserving location state in `clearSearch()`
+5. **Auth State** - Added authentication checking and favorites loading on app startup
 
 ### Data Enrichment Pipeline ✅ COMPLETE
 - **Phase 1**: Cleaned and segmented 1,206 New Orleans restaurants
