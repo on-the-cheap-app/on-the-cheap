@@ -411,11 +411,32 @@ const HomeScreen = ({ navigation }: any) => {
                   Restaurants
                 </Chip>
                 <Chip
+                  selected={selectedVendorType === 'bar'}
+                  onPress={() => setSelectedVendorType('bar')}
+                  style={styles.filterChip}
+                >
+                  Bars
+                </Chip>
+                <Chip
                   selected={selectedVendorType === 'mobile'}
                   onPress={() => setSelectedVendorType('mobile')}
                   style={styles.filterChip}
                 >
-                  🚛 Food Trucks
+                  Food Trucks
+                </Chip>
+                <Chip
+                  selected={selectedVendorType === 'popup'}
+                  onPress={() => setSelectedVendorType('popup')}
+                  style={styles.filterChip}
+                >
+                  Pop-ups
+                </Chip>
+                <Chip
+                  selected={selectedVendorType === 'other'}
+                  onPress={() => setSelectedVendorType('other')}
+                  style={styles.filterChip}
+                >
+                  Other
                 </Chip>
               </ScrollView>
             </View>
