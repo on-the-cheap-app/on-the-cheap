@@ -1009,9 +1009,11 @@ function App() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Venues</SelectItem>
-                    <SelectItem value="permanent">Restaurants Only</SelectItem>
-                    <SelectItem value="bar">🍺 Bars</SelectItem>
-                    <SelectItem value="mobile">🚛 Food Trucks & Pop-ups</SelectItem>
+                    <SelectItem value="permanent">Restaurants</SelectItem>
+                    <SelectItem value="bar">Bars</SelectItem>
+                    <SelectItem value="mobile">Food Trucks</SelectItem>
+                    <SelectItem value="popup">Pop-ups</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
