@@ -265,7 +265,6 @@ const HomeScreen = ({ navigation }: any) => {
   // Clear search and reset state
   const clearSearch = () => {
     setRestaurants([]);
-    setSearchQuery('');
     setSearchLocation('');
     setLastSearchLocation('');
     // Don't reset location - keep it so user can search again
