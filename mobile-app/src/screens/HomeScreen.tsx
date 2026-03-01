@@ -212,7 +212,7 @@ const HomeScreen = ({ navigation }: any) => {
 
   // Search by address
   const searchByAddress = async () => {
-    if (!searchQuery.trim()) {
+    if (!searchLocation.trim()) {
       Alert.alert('Search Required', 'Please enter a city or address');
       return;
     }
@@ -220,12 +220,12 @@ const HomeScreen = ({ navigation }: any) => {
     setLoading(true);
     try {
       // First geocode the address
-      const geocodeResult = await APIService.geocodeAddress(searchQuery);
+      const geocodeResult = await APIService.geocodeAddress(searchLocation);
       
       if (geocodeResult.coordinates) {
         const { latitude, longitude } = geocodeResult.coordinates;
         setLocation({ latitude, longitude });
-        setLastSearchLocation(geocodeResult.formatted_address || searchQuery);
+        setLastSearchLocation(geocodeResult.formatted_address || searchLocation);
         
         // Then search restaurants
         await searchNearbyRestaurants(latitude, longitude);
