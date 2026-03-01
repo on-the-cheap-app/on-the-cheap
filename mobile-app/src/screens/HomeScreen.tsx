@@ -859,6 +859,10 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     paddingHorizontal: spacing.md,
   },
+  snackbar: {
+    marginBottom: spacing.lg,
+    marginHorizontal: spacing.md,
+  },
 });
 
 export default HomeScreen;
