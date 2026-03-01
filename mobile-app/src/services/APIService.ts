@@ -231,9 +231,8 @@ class APIService {
       await AsyncStorage.multiRemove(['auth_token', 'user_data']);
       // Clear auth cache on logout
       this.authCache = null;
-      console.log('User logged out successfully');
     } catch (error) {
-      console.error('Error logging out:', error);
+      // Silently fail
     }
   }
 
@@ -243,7 +242,6 @@ class APIService {
       // Check cache first to avoid repeated server calls
       const now = Date.now();
       if (this.authCache && (now - this.authCache.timestamp) < this.AUTH_CACHE_DURATION) {
-        console.log('✅ Using cached authentication status');
         return this.authCache.isAuthenticated;
       }
 
