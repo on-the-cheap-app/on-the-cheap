@@ -51,6 +51,10 @@ const HomeScreen = ({ navigation }: any) => {
   // Menu states for dropdowns
   const [specialTypeMenuVisible, setSpecialTypeMenuVisible] = useState(false);
   const [radiusMenuVisible, setRadiusMenuVisible] = useState(false);
+  
+  // Snackbar state for feedback messages
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   // Radius options
   const radiusOptions = [
