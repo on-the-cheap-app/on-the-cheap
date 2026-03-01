@@ -44,6 +44,10 @@ const HomeScreen = ({ navigation }: any) => {
   const [lastSearchLocation, setLastSearchLocation] = useState<string>('');
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   
+  // Favorites state
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
   // Menu states for dropdowns
   const [specialTypeMenuVisible, setSpecialTypeMenuVisible] = useState(false);
   const [radiusMenuVisible, setRadiusMenuVisible] = useState(false);
