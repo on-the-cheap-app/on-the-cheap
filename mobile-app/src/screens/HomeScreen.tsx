@@ -65,7 +65,74 @@ const HomeScreen = ({ navigation }: any) => {
   useEffect(() => {
     getCurrentLocation();
     loadSpecialTypes();
+    checkAuthAndLoadFavorites();
   }, []);
+
+  // Check authentication and load favorites
+  const checkAuthAndLoadFavorites = async () => {
+    try {
+      const authenticated = await APIService.isAuthenticated();
+      setIsAuthenticated(authenticated);
+      if (authenticated) {
+        await loadFavorites();
+      }
+    } catch (error) {
+      console.error('Auth check error:', error);
+    }
+  };
+
+  // Load user's favorites
+  const loadFavorites = async () => {
+    try {
+      const response = await APIService.getFavorites();
+      const favoriteIds = new Set(
+        (response.favorites || []).map((fav: any) => fav.id || fav.restaurant_id)
+      );
+      setFavorites(favoriteIds);
+      console.log('📍 Loaded favorites:', favoriteIds.size);
+    } catch (error) {
+      console.error('Load favorites error:', error);
+    }
+  };
+
+  // Toggle favorite
+  const toggleFavorite = useCallback(async (restaurantId: string) => {
+    if (!isAuthenticated) {
+      Alert.alert('Login Required', 'Please log in to save favorites');
+      return;
+    }
+    
+    const isFavorite = favorites.has(restaurantId);
+    
+    // Optimistic update
+    setFavorites(prev => {
+      const newSet = new Set(prev);
+      if (isFavorite) {
+        newSet.delete(restaurantId);
+      } else {
+        newSet.add(restaurantId);
+      }
+      return newSet;
+    });
+    
+    try {
+      await APIService.toggleFavorite(restaurantId, isFavorite);
+      console.log(`❤️ Favorite ${isFavorite ? 'removed' : 'added'}: ${restaurantId}`);
+    } catch (error: any) {
+      // Revert on failure
+      setFavorites(prev => {
+        const newSet = new Set(prev);
+        if (isFavorite) {
+          newSet.add(restaurantId);
+        } else {
+          newSet.delete(restaurantId);
+        }
+        return newSet;
+      });
+      console.error('Toggle favorite error:', error);
+      Alert.alert('Error', error.response?.data?.detail || 'Failed to update favorite');
+    }
+  }, [isAuthenticated, favorites]);
 
   // Get current location
   const getCurrentLocation = async () => {
