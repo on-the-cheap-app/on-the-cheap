@@ -560,18 +560,15 @@ const HomeScreen = ({ navigation }: any) => {
       {/* Results - List View */}
       {!loading && restaurants.length > 0 && viewMode === 'list' && (
         <View style={styles.resultsSection}>          
-          {restaurants.map((restaurant, index) => {
-            console.log(`Rendering restaurant ${index}:`, restaurant.name, 'Photos:', restaurant.photos?.length || 0);
-            return (
-              <RestaurantCard
-                key={restaurant.id}
-                restaurant={restaurant}
-                onPress={() => navigation.navigate('RestaurantDetail', { restaurant })}
-                onToggleFavorite={toggleFavorite}
-                isFavorite={favorites.has(restaurant.id)}
-              />
-            );
-          })}
+          {restaurants.map((restaurant) => (
+            <RestaurantCard
+              key={restaurant.id}
+              restaurant={restaurant}
+              onPress={() => navigation.navigate('RestaurantDetail', { restaurant })}
+              onToggleFavorite={toggleFavorite}
+              isFavorite={favorites.has(restaurant.id)}
+            />
+          ))}
         </View>
       )}
 
