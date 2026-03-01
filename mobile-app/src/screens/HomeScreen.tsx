@@ -264,7 +264,7 @@ const HomeScreen = ({ navigation }: any) => {
     setSearchQuery('');
     setSearchLocation('');
     setLastSearchLocation('');
-    setLocation(null);
+    // Don't reset location - keep it so user can search again
     setSelectedSpecialType('all');
     setSelectedVendorType('all');
     setSelectedRadius(25000);
