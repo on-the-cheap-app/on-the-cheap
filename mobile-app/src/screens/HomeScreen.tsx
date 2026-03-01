@@ -93,9 +93,8 @@ const HomeScreen = ({ navigation }: any) => {
         (response.favorites || []).map((fav: any) => String(fav.id || fav.restaurant_id))
       );
       setFavorites(favoriteIds);
-      console.log('📍 Loaded favorites:', favoriteIds.size);
     } catch (error) {
-      console.error('Load favorites error:', error);
+      // Silently fail - favorites will just be empty
     }
   };
 
