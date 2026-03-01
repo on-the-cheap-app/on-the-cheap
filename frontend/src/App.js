@@ -828,13 +828,20 @@ function App() {
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-6xl mx-auto px-4 py-4 sm:py-6">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div className="text-center sm:flex-1">
-              <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-1 sm:mb-2">
-                On-the-Cheap
-              </h1>
-              <p className="text-sm sm:text-lg text-gray-600">
-                Find the best restaurant specials near you
-              </p>
+            <div className="flex items-center gap-3 text-center sm:flex-1">
+              <img 
+                src="/logo.png" 
+                alt="On-the-Cheap Logo" 
+                className="w-10 h-10 sm:w-12 sm:h-12"
+              />
+              <div>
+                <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-0 sm:mb-1">
+                  On-the-Cheap
+                </h1>
+                <p className="text-xs sm:text-lg text-gray-600">
+                  Find the best restaurant specials near you
+                </p>
+              </div>
             </div>
             <div className="flex flex-wrap gap-2 justify-center sm:justify-end">
               {/* Auth buttons */}
