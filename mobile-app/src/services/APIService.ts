@@ -9,7 +9,6 @@ class APIService {
   private readonly AUTH_CACHE_DURATION = 5000; // 5 seconds cache
 
   constructor() {
-    console.log('🔧 APIService initializing with baseURL:', this.baseURL);
     this.api = axios.create({
       baseURL: this.baseURL,
       timeout: 10000,
@@ -21,21 +20,8 @@ class APIService {
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
-      console.log('📡 API Request:', config.method?.toUpperCase(), config.url);
       return config;
     });
-
-    // Add response/error interceptors for debugging
-    this.api.interceptors.response.use(
-      (response) => {
-        console.log('✅ API Response:', response.config.method?.toUpperCase(), response.config.url, response.status);
-        return response;
-      },
-      (error) => {
-        console.error('❌ API Error:', error.config?.method?.toUpperCase(), error.config?.url, error.response?.status, error.message);
-        return Promise.reject(error);
-      }
-    );
 
     // Handle token expiration
     this.api.interceptors.response.use(
