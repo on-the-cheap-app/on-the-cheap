@@ -1133,14 +1133,26 @@ async def search_restaurants(
                     if not r.get('is_mobile_vendor', False) and r.get('vendor_type') != 'mobile'
                 ]
             elif vendor_type == 'bar':
-                # Filter for bars based on cuisine_type
+                # Filter for bars based on cuisine_type or vendor_type flag
                 bar_keywords = ['bar', 'bars', 'pub', 'tavern', 'lounge', 'cocktail', 'brewery', 'wine bar', 'sports bar', 'night club']
                 nearby_restaurants = [
                     r for r in nearby_restaurants 
-                    if any(
+                    if r.get('vendor_type') == 'bar' or any(
                         any(keyword in cuisine.lower() for keyword in bar_keywords)
                         for cuisine in r.get('cuisine_type', [])
                     )
+                ]
+            elif vendor_type == 'popup':
+                # Filter for pop-up venues (manual flag)
+                nearby_restaurants = [
+                    r for r in nearby_restaurants 
+                    if r.get('vendor_type') == 'popup' or r.get('is_popup', False)
+                ]
+            elif vendor_type == 'other':
+                # Filter for other venues (smoke shops, salons, etc.)
+                nearby_restaurants = [
+                    r for r in nearby_restaurants 
+                    if r.get('vendor_type') == 'other'
                 ]
         
         # Sort by priority: owner-managed first, then by distance
