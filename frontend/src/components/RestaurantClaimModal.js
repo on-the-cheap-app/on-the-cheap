@@ -22,7 +22,8 @@ const RestaurantClaimModal = ({ onClose, token, onSuccess }) => {
     address: '',
     phone: '',
     website: '',
-    cuisine_type: ''
+    cuisine_type: '',
+    vendor_type: 'permanent'
   });
 
   // Filter results client-side
