@@ -633,6 +633,19 @@ const styles = StyleSheet.create({
   addressInput: {
     marginBottom: spacing.md,
   },
+  addressSearchRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  addressInputWrapper: {
+    flex: 1,
+  },
+  searchButton: {
+    marginTop: 0,
+    backgroundColor: colors.primary,
+  },
   buttonRow: {
     flexDirection: 'row',
     gap: spacing.sm,
