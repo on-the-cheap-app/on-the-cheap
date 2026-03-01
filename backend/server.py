@@ -3722,6 +3722,7 @@ class CreateRestaurantRequest(BaseModel):
     phone: Optional[str] = None
     website: Optional[str] = None
     cuisine_type: List[str] = []
+    vendor_type: Optional[str] = "permanent"  # permanent, bar, mobile, popup, other
     latitude: float
     longitude: float
 
