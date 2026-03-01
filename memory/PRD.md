@@ -56,6 +56,8 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 3. **Search Button** - Added explicit "Search" button next to address input field
 4. **Search After Logout** - Fixed by preserving location state in `clearSearch()`
 5. **Auth State** - Added authentication checking and favorites loading on app startup
+6. **Pull-to-Refresh Favorites Sync** - Pull down to refresh syncs favorites with server and shows snackbar confirmation
+7. **Favorite Toggle Feedback** - Snackbar notifications when adding/removing favorites
 
 ### Data Enrichment Pipeline ✅ COMPLETE
 - **Phase 1**: Cleaned and segmented 1,206 New Orleans restaurants
