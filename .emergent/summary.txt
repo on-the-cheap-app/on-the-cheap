@@ -1,5 +1,5 @@
 <analysis>**original_problem_statement:**
-The user wants to build a full-stack restaurant deals application. The initial request in this session was to add administrative endpoints to manage restaurant ownership. After successfully implementing and deploying those, along with fixing a critical UI bug, the user pivoted to enhancing the mobile app. The current tasks are to add a map view for browsing restaurants and to implement push notifications for new specials from a user's favorite restaurants.
+The user wants to build a full-stack restaurant deals application. The initial request in this session was to add administrative endpoints to manage restaurant ownership. After successfully implementing and deploying those, along with fixing a critical UI bug, the user pivoted to enhancing the mobile app. The current tasks are to add a map view for browsing restaurants and to implement push notifications for new specials from a user's favorite restaurants. However, the session was almost entirely consumed by a massive debugging effort to get the mobile app to build and run without crashing, which has superseded the original feature goals.
 
 PRODUCT REQUIREMENTS:
 -   **Mobile Map View:**
@@ -16,182 +16,210 @@ PRODUCT REQUIREMENTS:
 **User's preferred language**: English
 
 **what currently exists?**
--   **Web App:** A functional React frontend and FastAPI backend. It includes features for restaurant owners, a referral program, and an analytics dashboard. All known production bugs have been fixed.
--   **Mobile App (React Native/Expo):** The app is functional and deployed. Users can log in, browse restaurants, and manage favorites. The codebase includes initial scaffolding for a map view and push notifications.
--   **Backend:** A FastAPI server connected to MongoDB. It serves both the web and mobile apps. It has APIs for owner management, analytics, referrals, and recently added admin endpoints. A backend service for OneSignal also exists.
+The mobile app now launches, authenticates, and successfully fetches and displays restaurant data on the initial load. A significant amount of work was done to fix numerous build-time and run-time errors that were causing the app to crash or fail silently. The codebase has been heavily modified to stabilize the build process and API interactions. Key features like adding favorites and searching after logging out are currently broken. The original map view and push notification features are coded but untested and were disabled to help isolate the crashing bugs.
 
 **Last working item**:
--   **Last item agent was working:** The agent was simultaneously implementing two mobile app features: a map view and push notifications.
-    -   **For Map View:** A reusable  component was created, and the  was modified to include a list/map toggle and conditional rendering logic.
-    -   **For Push Notifications:** The agent received the OneSignal App ID, retrieved the integration playbook, and added a backend endpoint to trigger notifications. The mobile app's profile screen was updated with notification preferences, and the API service was updated to tag users in OneSignal.
+-   **Last item agent was working:** The agent was debugging a series of critical bugs in the mobile app. The last successful fix was rewriting  to use a custom query string builder, which resolved an HTTP 422 error caused by  parameters being sent to the backend. This allowed restaurant searches to finally succeed.
 -   **Status:** IN PROGRESS
 -   **Agent Testing Done:** N
--   **Which testing method agent to use?** both
--   **User Testing Done:** N
+-   **Which testing method agent to use?** manual testing by curl
+-   **User Testing Done:** Y
 
 **All Pending/In progress Issue list**:
--   **Issue 1:** Complete and test the mobile map view feature (P0)
--   **Issue 2:** Complete and test the push notification integration (P0)
+-   **Issue 1:** Search stops working after user logs out (P0)
+-   **Issue 2:** Cannot add/toggle favorites when logged in (P1)
+-   **Issue 3:** Address search UX is confusing with no explicit Search button (P2)
 
 **Issues Detail:**
--   **Issue 1: Complete and test the mobile map view feature**
-    -   **Attempted fixes:** The agent has already created the  component and added the toggle logic to .
+-   **Issue 1: Search stops working after user logs out**
+    -   **Attempted fixes:** None yet. The issue was discovered at the very end of the session.
     -   **Next debug checklist:**
-        1.  Build and run the mobile app in a simulator or on a device.
-        2.  Verify the list/map toggle functions correctly on the home screen.
-        3.  Confirm that restaurant markers are displayed on the map.
-        4.  Ensure markers for restaurants with specials are visually distinct.
-        5.  Test the tap interaction on a marker to confirm it opens a restaurant preview.
-    -   **Why fix this issue and what will be achieved with the fix?** To complete the user-requested map view, offering an engaging and visual way for users to discover restaurants with deals.
-    -   **Status:** IN PROGRESS
+        1.  Verify the state of  in  after a logout and a subsequent press of the Near Me button.
+        2.  The  function is called on logout, which sets  to . The  function is called by Near Me, which should repopulate the location state.
+        3.  The search works on initial app load, but not after logout. This points to a state management issue where the app isn't correctly resetting or re-fetching what it needs.
+    -   **Why fix this issue and what will be achieved with the fix?** This is a critical bug breaking the core functionality for logged-out users. Fixing it will restore the primary search feature.
+    -   **Status:** NOT STARTED
     -   **Is recurring issue?** N
     -   **Should Test frontend/backend/both after fix?** frontend
     -   **Blocked on other issue:** None
 
--   **Issue 2: Complete and test the push notification integration**
-    -   **Attempted fixes:** The agent has added a backend endpoint, UI for preferences on , and OneSignal tagging logic in .
+-   **Issue 2: Cannot add/toggle favorites when logged in**
+    -   **Attempted fixes:** The agent implemented the state (), logic (, ), and props (, ) in  to handle favorites.
     -   **Next debug checklist:**
-        1.  Uncomment and correctly implement the OneSignal initialization in  using the provided App ID.
-        2.  Configure the OneSignal Gradle plugin in  as per the integration playbook.
-        3.  Build the app and test that it prompts for notification permissions.
-        4.  Trigger the backend notification endpoint (e.g., ) and verify the notification is received on the device.
-        5.  Test the notification preference toggles on the profile screen to ensure they function correctly.
-    -   **Why fix this issue and what will be achieved with the fix?** To complete the push notification feature, which will increase user retention and engagement by proactively alerting them to relevant deals.
+        1.  The  function has a generic catch block. Update it to display a more specific error from the API call.
+        2.  Verify the  function is being called correctly with the right  and  boolean.
+        3.  Test the  endpoints directly with  using a valid auth token to ensure the backend is working as expected.
+    -   **Why fix this issue and what will be achieved with the fix?** This is a core feature for user engagement and retention.
     -   **Status:** IN PROGRESS
     -   **Is recurring issue?** N
     -   **Should Test frontend/backend/both after fix?** both
+    -   **Blocked on other issue:** None
+
+-   **Issue 3: Address search UX is confusing**
+    -   **Attempted fixes:** None. The agent identified the UI relies on an  event from an autocomplete component (), with no visible button to trigger a search.
+    -   **Next debug checklist:**
+        1.  Add a dedicated Search button next to the address input field.
+        2.  Hook this button up to the  function in .
+    -   **Why fix this issue and what will be achieved with the fix?** To improve usability and align the UI with user expectations for how a search bar works.
+    -   **Status:** NOT STARTED
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** frontend
     -   **Blocked on other issue:** None
 
 **In progress Task List**:
 -   **Task 1: Mobile App - Map View (P0)**
-    -   **Where to resume:** Test the existing implementation in  and  by building and running the mobile app.
-    -   **What will be achieved with this?** A functional map view on the mobile home screen where users can see restaurant locations.
-    -   **Status:** IN PROGRESS
+    -   **Where to resume:** The code exists in  and  but is completely untested. It needs to be re-enabled and tested once the app is stable.
+    -   **What will be achieved with this?** A functional map view on the mobile home screen.
+    -   **Status:** BLOCKED
     -   **Should Test frontend/backend/both after fix?** frontend
-    -   **Blocked on something:** No.
+    -   **Blocked on something:** The app must be stable and core features (like search) must work reliably first.
 
 -   **Task 2: Mobile App - Push Notifications (P0)**
-    -   **Where to resume:** The immediate next step is to correctly initialize the OneSignal SDK in  and configure it in  using the provided App ID.
-    -   **What will be achieved with this?** A fully functional push notification system that alerts users to new specials from their favorite restaurants.
-    -   **Status:** IN PROGRESS
+    -   **Where to resume:** The OneSignal code in  was commented out as it was the suspected cause of the initial app crashes. It needs to be re-enabled and configured correctly.
+    -   **What will be achieved with this?** A functional push notification system.
+    -   **Status:** BLOCKED
     -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on something:** No.
+    -   **Blocked on something:** The app must be stable first. This feature was a likely source of previous crashes and should be handled with care.
 
 **Upcoming and Future Tasks**
 *   **Upcoming Tasks:**
-    *   (P1) **Mobile App & Web - Branding Update:** Replace the current app icon, splash screen, web logo, and favicon with new assets when the user provides them.
+    *   (P1) **Mobile App & Web - Branding Update:** The agent has already updated the mobile app assets, but this may need to be revisited once the app is stable. Web assets still need updating.
 *   **Future Tasks:**
     *   (P2) Create a dedicated landing page for New Orleans restaurant owners.
-    *   (P2) Integrate PayPal as an alternative payment option.
+    - (P2) Integrate PayPal as an alternative payment option.
     - (P2) Enhance the Owner Analytics Dashboard (Tier 2/3 features).
     - (P2) Build a UI for the admin approval workflow for specials.
     - (P2) Submit the mobile app to the Apple App Store.
 
 **Completed work in this session**
--   **Admin Endpoints & Enhancement:**
-    -   Implemented and tested  and .
-    -   Added a new  endpoint as an enhancement.
--   **Production Deployment & Debugging:**
-    -   Guided the user through multiple production deployments.
-    -   Diagnosed and provided a resolution for a recurring production login failure caused by incorrect database environment variables.
--   **Critical UI Bug Fix (Already Claimed):**
-    -   Fixed a bug where an un-claimed restaurant was incorrectly displayed as Already Claimed. This involved fixes to both the backend search API and the frontend claim modal logic.
--   **Mobile App Bug Fixes:**
-    -   **Missing Photos:** Updated the  endpoint to include photo URLs, fixing an issue where favorite restaurant cards had no images.
-    -   **Disappearing Favorites:** Diagnosed that favorites were disappearing due to a stale auth token and guided the user to log out and back in to resolve it.
--   **Planning:**
-    -   Outlined the complete process for the upcoming app branding update.
-    -   Gathered requirements and created a plan for the map view and push notification features.
+-   **Massive Build & Runtime Debugging:**
+    -   Fixed multiple critical EAS build failures related to Expo project ID, missing font plugins, invalid , and incorrect .
+    -   Diagnosed and fixed build failures caused by corrupted and incorrectly sized app icon assets.
+    -   Guided the user through a complex local setup process involving Git, branches, and EAS CLI.
+-   **Critical App Crash Fixes:**
+    -   Identified that  was causing crashes and successfully replaced it with .
+    -   Identified and fixed a blank screen issue by correcting the app name registration in .
+-   **API Integration Fix:**
+    -   Diagnosed HTTP 422/500 errors and fixed them by rewriting  to use  with a custom query string builder that correctly handles  parameters.
+-   **Branding:**
+    -   Updated the mobile app icon and splash screen with the new rooster head assets.
 
 **Earlier issues found/mentioned but not fixed**
--   None. All previously known issues have been addressed or are currently in progress.
+-   None.
 
 **Known issue recurrence from previous fork**
--   **Production Environment Instability:** A critical recurring issue where production deployments can cause database environment variables (, ) to be reset, leading to application-wide failures (e.g., login). This occurred again this session and required external support to fix.
--   **Status:** RESOLVED (for now, but high risk of recurrence on next deployment).
--   **Mobile App Token Handling:** The disappearing favorites bug was resolved by a user-side logout/login, suggesting the app's session/token management may be fragile and could cause similar issues in the future.
--   **Status:** NOT STARTED
+-   **Codebase Fragility:** The session was defined by a cycle of fixing one bug only to have it revert or cause another. The mobile app codebase is very brittle. Any change, especially through M	.emergent/emergent.yml
+M	.gitignore
+M	frontend/yarn.lock or library updates, risks breaking the build or runtime.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **React Native Maps:** Using the  library to display interactive maps and markers.
--   **Push Notifications (OneSignal):** Integrating a third-party service for push notifications, including SDK setup, user segmentation with tags, and backend triggers.
--   **Production Environment Debugging:** Isolating issues specific to a production environment, particularly related to configuration and environment variables.
--   **State Management:** Differentiating between server-side data errors and client-side state/cache issues (e.g., the expired auth token).
+-   **Expo Application Services (EAS):** Extensive use of  and debugging of build failures by analyzing logs from different phases (Prebuild, Bundle JavaScript).
+-   **React Native Debugging:** A deep and painful dive into debugging build-time vs. run-time errors, including crashes on launch, blank screens, and silent API failures.
+-   **Babel/Metro Configuration:** The session required creating and modifying  and  to handle syntax issues in .
+-   **State Management:** The current bugs (search after logout) point to issues with how React state is being managed and reset.
+-   **API Client Implementation:** Replaced  with  and implemented a custom query string builder to fix a critical bug with how  parameters were being serialized.
 
 **key DB schema**
--   No new schemas were introduced. Work involved the , , and  (via favorites) collections.
+-   No schema changes were made.
 
 **All files of reference**
--    (Map View UI)
--    (Map View Component)
--    (OneSignal Initialization)
--    (OneSignal Configuration)
--    (Notification Preferences UI)
--    (OneSignal Tagging)
--    (Notification Trigger Endpoint)
--    (Integration Guide)
+-    (Core logic for search and favorites is here)
+-    (Handles all backend communication)
+-    (Project configuration, critical for builds)
+-    (Build configuration)
+-    (App entry point)
+-    (A guide created during the session)
 
 **Areas that need refactoring**:
--   The  file is now over 3000 lines and handles almost all application logic. It should be modularized by feature (e.g., , , ) to improve maintainability.
--   The mobile app's authentication flow needs improved error handling for expired tokens to avoid silent failures that make data appear to be missing. It should automatically attempt to refresh the token or prompt the user to log in again.
+-    is now responsible for location, search, filters, and favorites state and logic. It should be broken down into smaller hooks or components.
+-   The debug alerts added to  should be removed and replaced with .
 
 **key api endpoints**
--   **Admin (New):**
-    -   
-    -   
-    -   
--   **Favorites (Updated):**
-    -    (Now includes ).
--   **Notifications (New):**
-    -   
+-   
+-   
+-   
+-   
 
 **Critical Info for New Agent**
--   **Priorities:** Your immediate task is to complete the two in-progress mobile features: Map View and Push Notifications. They should be worked on in parallel and tested thoroughly.
--   **Map View Status:** The UI code is written. You need to build the app, test it on a simulator, and debug any issues with the map rendering, markers, or interactions.
--   **Push Notification Status:** The user has provided the OneSignal App ID: . Your next step is to correctly initialize the SDK in  and configure  using the playbook at . After that, test the full end-to-end flow.
--   **Recurring Production Risk:** Be extremely cautious with deployments. There is a known, recurring platform issue where production environment variables (especially for MongoDB) are reset, causing the live application to fail. If logins break after deployment, this is the first thing to suspect.
--   **Pending User Request:** The user is waiting on new brand assets from a design firm. Be prepared to implement the UI changes for the app icon, splash screen, and logos once the user provides the files.
+-   **The App is Fragile:** This session was a long and difficult debugging process. The mobile codebase is unstable. Proceed with extreme caution. **Test every single change**, no matter how small.
+-   **Prioritize Stability:** Before implementing any new features (Map View, Push Notifications), you MUST fix the remaining P0 and P1 bugs (search after logout, non-functional favorites).
+-   **Logout Bug is P0:** The most critical issue is that search breaks after a user logs out. This must be the first thing you fix.
+-   **Use a Stable Baseline:** The current code in the  branch is the most stable we've achieved. Before making changes, commit this state with [main c9e5e07] Stable baseline after extensive debugging
+ 2 files changed, 6 insertions(+), 2 deletions(-) so you have a safe point to return to.
+-   **APIService.ts is Fixed:** The service was rewritten to use  and a custom query builder. Do not revert this change.
+-   **Geolocation is Fixed:**  now uses . Do not revert to .
 
 **documents and test reports created in this job**
--   
--   
--   
--   
+-   /app/memory/mobile_build_and_test_guide.md
 
 **Last 10 User Messages and any pending HUMAN messages**
--   **10. User:** Asked for a plan to change the app icon, logo, and splash screen. (Agent provided a plan).
--   **9. User:** Confirmed they shared the plan with their graphics firm and declared a break.
--   **8. User:** Returned from break and requested work on the mobile map view and push notifications. (Tasks are in progress).
--   **7. User:** Provided detailed requirements for the map view (toggle, prioritize specials) and push notifications.
--   **6. Agent:** Proposed a plan and asked for the OneSignal App ID.
--   **5. User:** Provided the OneSignal App ID: .
--   **4-1. Agent:** Acknowledged the ID and proceeded with implementation. The remaining messages are the agent's internal thought process and tool calls before the session ended.
+-   **10. User:** Confirmed the app launches and populates restaurants near me. (Success)
+-   **9. User:** Asked what to do after logging out and trying to search again. (Debugging)
+-   **8. User:** Confirmed that after logging out, the Near Me search still works and shows debug alerts. (Progress)
+-   **7. User:** Reported new issues: login/favorites work, but there's no search button for address/filters, and adding a favorite doesn't work. (New bug reports)
+-   **6. User:** Confirmed they are stuck in quote mode in the terminal. (User assistance)
+-   **5. User:** Reported an HTTP 500 error after the app finally populated with data. (New bug report)
+-   **4. User:** Confirmed the app now launches, they can see favorites, but searching near me causes an error. (Progress & new bug)
+-   **3. User:** Reported that the build with the fixed favorite props and state management is complete. (User update)
+-   **2. User:** Confirmed they are logged in, but favorites are missing. (Bug report)
+-   **1. User:** Reported being unable to add a favorite after the app finally worked. (Bug report)
 
 **Project Health Check:**
--   **Broken:** None.
+-   **Broken:**
+    -   Search functionality after user logs out.
+    -   Adding/toggling favorites.
+    -   Address search UI (no button).
 -   **Mocked:** None.
 
 **3rd Party Integrations**
--   **Stripe (Payments):** Live and functional.
--   **Yelp Fusion API:** Used for data ingestion.
--   **Expo Application Services (EAS):** Used for mobile app builds.
--   **OneSignal (Push Notifications):** **IN PROGRESS**. App ID is known. SDK is installed but requires final configuration in  and .
--   **react-native-maps:** Installed and used for the new map view feature.
+-   **Stripe (Payments):** Live and functional (in web app).
+-   **Yelp Fusion API:** Used for data ingestion (in backend).
+-   **Expo Application Services (EAS):** In use for all mobile builds.
+-   **OneSignal (Push Notifications):** **DISABLED**. Code exists but is commented out in  as it was a suspected source of crashes.
+-   **react-native-maps:** Installed, code exists, but feature is untested and not a priority.
+-   **expo-location:** Now used for geolocation, replacing the unstable .
 
 **Testing status**
 -   **Testing agent used after significant changes:** NO
 -   **Troubleshoot agent used after agent stuck in loop:** NO
--   **Test files created:** []
--   **Known regressions:** None.
+-   **Test files created:** None in this session.
+-   **Known regressions:** Search functionality breaks after logout.
 
 **Credentials to test flow:**
--   **Owner:**  / 
 -   **Customer:**  / 
 -   **OneSignal App ID:** 
 
 **What agent forgot to execute**
--   The agent was in the middle of implementation and did not complete the final configuration steps for the OneSignal SDK in  and .
--   The agent did not build or test the mobile app after adding the new code for both the map view and the push notification features. This is the most critical next step.</analysis>
+-   The original tasks (Map View, Push Notifications) were completely abandoned in favor of debugging the app to a barely-functional state.
+-   The agent did not commit a stable baseline after finally getting the app to work, which led to fixes being accidentally reverted by M	README.md
+M	backend/coupon_service.py
+M	backend_test.py
+M	favorites_debug_test.py
+M	favorites_workflow_test.py
+M	frontend/public/mobile-fix.sh
+M	frontend/public/mobile-setup-complete.sh
+M	frontend/public/mobile-setup.sh
+M	frontend/yarn.lock
+M	memory/BUSINESS_PLAN.md
+M	memory/BUSINESS_PLAN_GOOGLE_DOCS.txt
+M	memory/PRD.md
+M	mobile-app/BUILD_AND_TEST_GUIDE.md
+M	mobile-app/README.md
+M	mobile_app_backend_test.py
+M	mobile_app_detailed_test.py
+M	mobile_coupon_backend_test.py
+M	mobile_coupon_comprehensive_test.py
+M	mobile_coupon_focused_test.py
+M	mobile_coupon_test.py
+M	photo_url_test.py
+M	production_optimization_test.py
+M	specials_messaging_test.py
+M	support_email_draft.md
+M	support_email_draft_feb12.md
+M	test_favorites_fix.py
+M	test_owner_dashboard.py
+M	test_result.md commands.
+-   The agent did not add a search button for the address/filter functionality, leaving the UI confusing.</analysis>

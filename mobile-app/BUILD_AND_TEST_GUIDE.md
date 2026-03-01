@@ -288,7 +288,7 @@ I'll help troubleshoot and get your app ready for submission!
 ### Backend API for Manual Testing
 ```bash
 # Test notification endpoint (replace IDs)
-curl -X POST "https://deals-alert-staging.preview.emergentagent.com/api/notifications/favorite-special?restaurant_id=YOUR_RESTAURANT_ID&special_title=Test%20Special&special_description=50%25%20off%20lunch"
+curl -X POST "https://stable-baseline.preview.emergentagent.com/api/notifications/favorite-special?restaurant_id=YOUR_RESTAURANT_ID&special_title=Test%20Special&special_description=50%25%20off%20lunch"
 ```
 
 ---

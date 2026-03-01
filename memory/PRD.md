@@ -67,7 +67,7 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 
 ## Key URLs
 - Production: https://www.onthecheapapp.com
-- Preview: https://deals-alert-staging.preview.emergentagent.com
+- Preview: https://stable-baseline.preview.emergentagent.com
 - Privacy Policy: https://www.onthecheapapp.com/privacy
 - Partner Info: https://www.onthecheapapp.com/partner-info
 
