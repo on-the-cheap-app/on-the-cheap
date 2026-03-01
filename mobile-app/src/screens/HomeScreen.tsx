@@ -321,6 +321,7 @@ const HomeScreen = ({ navigation }: any) => {
                 <AddressInput
                   placeholder="Enter city or address (e.g., San Francisco, New York)"
                   onAddressSelect={handleAddressSelect}
+                  onQueryChange={handleAddressQueryChange}
                   initialValue={searchLocation}
                   region="US"
                   style={styles.addressInput}
@@ -330,7 +331,7 @@ const HomeScreen = ({ navigation }: any) => {
                 mode="contained"
                 onPress={searchByAddress}
                 style={styles.searchButton}
-                disabled={loading || !searchQuery.trim()}
+                disabled={loading || !searchLocation.trim()}
                 icon="magnify"
                 compact
               >
