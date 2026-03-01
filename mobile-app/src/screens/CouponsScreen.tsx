@@ -99,10 +99,8 @@ const CouponsScreen = ({ navigation }: any) => {
         16094 // 10 miles
       );
       
-      console.log('🎟️ Found coupons:', result.coupons?.length || 0);
       setCoupons(result.coupons || []);
     } catch (error) {
-      console.error('Error loading coupons:', error);
       Alert.alert('Error', 'Could not load coupons. Please try again.');
     } finally {
       setLoading(false);
