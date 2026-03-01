@@ -285,6 +285,8 @@ const HomeScreen = ({ navigation }: any) => {
   // Refresh data
   const onRefresh = async () => {
     setRefreshing(true);
+    // Refresh auth state and favorites
+    await checkAuthAndLoadFavorites();
     if (location) {
       await searchNearbyRestaurants();
     } else {
