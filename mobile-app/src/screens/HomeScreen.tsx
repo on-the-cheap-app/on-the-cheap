@@ -618,6 +618,20 @@ const HomeScreen = ({ navigation }: any) => {
           </Card>
         </View>
       )}
+
+      {/* Snackbar for feedback messages */}
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={2000}
+        style={styles.snackbar}
+        action={{
+          label: 'OK',
+          onPress: () => setSnackbarVisible(false),
+        }}
+      >
+        {snackbarMessage}
+      </Snackbar>
     </ScrollView>
   );
 };
