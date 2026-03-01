@@ -120,11 +120,9 @@ const CouponsScreen = ({ navigation }: any) => {
     setLoading(true);
     try {
       const result = await APIService.getSavedCoupons();
-      console.log('💾 Saved coupons:', result.coupons?.length || 0);
       setCoupons(result.coupons || []);
       setSavedCouponIds(result.coupons?.map((c: Coupon) => c.id) || []);
     } catch (error) {
-      console.error('Error loading saved coupons:', error);
       Alert.alert('Error', 'Could not load saved coupons. Please try again.');
     } finally {
       setLoading(false);
