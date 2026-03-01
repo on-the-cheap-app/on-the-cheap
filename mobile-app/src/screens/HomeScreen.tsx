@@ -31,7 +31,6 @@ import { colors, spacing } from '../theme/colors';
 import { Restaurant, SearchParams } from '../types/restaurant';
 
 const HomeScreen = ({ navigation }: any) => {
-  const [searchQuery, setSearchQuery] = useState('');
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
