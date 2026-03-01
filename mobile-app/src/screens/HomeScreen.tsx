@@ -520,6 +520,8 @@ const HomeScreen = ({ navigation }: any) => {
                 key={restaurant.id}
                 restaurant={restaurant}
                 onPress={() => navigation.navigate('RestaurantDetail', { restaurant })}
+                onToggleFavorite={toggleFavorite}
+                isFavorite={favorites.has(restaurant.id)}
               />
             );
           })}
