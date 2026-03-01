@@ -84,8 +84,8 @@ const HomeScreen = ({ navigation }: any) => {
   const loadFavorites = async () => {
     try {
       const response = await APIService.getFavorites();
-      const favoriteIds = new Set(
-        (response.favorites || []).map((fav: any) => fav.id || fav.restaurant_id)
+      const favoriteIds = new Set<string>(
+        (response.favorites || []).map((fav: any) => String(fav.id || fav.restaurant_id))
       );
       setFavorites(favoriteIds);
       console.log('📍 Loaded favorites:', favoriteIds.size);
