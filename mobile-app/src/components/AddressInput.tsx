@@ -103,6 +103,7 @@ const AddressInput: React.FC<AddressInputProps> = ({
 
   const handleQueryChange = (text: string) => {
     setQuery(text);
+    onQueryChange?.(text);
     if (text.length < 3) {
       setShowSuggestions(false);
       setSuggestions([]);
