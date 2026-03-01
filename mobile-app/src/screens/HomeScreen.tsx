@@ -290,16 +290,32 @@ const HomeScreen = ({ navigation }: any) => {
     return option ? option.label : formatDistance(meters);
   };
 
-  // Refresh data
+  // Refresh data with favorites sync
   const onRefresh = async () => {
     setRefreshing(true);
+    
     // Refresh auth state and favorites
+    const previousFavCount = favorites.size;
     await checkAuthAndLoadFavorites();
+    
+    // Search for restaurants
     if (location) {
       await searchNearbyRestaurants();
     } else {
       await getCurrentLocation();
     }
+    
+    // Show sync feedback if authenticated
+    if (isAuthenticated) {
+      const newFavCount = favorites.size;
+      if (newFavCount !== previousFavCount) {
+        setSnackbarMessage(`Favorites synced (${newFavCount} saved)`);
+      } else {
+        setSnackbarMessage('Favorites up to date');
+      }
+      setSnackbarVisible(true);
+    }
+    
     setRefreshing(false);
   };
 
