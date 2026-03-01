@@ -59,6 +59,13 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 6. **Pull-to-Refresh Favorites Sync** - Pull down to refresh syncs favorites with server and shows snackbar confirmation
 7. **Favorite Toggle Feedback** - Snackbar notifications when adding/removing favorites
 8. **Venue Type Filters** - Added Bars, Pop-ups, and Other venue types to filter options
+9. **Branding Update** - New rooster logo applied to:
+   - Mobile app icon (1024x1024)
+   - Mobile adaptive icon (Android)
+   - Mobile splash screen (1284x2778)
+   - Web header logo
+   - Web footer logo
+   - Favicon
 
 ### Data Enrichment Pipeline ✅ COMPLETE
 - **Phase 1**: Cleaned and segmented 1,206 New Orleans restaurants
