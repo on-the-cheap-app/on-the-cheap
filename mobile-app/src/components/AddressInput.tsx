@@ -35,6 +35,7 @@ interface AddressInputProps {
 const AddressInput: React.FC<AddressInputProps> = ({
   placeholder = "Enter city or address",
   onAddressSelect,
+  onQueryChange,
   initialValue = "",
   region = "US",
   style,
