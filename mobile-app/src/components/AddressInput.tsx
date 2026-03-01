@@ -26,6 +26,7 @@ interface AddressSuggestion {
 interface AddressInputProps {
   placeholder?: string;
   onAddressSelect: (result: AddressSuggestion) => void;
+  onQueryChange?: (query: string) => void;
   initialValue?: string;
   region?: string;
   style?: any;
