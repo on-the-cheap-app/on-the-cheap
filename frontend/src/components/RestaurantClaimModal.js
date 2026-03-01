@@ -190,6 +190,7 @@ const RestaurantClaimModal = ({ onClose, token, onSuccess }) => {
           phone: newRestaurant.phone.trim() || null,
           website: newRestaurant.website.trim() || null,
           cuisine_type: newRestaurant.cuisine_type.split(',').map(c => c.trim()).filter(c => c),
+          vendor_type: newRestaurant.vendor_type,
           latitude: coords.latitude,
           longitude: coords.longitude
         })
