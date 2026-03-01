@@ -3,7 +3,7 @@
 ## Original Problem Statement
 A restaurant deals mobile app and web platform that helps users find restaurant specials, happy hours, and food deals near them.
 
-## Current Status (February 13, 2026)
+## Current Status (March 1, 2026)
 
 ### Web App - PRODUCTION READY ✅
 - ✅ Customer experience working (search, favorites, share)
@@ -24,17 +24,17 @@ A restaurant deals mobile app and web platform that helps users find restaurant 
 - ✅ **Delete Owner Profile** - Owners can delete their account
 - ✅ **New Orleans Restaurant Data** - 565 restaurants imported with Yelp enrichment
 
-### Mobile App - CODE COMPLETE (Awaiting Build & Test) 🟡
+### Mobile App - BUG FIXES COMPLETE (March 1, 2026) 🟢
+- ✅ **Geolocation Fixed** - Now using `expo-location` instead of `react-native-geolocation-service`
+- ✅ **Favorites Functionality** - Full add/remove favorites with optimistic updates
+- ✅ **Search Button Added** - Explicit "Search" button next to address input
+- ✅ **Search After Logout Fixed** - Location state preserved after clearing search
 - ✅ **Map View Feature** - Toggle between list/map on home screen
   - Custom markers (orange=specials, gray=no specials)
   - Restaurant preview card on marker tap
   - Legend showing marker meanings
   - Auto-fit to show all restaurants
-- ✅ **Push Notifications (OneSignal)** - Full integration
-  - OneSignal SDK initialization (App ID: `e841b137-33e1-439c-8284-7cebb747fde7`)
-  - User tagging for favorite restaurant targeting
-  - Granular notification preferences (new specials, starting soon, daily digest)
-  - Deep linking (tap notification → restaurant detail)
+- ⏳ **Push Notifications (OneSignal)** - Code exists but disabled, needs testing
 - ⏳ **Requires EAS Build** - Build and test on physical device
 
 ### Referral Program Details
