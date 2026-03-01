@@ -249,6 +249,11 @@ const HomeScreen = ({ navigation }: any) => {
     searchNearbyRestaurants(result.latitude, result.longitude);
   };
 
+  // Handle address query change (for enabling Search button)
+  const handleAddressQueryChange = (query: string) => {
+    setSearchLocation(query);
+  };
+
   // Format distance helper
   const formatDistance = (meters: number): string => {
     const miles = meters * 0.000621371;
