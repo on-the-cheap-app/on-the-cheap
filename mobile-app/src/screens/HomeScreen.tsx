@@ -193,22 +193,8 @@ const HomeScreen = ({ navigation }: any) => {
       };
 
       const result = await APIService.searchRestaurants(searchParams);
-      console.log('🍽️ Restaurant search result:', result.restaurants?.length || 0, 'restaurants found');
       setRestaurants(result.restaurants || []);
-      
-      // Debug: Log photos for first restaurant
-      if (result.restaurants && result.restaurants.length > 0) {
-        const firstRestaurant = result.restaurants[0];
-        console.log('📸 First restaurant photos:', firstRestaurant.photos?.length || 0, 'photos');
-        console.log('📸 First photo URL:', firstRestaurant.photos?.[0]?.url);
-        console.log('🏪 First restaurant data keys:', Object.keys(firstRestaurant));
-      }
-      
-      console.log(`Found ${result.restaurants?.length || 0} restaurants within ${formatDistance(selectedRadius)}`);
-      console.log('Restaurants array:', result.restaurants?.length || 0, 'total restaurants');
-      console.log('First restaurant structure:', result.restaurants?.[0] ? Object.keys(result.restaurants[0]) : 'No restaurants');
     } catch (error) {
-      console.error('Search error:', error);
       Alert.alert('Search Error', 'Could not search for restaurants. Please try again.');
     } finally {
       setLoading(false);
