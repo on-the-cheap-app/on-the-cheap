@@ -120,7 +120,6 @@ const HomeScreen = ({ navigation }: any) => {
     
     try {
       await APIService.toggleFavorite(restaurantId, isFavorite);
-      console.log(`❤️ Favorite ${isFavorite ? 'removed' : 'added'}: ${restaurantId}`);
       // Show feedback
       setSnackbarMessage(isFavorite ? 'Removed from favorites' : 'Added to favorites');
       setSnackbarVisible(true);
