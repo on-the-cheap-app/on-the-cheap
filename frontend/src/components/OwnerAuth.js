@@ -237,8 +237,9 @@ const OwnerAuth = ({ onClose, onAuthSuccess }) => {
                       <option value="bar">Bar</option>
                       <option value="cafe">Cafe</option>
                       <option value="food_truck">Food Truck</option>
+                      <option value="popup">Pop-up</option>
                       <option value="bakery">Bakery</option>
-                      <option value="other">Other</option>
+                      <option value="other">Other (Smoke Shop, Salon, etc.)</option>
                     </select>
                   </div>
                 </div>
