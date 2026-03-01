@@ -310,14 +310,28 @@ const HomeScreen = ({ navigation }: any) => {
               Search by location or use your current position
             </Paragraph>
             
-            {/* Enhanced Address Input */}
-            <AddressInput
-              placeholder="Enter city or address (e.g., San Francisco, New York)"
-              onAddressSelect={handleAddressSelect}
-              initialValue={searchLocation}
-              region="US"
-              style={styles.addressInput}
-            />
+            {/* Enhanced Address Input with Search Button */}
+            <View style={styles.addressSearchRow}>
+              <View style={styles.addressInputWrapper}>
+                <AddressInput
+                  placeholder="Enter city or address (e.g., San Francisco, New York)"
+                  onAddressSelect={handleAddressSelect}
+                  initialValue={searchLocation}
+                  region="US"
+                  style={styles.addressInput}
+                />
+              </View>
+              <Button
+                mode="contained"
+                onPress={searchByAddress}
+                style={styles.searchButton}
+                disabled={loading || !searchQuery.trim()}
+                icon="magnify"
+                compact
+              >
+                Search
+              </Button>
+            </View>
             
             <View style={styles.buttonRow}>
               <Button
