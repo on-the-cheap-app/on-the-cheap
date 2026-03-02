@@ -38,7 +38,7 @@ const App = (): React.JSX.Element => {
         }
       });
     } else {
-      console.log('OneSignal App ID not configured. Push notifications disabled.');
+      // OneSignal not configured - push notifications disabled
     }
   }, []);
 

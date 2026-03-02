@@ -140,12 +140,11 @@ class APIService {
         const OneSignalService = require('./OneSignalService').default;
         await OneSignalService.tagFavoriteRestaurant(restaurantId);
       } catch (e) {
-        console.log('OneSignal tagging skipped:', e);
+        // OneSignal tagging skipped silently
       }
       
       return response.data;
     } catch (error) {
-      console.error('API Error - Add Favorite:', error);
       throw error;
     }
   }
@@ -159,12 +158,11 @@ class APIService {
         const OneSignalService = require('./OneSignalService').default;
         await OneSignalService.untagFavoriteRestaurant(restaurantId);
       } catch (e) {
-        console.log('OneSignal untagging skipped:', e);
+        // OneSignal untagging skipped silently
       }
       
       return response.data;
     } catch (error) {
-      console.error('API Error - Remove Favorite:', error);
       throw error;
     }
   }
